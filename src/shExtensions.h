@@ -1,0 +1,53 @@
+/*
+ * Copyright (c) 2007 Ivan Leben
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library in the file COPYING;
+ * if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ */
+
+#ifndef __SHEXTENSIONS_H
+#define __SHEXTENSIONS_H
+
+/* Define missing constants and route missing
+   functions to extension pointers */
+
+#ifndef APIENTRY
+#define APIENTRY
+#endif
+#ifndef APIENTRYP
+#define APIENTRYP APIENTRY *
+#endif
+
+#ifndef GL_VERSION_1_2
+#  define GL_CLAMP_TO_EDGE       0x812F
+#endif
+
+#ifndef GL_VERSION_1_3
+#  define GL_MULTISAMPLE         0x809D
+#  define GL_TEXTURE0            0x84C0
+#  define GL_TEXTURE1            0x84C1
+#  define glActiveTexture        context->pglActiveTexture
+#  define glMultiTexCoord1f      context->pglMultiTexCoord1f
+#endif
+
+#ifndef GL_VERSION_1_4
+#  define GL_MIRRORED_REPEAT     0x8370
+#endif
+
+typedef void (APIENTRYP SH_PGLACTIVETEXTURE) (GLenum);
+typedef void (APIENTRYP SH_PGLMULTITEXCOORD1F) (GLenum, GLfloat);
+
+#endif

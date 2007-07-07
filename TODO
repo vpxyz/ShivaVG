@@ -1,0 +1,54 @@
+--------------
+First release:
+--------------
+
+- AA on/off
+- blending (at least the wrong way)
+- VG_DRAW_IMAGE_STENCIL (use additional multitexturing blending modes ;)
+- scissoring (use stencil buffer, mask other stencil usage to 1 bit)
+
+- Write TODO describing exactly which functions
+  are implemented and which are not + incomplete
+  functionality for implemented ones
+
+----------
+Known bugs
+----------
+
+- approximate the radial gradient circle
+  when drawing in some smarter way than
+  with a fixed step
+
+- outofmemory in arrays silently ignored
+
+- blending doesn't use premultiplied colors
+
+- gradient color ramp is not interpolated in linear space
+
+---------------------------
+Possible portability issues
+---------------------------
+
+- GL_MIRRORED_REPEAT for gradients
+- multitexturing for VG_DRAW_IMAGE_MULTIPLY, VG_DRAW_IMAGE_STENCIL
+
+-------------------------
+Incomplete functionality:
+-------------------------
+
+- the only AA mode is multisampling
+  (RENDERING_QUALITY_FASTER == RENDERING_QUALITY_BETTER)
+- boundbox / point-on-path / tangent-on-path queries
+- non-zero fill mode
+- pattern paint
+- masking
+- image formats other than sRGBA_8888
+- child images
+- VGU warp matrices
+- EGL (image drawing targets)
+
+------
+Bonus:
+------
+
+- gradient shaders? antialiasing shader?
