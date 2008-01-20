@@ -43,6 +43,10 @@ if BUILD_IMAGE
 noinst_PROGRAMS += test_image
 endif
 
+if BUILD_PATTERN
+noinst_PROGRAMS += test_pattern
+endif
+
 if BUILD_BLEND
 noinst_PROGRAMS += test_blend
 endif
@@ -67,6 +71,9 @@ test_tiger_SOURCES =\
 
 test_image_SOURCES =\
 	${EXAMPLE_SRCS} test_image.c
+
+test_pattern_SOURCES =\
+	${EXAMPLE_SRCS} test_pattern.c
 
 test_blend_SOURCES =\
 	${EXAMPLE_SRCS} test_blend.c
@@ -99,6 +106,10 @@ test_tiger_LDFLAGS = ${EXAMPLE_LF}
 test_image_CFLAGS = ${EXAMPLE_CF}
 test_image_LDADD = ${EXAMPLE_LA} -ljpeg
 test_image_LDFLAGS = ${EXAMPLE_LF}
+
+test_pattern_CFLAGS = ${EXAMPLE_CF}
+test_pattern_LDADD = ${EXAMPLE_LA} -ljpeg
+test_pattern_LDFLAGS = ${EXAMPLE_LF}
 
 test_blend_CFLAGS = ${EXAMPLE_CF}
 test_blend_LDADD = ${EXAMPLE_LA}

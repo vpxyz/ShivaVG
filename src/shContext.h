@@ -42,6 +42,10 @@ typedef enum
 
 typedef struct
 {
+  /* Surface info (since no EGL yet) */
+  SHint surfaceWidth;
+  SHint surfaceHeight;
+  
   /* GetString info */
   char vendor[256];
   char renderer[256];
@@ -106,8 +110,10 @@ typedef struct
   SHint isGLAvailable_ClampToEdge;
   SHint isGLAvailable_MirroredRepeat;
   SHint isGLAvailable_Multitexture;
+  SHint isGLAvailable_TextureNonPowerOfTwo;
   SH_PGLACTIVETEXTURE pglActiveTexture;
   SH_PGLMULTITEXCOORD1F pglMultiTexCoord1f;
+  SH_PGLMULTITEXCOORD2F pglMultiTexCoord2f;
   
 } VGContext;
 

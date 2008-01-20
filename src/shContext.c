@@ -34,7 +34,7 @@
 
 static VGContext *g_context = NULL;
 
-VG_API_CALL VGboolean vgCreateContextSH()
+VG_API_CALL VGboolean vgCreateContextSH(VGint width, VGint height)
 {
   /* return if already created */
   if (g_context) return VG_TRUE;
@@ -43,7 +43,42 @@ VG_API_CALL VGboolean vgCreateContextSH()
   SH_NEWOBJ(VGContext, g_context);
   if (!g_context) return VG_FALSE;
   
+  /* init surface info */
+  g_context->surfaceWidth = width;
+  g_context->surfaceHeight = height;
+  
+  /* setup GL projection */
+  glViewport(0,0,width,height);
+  
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluOrtho2D(0,width,0,height);
+  
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  
   return VG_TRUE;
+}
+
+VG_API_CALL void vgResizeSurfaceSH(VGint width, VGint height)
+{
+  VG_GETCONTEXT(VG_NO_RETVAL);
+  
+  /* update surface info */
+  context->surfaceWidth = width;
+  context->surfaceHeight = height;
+  
+  /* setup GL projection */
+  glViewport(0,0,width,height);
+  
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluOrtho2D(0,width,0,height);
+  
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  
+  VG_RETURN(VG_NO_RETVAL);
 }
 
 VG_API_CALL void vgDestroyContextSH()
@@ -70,6 +105,10 @@ void shLoadExtensions(VGContext *c);
 
 void VGContext_ctor(VGContext *c)
 {
+  /* Surface info */
+  c->surfaceWidth = 0;
+  c->surfaceHeight = 0;
+  
   /* GetString info */
   strncpy(c->vendor, "Ivan Leben", sizeof(c->vendor));
   strncpy(c->renderer, "ShivaVG 0.1.0", sizeof(c->renderer));
@@ -239,28 +278,22 @@ VG_API_CALL void vgFinish(void)
 
 VG_API_CALL void vgClear(VGint x, VGint y, VGint width, VGint height)
 {
-  /*SHint winW, winH;*/
   VG_GETCONTEXT(VG_NO_RETVAL);
   
   /* Clip to window */
-  
-  /* Commented-out because introduces the need for GLUT
-     already in the library itself (don't like this).
-     What we really need is to implement EGL and handle
-     the OpenGL context ourselves.
-
-  winW = glutGet(GLUT_WINDOW_WIDTH);
-  winH = glutGet(GLUT_WINDOW_HEIGHT);
   if (x < 0) x = 0;
   if (y < 0) y = 0;
-  if (width > winW) width = winW;
-  if (height > winH) height = winH; */
+  if (width > context->surfaceWidth) width = context->surfaceWidth;
+  if (height > context->surfaceHeight) height = context->surfaceHeight;
   
   /* Check if scissoring needed */
-  /*if (x > 0 || y > 0 || width < winW || height < winH) {*/
+  if (x > 0 || y > 0 ||
+      width < context->surfaceWidth ||
+      height < context->surfaceHeight) {
+    
     glScissor(x, y, width, height);
     glEnable(GL_SCISSOR_TEST);
-  /*}*/
+  }
   
   /* Clear GL color buffer */
   /* TODO: what about stencil and depth? when do we clear that?

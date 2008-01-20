@@ -88,8 +88,15 @@ int shIsValidImageFormat(VGImageFormat format)
 
 void shUpdateImageTextureSize(SHImage *i)
 {
+  i->texwidth = i->width;
+  i->texheight = i->height;
+  i->texwidthK = 1.0f;
+  i->texheightK = 1.0f;
+  
   /* Round size to nearest power of 2 */
-  i->texwidth = 1;
+  /* TODO: might be dropped out if it works without  */
+  
+  /*i->texwidth = 1;
   while (i->texwidth < i->width)
     i->texwidth *= 2;
   
@@ -98,39 +105,56 @@ void shUpdateImageTextureSize(SHImage *i)
     i->texheight *= 2;
   
   i->texwidthK  = (SHfloat)i->width  / i->texwidth;
-  i->texheightK = (SHfloat)i->height / i->texheight;
+  i->texheightK = (SHfloat)i->height / i->texheight; */
 }
 
-void shUpdateImageTexture(SHImage *i)
+void shUpdateImageTexture(SHImage *i, VGContext *c)
 {
-  SHint x,y;
-  SHint stride;
+  SHint potwidth;
+  SHint potheight;
+  SHint8 *potdata;
   
-  /* Duplicate last row and column if texture larger
-     than image for proper edge filtering */
-  if (i->width < i->texwidth) {
-    SHint32 *data1 = (SHint32*)i->data + i->width - 1;
-    SHint32 *data2 = data1 + 1;
-    for (y=0; y < i->height; ++y) {
-      *data2 = *data1;
-      data1 += i->texwidth;
-      data2 += i->texwidth;
-    }}
+
+  /* Find nearest power of two size */
+
+  potwidth = 1;
+  while (potwidth < i->width)
+    potwidth *= 2;
   
-  stride = i->texwidth * 4;
-  if (i->height < i->texheight) {
-    SHuint8 *data1 = i->data + (i->height-1) * stride;
-    SHuint8 *data2 = data1 + stride;
-    for (x=0; x < i->width*4; ++x) {
-      *data2 = *data1;
-      ++data1; ++data2;
-    }}
+  potheight = 1;
+  while (potheight < i->height)
+    potheight *= 2;
+  
+  
+  /* Scale into a temp buffer if image not a power of two (pot)
+     and non-power-of-two textures are not supported by OpenGL */  
+  
+  if ((i->width < potwidth || i->height < potheight) &&
+      !c->isGLAvailable_TextureNonPowerOfTwo) {
+    
+    potdata = (SHint8*)malloc( potwidth * potheight * 4 );
+    if (!potdata) return;
+    
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glBindTexture(GL_TEXTURE_2D, i->texture);
+    
+    
+    gluScaleImage(GL_RGBA, i->width, i->height, GL_UNSIGNED_BYTE, i->data,
+                  potwidth, potheight, GL_UNSIGNED_BYTE, potdata);
+    
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, potwidth, potheight, 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, potdata);
+    
+    free(potdata);
+    return;
+  }
   
   /* Store pixels to texture */
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   glBindTexture(GL_TEXTURE_2D, i->texture);
-  gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, i->texwidth, i->texheight,
-                    GL_RGBA, GL_UNSIGNED_BYTE, i->data);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, i->texwidth, i->texheight, 0,
+               GL_RGBA, GL_UNSIGNED_BYTE, i->data);
 }
 
 VG_API_CALL VGImage vgCreateImage(VGImageFormat format,
@@ -185,7 +209,7 @@ VG_API_CALL VGImage vgCreateImage(VGImageFormat format,
   
   /* Initialize data by zeroing-out */
   memset(i->data, 0, width * height * 4);
-  shUpdateImageTexture(i);
+  shUpdateImageTexture(i, context);
   
   /* Add to resource list */
   shImageArrayPushBack(&context->images, i);
@@ -275,7 +299,7 @@ VG_API_CALL void vgClearImage(VGImage image,
       data += 4;
     }}
   
-  shUpdateImageTexture(i);
+  shUpdateImageTexture(i, context);
   VG_RETURN(VG_NO_RETVAL);
 }
 
@@ -418,7 +442,7 @@ VG_API_CALL void vgImageSubData(VGImage image,
                i->width, i->height, width, height,
                x, y, 0, 0, width, height);
   
-  shUpdateImageTexture(i);
+  shUpdateImageTexture(i, context);
   VG_RETURN(VG_NO_RETVAL);
 }
 
@@ -495,6 +519,9 @@ VG_API_CALL void vgCopyImage(VGImage dst, VGint dx, VGint dy,
   /* In order to perform copying in a cosistent fashion
      we first copy to a temporary buffer and only then to
      destination image */
+  
+  /* TODO: rather check first if the image is really
+     the same at and whether the regions overlap */
 
   pixels = (SHuint8*)malloc(width * height * 4);
   SH_RETURN_ERR_IF(!pixels, VG_OUT_OF_MEMORY_ERROR, SH_NO_RETVAL);
@@ -511,7 +538,7 @@ VG_API_CALL void vgCopyImage(VGImage dst, VGint dx, VGint dy,
 
   free(pixels);
   
-  shUpdateImageTexture(d);
+  shUpdateImageTexture(d, context);
   VG_RETURN(VG_NO_RETVAL);
 }
 
@@ -653,7 +680,7 @@ VG_API_CALL void vgGetPixels(VGImage dst, VGint dx, VGint dy,
 
   free(pixels);
   
-  shUpdateImageTexture(i);
+  shUpdateImageTexture(i, context);
   VG_RETURN(VG_NO_RETVAL);
 }
 

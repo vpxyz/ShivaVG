@@ -7,7 +7,7 @@ VGfloat r;
 
 VGfloat sx=1.0f, sy=1.0f;
 VGfloat tx=0.0f, ty=0.0f;
-VGfloat ang=0.0f;
+VGfloat ang=15.0f;
 
 VGint sindex = 0;
 VGint ssize = 3;
@@ -65,8 +65,8 @@ void display(float interval)
   vgSeti(VG_MATRIX_MODE, VG_MATRIX_FILL_PAINT_TO_USER);
   vgLoadIdentity();
   vgTranslate(tx, ty);
-  vgScale(sx, sy);
   vgRotate(ang);
+  vgScale(sx, sy);
   
   vgSeti(VG_MATRIX_MODE, VG_MATRIX_PATH_USER_TO_SURFACE);
   vgLoadIdentity();
@@ -75,8 +75,8 @@ void display(float interval)
   vgDrawPath(p, VG_FILL_PATH);
   
   vgTranslate(tx, ty);
-  vgScale(sx, sy);
   vgRotate(ang);
+  vgScale(sx, sy);
   
   vgSetPaint(blackFill, VG_FILL_PATH | VG_STROKE_PATH);
   vgDrawPath(radius, VG_STROKE_PATH);
@@ -86,7 +86,7 @@ void display(float interval)
 
 void createCross(VGPath p, VGfloat x, VGfloat y)
 {
-  VGfloat D=15;
+  VGfloat D=20;
   testMoveTo(p, x-D/2,     y, VG_ABSOLUTE);
   testLineTo(p,     D,     0, VG_RELATIVE);
   testMoveTo(p,     x, y-D/2, VG_ABSOLUTE);

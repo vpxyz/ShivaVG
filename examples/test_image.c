@@ -475,11 +475,11 @@ int main(int argc, char **argv)
   testCallback(TEST_CALLBACK_MOVE, (CallbackFunc)move);
   testOverlayColor(1,1,1,1);
   
-  covers[0] = createImageFromJpeg(IMAGE_DIR"test_img_mariah.jpg");
-  covers[1] = createImageFromJpeg(IMAGE_DIR"test_img_omarion.jpg");
-  covers[2] = createImageFromJpeg(IMAGE_DIR"test_img_usher.jpg");
-  covers[3] = createImageFromJpeg(IMAGE_DIR"test_img_beyonce.jpg");
-  covers[4] = createImageFromJpeg(IMAGE_DIR"test_img_justin.jpg");
+  covers[0] = createImageFromJpeg(IMAGE_DIR"test_img_guitar.jpg");
+  covers[1] = createImageFromJpeg(IMAGE_DIR"test_img_piano.jpg");
+  covers[2] = createImageFromJpeg(IMAGE_DIR"test_img_violin.jpg");
+  covers[3] = createImageFromJpeg(IMAGE_DIR"test_img_flute.jpg");
+  covers[4] = createImageFromJpeg(IMAGE_DIR"test_img_sax.jpg");
   
   frame = testCreatePath();
   vguRect(frame,0.0,0.0,400,400);

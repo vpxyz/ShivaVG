@@ -103,6 +103,8 @@ BUILD_INTERPOLATE_FALSE = @BUILD_INTERPOLATE_FALSE@
 BUILD_INTERPOLATE_TRUE = @BUILD_INTERPOLATE_TRUE@
 BUILD_LINEAR_FALSE = @BUILD_LINEAR_FALSE@
 BUILD_LINEAR_TRUE = @BUILD_LINEAR_TRUE@
+BUILD_PATTERN_FALSE = @BUILD_PATTERN_FALSE@
+BUILD_PATTERN_TRUE = @BUILD_PATTERN_TRUE@
 BUILD_RADIAL_FALSE = @BUILD_RADIAL_FALSE@
 BUILD_RADIAL_TRUE = @BUILD_RADIAL_TRUE@
 BUILD_TIGER_FALSE = @BUILD_TIGER_FALSE@
@@ -205,7 +207,7 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 lib_LTLIBRARIES = libOpenVG.la
-libOpenVG_la_CFLAGS = -ansi -pedantic -I$(top_builddir)/include/VG
+libOpenVG_la_CFLAGS = -ansi -pedantic -I$(top_builddir)/include/vg
 libOpenVG_la_SOURCES = \
 	shDefs.h\
 	shExtensions.h\
@@ -229,10 +231,10 @@ libOpenVG_la_SOURCES = \
 	shContext.c\
 	shVgu.c
 
-VG_includedir = $(includedir)/VG
+VG_includedir = $(includedir)/vg
 VG_include_HEADERS = \
-	$(top_builddir)/include/VG/openvg.h\
-	$(top_builddir)/include/VG/vgu.h
+	$(top_builddir)/include/vg/openvg.h\
+	$(top_builddir)/include/vg/vgu.h
 
 all: all-am
 
@@ -489,7 +491,7 @@ distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 
 distdir: $(DISTFILES)
-	$(mkdir_p) $(distdir)/$(top_builddir)/include/VG
+	$(mkdir_p) $(distdir)/$(top_builddir)/include/vg
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \

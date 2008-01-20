@@ -39,8 +39,10 @@
 #  define GL_MULTISAMPLE         0x809D
 #  define GL_TEXTURE0            0x84C0
 #  define GL_TEXTURE1            0x84C1
+#  define GL_CLAMP_TO_BORDER     0x812D
 #  define glActiveTexture        context->pglActiveTexture
 #  define glMultiTexCoord1f      context->pglMultiTexCoord1f
+#  define glMultiTexCoord2f      context->pglMultiTexCoord2f
 #endif
 
 #ifndef GL_VERSION_1_4
@@ -49,5 +51,6 @@
 
 typedef void (APIENTRYP SH_PGLACTIVETEXTURE) (GLenum);
 typedef void (APIENTRYP SH_PGLMULTITEXCOORD1F) (GLenum, GLfloat);
+typedef void (APIENTRYP SH_PGLMULTITEXCOORD2F) (GLenum, GLfloat, GLfloat);
 
 #endif

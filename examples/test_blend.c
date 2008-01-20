@@ -77,6 +77,7 @@ int main(int argc, char **argv)
   testInit(argc, argv, 400,400, "ShivaVG: Blending Test");
   testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc)display);
   testOverlayColor(1,1,1,1);
+  testOverlayString("Not implemented yet");
 
   /*createOperands();*/
   testRun();

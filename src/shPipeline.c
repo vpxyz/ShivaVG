@@ -176,6 +176,12 @@ static void shDrawPaintMesh(VGContext *c, SHVector2 *min, SHVector2 *max,
   case VG_PAINT_TYPE_RADIAL_GRADIENT:
     shDrawRadialGradientMesh(p, min, max, mode, texUnit);
     break;
+    
+  case VG_PAINT_TYPE_PATTERN:
+    if (p->pattern != VG_INVALID_HANDLE) {
+      shDrawPatternMesh(p, min, max, mode, texUnit);
+      break;
+    }/* else behave as a color paint */
   
   case VG_PAINT_TYPE_COLOR:
     glColor4fv((GLfloat*)&p->color);
@@ -224,7 +230,8 @@ VG_API_CALL void vgDrawPath(VGPath path, VGbitfield paintModes)
   /* Apply transformation */
   shMatrixToGL(&context->pathTransform, mgl);
   glMatrixMode(GL_MODELVIEW);
-  glLoadMatrixf(mgl);
+  glPushMatrix();
+  glMultMatrixf(mgl);
   
   if (paintModes & VG_FILL_PATH) {
     
@@ -321,6 +328,7 @@ VG_API_CALL void vgDrawPath(VGPath path, VGbitfield paintModes)
     }
   }
   
+  glPopMatrix();
   
   VG_RETURN(VG_NO_RETVAL);
 }
@@ -345,7 +353,8 @@ VG_API_CALL void vgDrawImage(VGImage image)
   i = (SHImage*)image;
   shMatrixToGL(&context->imageTransform, mgl);
   glMatrixMode(GL_MODELVIEW);
-  glLoadMatrixf(mgl);
+  glPushMatrix();
+  glMultMatrixf(mgl);
   
   /* Setup blending */
   updateBlendingStateGL(context, 0);
@@ -363,8 +372,8 @@ VG_API_CALL void vgDrawImage(VGImage image)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glDisable(GL_MULTISAMPLE);
   }else{
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glEnable(GL_MULTISAMPLE);
   }
   
@@ -386,6 +395,7 @@ VG_API_CALL void vgDrawImage(VGImage image)
       fill->type == VG_PAINT_TYPE_COLOR)
       glColor4fv((GLfloat*)&fill->color);
   else glColor4f(1,1,1,1);
+  
   
   /* Check image drawing mode */
   if (context->imageMode == VG_DRAW_IMAGE_MULTIPLY &&
@@ -418,7 +428,9 @@ VG_API_CALL void vgDrawImage(VGImage image)
     if (fill->type == VG_PAINT_TYPE_RADIAL_GRADIENT) {
       shDrawRadialGradientMesh(fill, &min, &max, VG_FILL_PATH, GL_TEXTURE1);
     }else if (fill->type == VG_PAINT_TYPE_LINEAR_GRADIENT) {
-      shDrawLinearGradientMesh(fill, &min, &max, VG_FILL_PATH, GL_TEXTURE1); }
+      shDrawLinearGradientMesh(fill, &min, &max, VG_FILL_PATH, GL_TEXTURE1);
+    }else if (fill->type == VG_PAINT_TYPE_PATTERN) {
+      shDrawPatternMesh(fill, &min, &max, VG_FILL_PATH, GL_TEXTURE1); }
     
     glActiveTexture(GL_TEXTURE0);
     glDisable(GL_TEXTURE_2D);
@@ -442,7 +454,10 @@ VG_API_CALL void vgDrawImage(VGImage image)
     glDisable(GL_TEXTURE_2D);
   }
   
+  
   glDisable(GL_TEXTURE_GEN_S);
   glDisable(GL_TEXTURE_GEN_T);
+  glPopMatrix();
+  
   VG_RETURN(VG_NO_RETVAL);
 }

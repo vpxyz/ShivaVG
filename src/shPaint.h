@@ -51,6 +51,7 @@ typedef struct
   SHfloat linearGradient[4];
   SHfloat radialGradient[5];
   GLuint texture;
+  VGImage pattern;
   
 } SHPaint;
 
@@ -73,6 +74,9 @@ int shDrawLinearGradientMesh(SHPaint *p, SHVector2 *min, SHVector2 *max,
   
 int shDrawRadialGradientMesh(SHPaint *p, SHVector2 *min, SHVector2 *max,
                              VGPaintMode mode, GLenum texUnit);
+
+int shDrawPatternMesh(SHPaint *p, SHVector2 *min, SHVector2 *max,
+                      VGPaintMode mode, GLenum texUnit);
   
 
 #endif /* __SHPAINT_H */

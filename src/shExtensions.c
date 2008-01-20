@@ -37,6 +37,10 @@ void fallbackMultiTexCoord1f(GLenum target, GLfloat x) {
   glTexCoord1f(x);
 }
 
+void fallbackMultiTexCoord2f(GLenum target, GLfloat x, GLfloat y) {
+  glTexCoord2f(x, y);
+}
+
 static int checkExtension(const char *extensions, const char *name)
 {
 	int nlen = (int)strlen(name);
@@ -88,6 +92,7 @@ void shLoadExtensions(VGContext *c)
   else /* Unavailable */
     c->isGLAvailable_ClampToEdge = 0;
   
+  
   /* GL_TEXTURE_MIRRORED_REPEAT */
   if (checkExtension(ext, "GL_ARB_texture_mirrored_repeat"))
     c->isGLAvailable_MirroredRepeat = 1;
@@ -96,16 +101,32 @@ void shLoadExtensions(VGContext *c)
   else /* Unavailable */
     c->isGLAvailable_MirroredRepeat = 0;
   
-  /* glActiveTexture, glMultiTexCoord1f */
-  if (checkExtension(ext, "GL_ARB_multitexture")) {
+  
+  /* glActiveTexture, glMultiTexCoord1f */  
+  if (checkExtension(ext, "GL_ARB_multitexture")) {    
     c->isGLAvailable_Multitexture = 1;
+    
     c->pglActiveTexture = (SH_PGLACTIVETEXTURE)
       shGetProcAddress("glActiveTextureARB");
     c->pglMultiTexCoord1f = (SH_PGLMULTITEXCOORD1F)
       shGetProcAddress("glMultiTexCoord1fARB");
+    c->pglMultiTexCoord2f = (SH_PGLMULTITEXCOORD2F)
+      shGetProcAddress("glMultiTexCoord2fARB");
+    
+    if (c->pglActiveTexture == NULL || c->pglMultiTexCoord1f == NULL ||
+        c->pglMultiTexCoord2f == NULL)
+      c->isGLAvailable_Multitexture = 0;
+    
   }else{ /* Unavailable */
     c->isGLAvailable_Multitexture = 0;
     c->pglActiveTexture = (SH_PGLACTIVETEXTURE)fallbackActiveTexture;
     c->pglMultiTexCoord1f = (SH_PGLMULTITEXCOORD1F)fallbackMultiTexCoord1f;
+    c->pglMultiTexCoord2f = (SH_PGLMULTITEXCOORD2F)fallbackMultiTexCoord2f;
   }
+  
+  /* Non-power-of-two textures */
+  if (checkExtension(ext, "GL_ARB_texture_non_power_of_two"))
+    c->isGLAvailable_TextureNonPowerOfTwo = 1;
+  else /* Unavailable */
+    c->isGLAvailable_TextureNonPowerOfTwo = 0;
 }

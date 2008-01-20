@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="TestImage"
-	ProjectGUID="{DC5EA0DC-F3FF-4973-B93D-3AAB2359E792}"
+	Name="TestPattern"
+	ProjectGUID="{CC47A259-7F6F-46F3-AF7A-3E58780D86DB}"
 	RootNamespace="test_dash"
 	Keyword="Win32Proj"
 	>
@@ -193,7 +193,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\examples\test_image.c"
+				RelativePath="..\..\examples\test_pattern.c"
 				>
 			</File>
 		</Filter>

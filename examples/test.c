@@ -288,14 +288,8 @@ void testReshape(int w, int h)
   testW = w;
   testH = h;
   
-  glViewport(0, 0, w, h);
+  vgResizeSurfaceSH(w, h);
   
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluOrtho2D(0,w,0,h);
-  
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
   
   if (callback)
     (*callback)(w,h);
@@ -360,7 +354,7 @@ void testInit(int argc, char **argv,
   glutPassiveMotionFunc(testMove);
   atexit(testCleanup);
   
-  vgCreateContextSH();
+  vgCreateContextSH(w,h);
   
   testW = w;
   testH = h;

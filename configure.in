@@ -1,4 +1,4 @@
-AC_INIT(ShivaVG, 0.1.0)
+AC_INIT(ShivaVG, 0.2.0)
 AC_CONFIG_HEADERS([config.h:config.h.in])
 AM_INIT_AUTOMAKE
 AC_CANONICAL_HOST
@@ -49,6 +49,11 @@ AC_ARG_WITH(
 	[example-image],
 	[  --with-example-image          Build Images example (default=yes)],
 	[build_test_image=$withval], [build_test_image="$build_test_all"])
+
+AC_ARG_WITH(
+	[example-pattern],
+	[  --with-example-pattern        Build Pattern Paint example (default=yes)],
+	[build_test_pattern=$withval], [build_test_pattern="$build_test_all"])
 
 AC_ARG_WITH(
 	[example-blend],
@@ -201,6 +206,17 @@ if test "x$build_test_image" = "xyes"; then
 	fi
 fi
 
+if test "x$build_test_pattern" = "xyes"; then
+
+	if test "x$has_jpeg_h" = "xno"; then
+		build_test_pattern="no (jpeg library headers missing)"
+	else
+		if test "x$has_jpeg" = "xno"; then
+			build_test_pattern="no (failed linking with jpeg library)"
+		fi
+	fi
+fi
+
 LDFLAGS=""
 
 # ==============================================
@@ -275,6 +291,7 @@ AM_CONDITIONAL([BUILD_RADIAL],      [test "x$build_test_radial" = "xyes"])
 AM_CONDITIONAL([BUILD_INTERPOLATE], [test "x$build_test_interpolate" = "xyes"])
 AM_CONDITIONAL([BUILD_TIGER],       [test "x$build_test_tiger" = "xyes"])
 AM_CONDITIONAL([BUILD_IMAGE],       [test "x$build_test_image" = "xyes"])
+AM_CONDITIONAL([BUILD_PATTERN],     [test "x$build_test_pattern" = "xyes"])
 AM_CONDITIONAL([BUILD_BLEND],       [test "x$build_test_blend" = "xyes"])
 
 AC_OUTPUT([
@@ -308,6 +325,7 @@ ShivaVG will be compiled with the following example programs
   Path Interpolation        ${build_test_interpolate}
   Tiger SVG                 ${build_test_tiger}
   Images                    ${build_test_image}
+  Pattern paint             ${build_test_pattern}
   Blending                  ${build_test_blend}
 "
 

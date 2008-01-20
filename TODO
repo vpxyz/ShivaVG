@@ -1,51 +1,37 @@
---------------
-First release:
---------------
-
-- AA on/off
-- blending (at least the wrong way)
-- VG_DRAW_IMAGE_STENCIL (use additional multitexturing blending modes ;)
-- scissoring (use stencil buffer, mask other stencil usage to 1 bit)
-
-- Write TODO describing exactly which functions
-  are implemented and which are not + incomplete
-  functionality for implemented ones
-
 ----------
 Known bugs
 ----------
 
-- approximate the radial gradient circle
-  when drawing in some smarter way than
-  with a fixed step
-
 - outofmemory in arrays silently ignored
-
-- blending doesn't use premultiplied colors
-
+- blending doesn't use premultiplied colors (not porter-duff model)
 - gradient color ramp is not interpolated in linear space
+- radial gradient circle has got a fixed step instead of
+  proportional to its radius
+
+-------------------------
+Incomplete functionality:
+-------------------------
+
+- non-zero fill mode
+- proper porter-duff blending
+- masking
+- scissoring
+- child images
+- VG_DRAW_IMAGE_STENCIL
+- image formats other than sRGBA_8888
+- VGU warp matrices
+- EGL (image drawing targets)
+- boundbox / point-on-path / tangent-on-path queries
+- RENDERING_QUALITY_FASTER == RENDERING_QUALITY_BETTER
 
 ---------------------------
 Possible portability issues
 ---------------------------
 
 - GL_MIRRORED_REPEAT for gradients
+- GL_CLAMP_TO_EDGE for gradients and pattern paints
+- GL_CLAMP_TO_BORDER for pattern paints
 - multitexturing for VG_DRAW_IMAGE_MULTIPLY, VG_DRAW_IMAGE_STENCIL
-
--------------------------
-Incomplete functionality:
--------------------------
-
-- the only AA mode is multisampling
-  (RENDERING_QUALITY_FASTER == RENDERING_QUALITY_BETTER)
-- boundbox / point-on-path / tangent-on-path queries
-- non-zero fill mode
-- pattern paint
-- masking
-- image formats other than sRGBA_8888
-- child images
-- VGU warp matrices
-- EGL (image drawing targets)
 
 ------
 Bonus:

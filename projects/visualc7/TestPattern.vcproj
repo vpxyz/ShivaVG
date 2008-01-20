@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="TestImage"
+	Name="TestPattern"
 	ProjectGUID="{B866A89F-1F10-4521-BCE6-6D91A41E68C8}"
 	Keyword="Win32Proj">
 	<Platforms>
@@ -126,7 +126,7 @@
 				RelativePath="..\..\examples\test.c">
 			</File>
 			<File
-				RelativePath="..\..\examples\test_image.c">
+				RelativePath="..\..\examples\test_pattern.c">
 			</File>
 		</Filter>
 		<Filter

@@ -38,7 +38,7 @@ build_triplet = @build@
 host_triplet = @host@
 noinst_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3) \
 	$(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6) \
-	$(am__EXEEXT_7) $(am__EXEEXT_8)
+	$(am__EXEEXT_7) $(am__EXEEXT_8) $(am__EXEEXT_9)
 @BUILD_VGU_TRUE@am__append_1 = test_vgu
 @BUILD_DASH_TRUE@am__append_2 = test_dash
 @BUILD_LINEAR_TRUE@am__append_3 = test_linear
@@ -46,7 +46,8 @@ noinst_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3) \
 @BUILD_INTERPOLATE_TRUE@am__append_5 = test_interpolate
 @BUILD_TIGER_TRUE@am__append_6 = test_tiger
 @BUILD_IMAGE_TRUE@am__append_7 = test_image
-@BUILD_BLEND_TRUE@am__append_8 = test_blend
+@BUILD_PATTERN_TRUE@am__append_8 = test_pattern
+@BUILD_BLEND_TRUE@am__append_9 = test_blend
 subdir = examples
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -63,7 +64,8 @@ CONFIG_CLEAN_FILES =
 @BUILD_INTERPOLATE_TRUE@am__EXEEXT_5 = test_interpolate$(EXEEXT)
 @BUILD_TIGER_TRUE@am__EXEEXT_6 = test_tiger$(EXEEXT)
 @BUILD_IMAGE_TRUE@am__EXEEXT_7 = test_image$(EXEEXT)
-@BUILD_BLEND_TRUE@am__EXEEXT_8 = test_blend$(EXEEXT)
+@BUILD_PATTERN_TRUE@am__EXEEXT_8 = test_pattern$(EXEEXT)
+@BUILD_BLEND_TRUE@am__EXEEXT_9 = test_blend$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
 am__objects_1 = test_blend-test.$(OBJEXT)
 am_test_blend_OBJECTS = $(am__objects_1) \
@@ -91,19 +93,24 @@ am_test_linear_OBJECTS = $(am__objects_5) \
 	test_linear-test_linear.$(OBJEXT)
 test_linear_OBJECTS = $(am_test_linear_OBJECTS)
 test_linear_DEPENDENCIES = $(am__DEPENDENCIES_2)
-am__objects_6 = test_radial-test.$(OBJEXT)
-am_test_radial_OBJECTS = $(am__objects_6) \
+am__objects_6 = test_pattern-test.$(OBJEXT)
+am_test_pattern_OBJECTS = $(am__objects_6) \
+	test_pattern-test_pattern.$(OBJEXT)
+test_pattern_OBJECTS = $(am_test_pattern_OBJECTS)
+test_pattern_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am__objects_7 = test_radial-test.$(OBJEXT)
+am_test_radial_OBJECTS = $(am__objects_7) \
 	test_radial-test_radial.$(OBJEXT)
 test_radial_OBJECTS = $(am_test_radial_OBJECTS)
 test_radial_DEPENDENCIES = $(am__DEPENDENCIES_2)
-am__objects_7 = test_tiger-test.$(OBJEXT)
-am_test_tiger_OBJECTS = $(am__objects_7) \
+am__objects_8 = test_tiger-test.$(OBJEXT)
+am_test_tiger_OBJECTS = $(am__objects_8) \
 	test_tiger-test_tiger.$(OBJEXT) \
 	test_tiger-test_tiger_paths.$(OBJEXT)
 test_tiger_OBJECTS = $(am_test_tiger_OBJECTS)
 test_tiger_DEPENDENCIES = $(am__DEPENDENCIES_2)
-am__objects_8 = test_vgu-test.$(OBJEXT)
-am_test_vgu_OBJECTS = $(am__objects_8) test_vgu-test_vgu.$(OBJEXT)
+am__objects_9 = test_vgu-test.$(OBJEXT)
+am_test_vgu_OBJECTS = $(am__objects_9) test_vgu-test_vgu.$(OBJEXT)
 test_vgu_OBJECTS = $(am_test_vgu_OBJECTS)
 test_vgu_DEPENDENCIES = $(am__DEPENDENCIES_2)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
@@ -119,12 +126,14 @@ LINK = $(LIBTOOL) --tag=CC --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(test_blend_SOURCES) $(test_dash_SOURCES) \
 	$(test_image_SOURCES) $(test_interpolate_SOURCES) \
-	$(test_linear_SOURCES) $(test_radial_SOURCES) \
-	$(test_tiger_SOURCES) $(test_vgu_SOURCES)
+	$(test_linear_SOURCES) $(test_pattern_SOURCES) \
+	$(test_radial_SOURCES) $(test_tiger_SOURCES) \
+	$(test_vgu_SOURCES)
 DIST_SOURCES = $(test_blend_SOURCES) $(test_dash_SOURCES) \
 	$(test_image_SOURCES) $(test_interpolate_SOURCES) \
-	$(test_linear_SOURCES) $(test_radial_SOURCES) \
-	$(test_tiger_SOURCES) $(test_vgu_SOURCES)
+	$(test_linear_SOURCES) $(test_pattern_SOURCES) \
+	$(test_radial_SOURCES) $(test_tiger_SOURCES) \
+	$(test_vgu_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -149,6 +158,8 @@ BUILD_INTERPOLATE_FALSE = @BUILD_INTERPOLATE_FALSE@
 BUILD_INTERPOLATE_TRUE = @BUILD_INTERPOLATE_TRUE@
 BUILD_LINEAR_FALSE = @BUILD_LINEAR_FALSE@
 BUILD_LINEAR_TRUE = @BUILD_LINEAR_TRUE@
+BUILD_PATTERN_FALSE = @BUILD_PATTERN_FALSE@
+BUILD_PATTERN_TRUE = @BUILD_PATTERN_TRUE@
 BUILD_RADIAL_FALSE = @BUILD_RADIAL_FALSE@
 BUILD_RADIAL_TRUE = @BUILD_RADIAL_TRUE@
 BUILD_TIGER_FALSE = @BUILD_TIGER_FALSE@
@@ -285,6 +296,9 @@ test_tiger_SOURCES = \
 test_image_SOURCES = \
 	${EXAMPLE_SRCS} test_image.c
 
+test_pattern_SOURCES = \
+	${EXAMPLE_SRCS} test_pattern.c
+
 test_blend_SOURCES = \
 	${EXAMPLE_SRCS} test_blend.c
 
@@ -309,6 +323,9 @@ test_tiger_LDFLAGS = ${EXAMPLE_LF}
 test_image_CFLAGS = ${EXAMPLE_CF}
 test_image_LDADD = ${EXAMPLE_LA} -ljpeg
 test_image_LDFLAGS = ${EXAMPLE_LF}
+test_pattern_CFLAGS = ${EXAMPLE_CF}
+test_pattern_LDADD = ${EXAMPLE_LA} -ljpeg
+test_pattern_LDFLAGS = ${EXAMPLE_LF}
 test_blend_CFLAGS = ${EXAMPLE_CF}
 test_blend_LDADD = ${EXAMPLE_LA}
 test_blend_LDFLAGS = ${EXAMPLE_LF}
@@ -367,6 +384,9 @@ test_interpolate$(EXEEXT): $(test_interpolate_OBJECTS) $(test_interpolate_DEPEND
 test_linear$(EXEEXT): $(test_linear_OBJECTS) $(test_linear_DEPENDENCIES) 
 	@rm -f test_linear$(EXEEXT)
 	$(LINK) $(test_linear_LDFLAGS) $(test_linear_OBJECTS) $(test_linear_LDADD) $(LIBS)
+test_pattern$(EXEEXT): $(test_pattern_OBJECTS) $(test_pattern_DEPENDENCIES) 
+	@rm -f test_pattern$(EXEEXT)
+	$(LINK) $(test_pattern_LDFLAGS) $(test_pattern_OBJECTS) $(test_pattern_LDADD) $(LIBS)
 test_radial$(EXEEXT): $(test_radial_OBJECTS) $(test_radial_DEPENDENCIES) 
 	@rm -f test_radial$(EXEEXT)
 	$(LINK) $(test_radial_LDFLAGS) $(test_radial_OBJECTS) $(test_radial_LDADD) $(LIBS)
@@ -393,6 +413,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_interpolate-test_interpolate.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_linear-test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_linear-test_linear.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_pattern-test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_pattern-test_pattern.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_radial-test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_radial-test_radial.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_tiger-test.Po@am__quote@
@@ -561,6 +583,34 @@ test_linear-test_linear.obj: test_linear.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test_linear.c' object='test_linear-test_linear.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_linear_CFLAGS) $(CFLAGS) -c -o test_linear-test_linear.obj `if test -f 'test_linear.c'; then $(CYGPATH_W) 'test_linear.c'; else $(CYGPATH_W) '$(srcdir)/test_linear.c'; fi`
+
+test_pattern-test.o: test.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_pattern_CFLAGS) $(CFLAGS) -MT test_pattern-test.o -MD -MP -MF "$(DEPDIR)/test_pattern-test.Tpo" -c -o test_pattern-test.o `test -f 'test.c' || echo '$(srcdir)/'`test.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/test_pattern-test.Tpo" "$(DEPDIR)/test_pattern-test.Po"; else rm -f "$(DEPDIR)/test_pattern-test.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test.c' object='test_pattern-test.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_pattern_CFLAGS) $(CFLAGS) -c -o test_pattern-test.o `test -f 'test.c' || echo '$(srcdir)/'`test.c
+
+test_pattern-test.obj: test.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_pattern_CFLAGS) $(CFLAGS) -MT test_pattern-test.obj -MD -MP -MF "$(DEPDIR)/test_pattern-test.Tpo" -c -o test_pattern-test.obj `if test -f 'test.c'; then $(CYGPATH_W) 'test.c'; else $(CYGPATH_W) '$(srcdir)/test.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/test_pattern-test.Tpo" "$(DEPDIR)/test_pattern-test.Po"; else rm -f "$(DEPDIR)/test_pattern-test.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test.c' object='test_pattern-test.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_pattern_CFLAGS) $(CFLAGS) -c -o test_pattern-test.obj `if test -f 'test.c'; then $(CYGPATH_W) 'test.c'; else $(CYGPATH_W) '$(srcdir)/test.c'; fi`
+
+test_pattern-test_pattern.o: test_pattern.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_pattern_CFLAGS) $(CFLAGS) -MT test_pattern-test_pattern.o -MD -MP -MF "$(DEPDIR)/test_pattern-test_pattern.Tpo" -c -o test_pattern-test_pattern.o `test -f 'test_pattern.c' || echo '$(srcdir)/'`test_pattern.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/test_pattern-test_pattern.Tpo" "$(DEPDIR)/test_pattern-test_pattern.Po"; else rm -f "$(DEPDIR)/test_pattern-test_pattern.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test_pattern.c' object='test_pattern-test_pattern.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_pattern_CFLAGS) $(CFLAGS) -c -o test_pattern-test_pattern.o `test -f 'test_pattern.c' || echo '$(srcdir)/'`test_pattern.c
+
+test_pattern-test_pattern.obj: test_pattern.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_pattern_CFLAGS) $(CFLAGS) -MT test_pattern-test_pattern.obj -MD -MP -MF "$(DEPDIR)/test_pattern-test_pattern.Tpo" -c -o test_pattern-test_pattern.obj `if test -f 'test_pattern.c'; then $(CYGPATH_W) 'test_pattern.c'; else $(CYGPATH_W) '$(srcdir)/test_pattern.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/test_pattern-test_pattern.Tpo" "$(DEPDIR)/test_pattern-test_pattern.Po"; else rm -f "$(DEPDIR)/test_pattern-test_pattern.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test_pattern.c' object='test_pattern-test_pattern.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_pattern_CFLAGS) $(CFLAGS) -c -o test_pattern-test_pattern.obj `if test -f 'test_pattern.c'; then $(CYGPATH_W) 'test_pattern.c'; else $(CYGPATH_W) '$(srcdir)/test_pattern.c'; fi`
 
 test_radial-test.o: test.c
 @am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_radial_CFLAGS) $(CFLAGS) -MT test_radial-test.o -MD -MP -MF "$(DEPDIR)/test_radial-test.Tpo" -c -o test_radial-test.o `test -f 'test.c' || echo '$(srcdir)/'`test.c; \
