@@ -1,4 +1,4 @@
-version 0.1.1 (20 Jan 2008):
+version 0.2.0 (20 Jan 2008):
   * Fixed a bug where rotation in the paint-to-user matrix broke radial
     gradient fill.
 
