@@ -259,7 +259,7 @@ VG_API_CALL VGErrorCode vgGetError(void)
   VG_GETCONTEXT(VG_NO_CONTEXT_ERROR);
   error = context->error;
   context->error = VG_NO_ERROR;
-  VG_RETURN(context->error);
+  VG_RETURN(error);
 }
 
 VG_API_CALL void vgFlush(void)
