@@ -20,6 +20,7 @@
 
 #define VG_API_EXPORT
 #include "openvg.h"
+#include "shContext.h"
 #include "shGeometry.h"
 
 
@@ -223,9 +224,11 @@ static void shSubdivideSegment(SHPath *p, VGPathSegment segment,
                                SHfloat *data, void *userData)
 {
   SHVertex v;
-  int *contourStart = (int*)userData;
+  SHint *contourStart = ((SHint**)userData)[0];
+  SHint *surfaceSpace = ((SHint**)userData)[1];
   SHQuad quad; SHCubic cubic; SHArc arc;
   SHVector2 c, ux, uy;
+  VG_GETCONTEXT(VG_NO_RETVAL);
   
   switch (segment)
   {
@@ -238,6 +241,8 @@ static void shSubdivideSegment(SHPath *p, VGPathSegment segment,
     v.point.x = data[2];
     v.point.y = data[3];
     v.flags = 0;
+    if (*surfaceSpace)
+      TRANSFORM2(v.point, context->pathTransform);
     break;
     
   case VG_CLOSE_PATH:
@@ -246,6 +251,8 @@ static void shSubdivideSegment(SHPath *p, VGPathSegment segment,
     v.point.x = data[2];
     v.point.y = data[3];
     v.flags = SH_VERTEX_FLAG_SEGEND | SH_VERTEX_FLAG_CLOSE;
+    if (*surfaceSpace)
+      TRANSFORM2(v.point, context->pathTransform);
     break;
     
   case VG_LINE_TO:
@@ -254,6 +261,8 @@ static void shSubdivideSegment(SHPath *p, VGPathSegment segment,
     v.point.x = data[2];
     v.point.y = data[3];
     v.flags = SH_VERTEX_FLAG_SEGEND;
+    if (*surfaceSpace)
+      TRANSFORM2(v.point, context->pathTransform);
     break;
     
   case VG_QUAD_TO:
@@ -262,12 +271,18 @@ static void shSubdivideSegment(SHPath *p, VGPathSegment segment,
     SET2(quad.p1, data[0], data[1]);
     SET2(quad.p2, data[2], data[3]);
     SET2(quad.p3, data[4], data[5]);
+    if (*surfaceSpace) {
+      TRANSFORM2(quad.p1, context->pathTransform);
+      TRANSFORM2(quad.p2, context->pathTransform);
+      TRANSFORM2(quad.p3, context->pathTransform); }
     shSubrecurseQuad(p, &quad, contourStart);
     
     /* Last segment vertex */
     v.point.x = data[4];
     v.point.y = data[5];
     v.flags = SH_VERTEX_FLAG_SEGEND;
+    if (*surfaceSpace)
+      TRANSFORM2(v.point, context->pathTransform);
     break;
     
   case VG_CUBIC_TO:
@@ -277,12 +292,19 @@ static void shSubdivideSegment(SHPath *p, VGPathSegment segment,
     SET2(cubic.p2, data[2], data[3]);
     SET2(cubic.p3, data[4], data[5]);
     SET2(cubic.p4, data[6], data[7]);
+    if (*surfaceSpace) {
+      TRANSFORM2(cubic.p1, context->pathTransform);
+      TRANSFORM2(cubic.p2, context->pathTransform);
+      TRANSFORM2(cubic.p3, context->pathTransform);
+      TRANSFORM2(cubic.p4, context->pathTransform); }
     shSubrecurseCubic(p, &cubic, contourStart);
     
     /* Last segment vertex */
     v.point.x = data[6];
     v.point.y = data[7];
     v.flags = SH_VERTEX_FLAG_SEGEND;
+    if (*surfaceSpace)
+      TRANSFORM2(v.point, context->pathTransform);
     break;
     
   default:
@@ -297,12 +319,20 @@ static void shSubdivideSegment(SHPath *p, VGPathSegment segment,
     SET2(c,  data[2], data[3]);
     SET2(ux, data[4], data[5]);
     SET2(uy, data[6], data[7]);
+    if (*surfaceSpace) {
+      TRANSFORM2(arc.p1, context->pathTransform);
+      TRANSFORM2(arc.p2, context->pathTransform);
+      TRANSFORM2(c, context->pathTransform);
+      TRANSFORM2DIR(ux, context->pathTransform);
+      TRANSFORM2DIR(uy, context->pathTransform); }
     shSubrecurseArc(p, &arc, &c, &ux, &uy, contourStart);
     
     /* Last segment vertex */
     v.point.x = data[10];
     v.point.y = data[11];
     v.flags = SH_VERTEX_FLAG_SEGEND;
+    if (*surfaceSpace) {
+      TRANSFORM2(v.point, context->pathTransform); }
     break;
   }
   
@@ -315,17 +345,22 @@ static void shSubdivideSegment(SHPath *p, VGPathSegment segment,
  * each segment to subdivision callback function
  *--------------------------------------------------*/
 
-void shFlattenPath(SHPath *p)
+void shFlattenPath(SHPath *p, SHint surfaceSpace)
 {
   SHint contourStart = -1;
+  SHint surfSpace = surfaceSpace;
+  SHint *userData[2];
   SHint processFlags =
     SH_PROCESS_SIMPLIFY_LINES |
     SH_PROCESS_SIMPLIFY_CURVES |
     SH_PROCESS_CENTRALIZE_ARCS |
     SH_PROCESS_REPAIR_ENDS;
   
+  userData[0] = &contourStart;
+  userData[1] = &surfaceSpace;
+  
   shVertexArrayClear(&p->vertices);
-  shProcessPathData(p, processFlags, shSubdivideSegment, &contourStart);
+  shProcessPathData(p, processFlags, shSubdivideSegment, userData);
 }
 
 /*-------------------------------------------
@@ -762,6 +797,22 @@ void shStrokePath(VGContext* c, SHPath *p)
   }
 }
 
+
+/*----------------------------------------------------------
+ * Transforms the tessellation vertices using the inverse
+ * of the current path-user-to-surface matrix
+ *----------------------------------------------------------*/
+
+void shTransformVertices(SHMatrix3x3 *m, SHPath *p)
+{
+  SHVector2 *v;
+  int i = 0;
+  
+  for (i = p->vertices.size-1; i>=0; --i) {
+    v = (&p->vertices.items[i].point);
+    TRANSFORM2((*v), (*m)); }
+}
+
 /*-----------------------------------------------------------
  * Finds the tight bounding box of a path defined by its
  * control points in path's own coordinate system.
@@ -816,7 +867,7 @@ VG_API_CALL void vgPathBounds(VGPath path,
                    VG_PATH_CAPABILITY_ERROR, VG_NO_RETVAL);
 
   /* Update path geometry */
-  shFlattenPath(p);
+  shFlattenPath(p, 0);
   shFindBoundbox(p);
 
   /* Output bounds */
@@ -838,10 +889,7 @@ VG_API_CALL void vgPathTransformedBounds(VGPath path,
                                          VGfloat * minX, VGfloat * minY,
                                          VGfloat * width, VGfloat * height)
 {
-  SHint c;
   SHPath *p = NULL;
-  SHVector2 corners[4];
-  SHVector2 min, max;
   VG_GETCONTEXT(VG_NO_RETVAL);
 
   VG_RETURN_ERR_IF(!shIsValidPath(context, path),
@@ -858,30 +906,28 @@ VG_API_CALL void vgPathTransformedBounds(VGPath path,
                    VG_PATH_CAPABILITY_ERROR, VG_NO_RETVAL);
 
   /* Update path geometry */
-  shFlattenPath(p);
+  shFlattenPath(p, 1);
   shFindBoundbox(p);
 
-  /* Four bounding box corners */
-  SET2(corners[0], p->min.x, p->min.y);
-  SET2(corners[1], p->max.x, p->min.y);
-  SET2(corners[2], p->max.x, p->max.y);
-  SET2(corners[3], p->min.x, p->max.y);
-  SET2(min, 0,0); SET2(max, 0,0);
-
-  /* Transform corners and find bounds again */
-  for (c=0; c<4; ++c) {
-    TRANSFORM2(corners[c],context->pathTransform);
-    if (corners[c].x < min.x || c == 0) min.x = corners[c].x;
-    if (corners[c].x > max.x || c == 0) max.x = corners[c].x;
-    if (corners[c].y < min.y || c == 0) min.y = corners[c].y;
-    if (corners[c].y > max.y || c == 0) max.y = corners[c].y;
-  }
-
   /* Output bounds */
-  *minX = min.x;
-  *minY = min.y;
-  *width = max.x - min.x;
-  *height = max.y - min.y;
+  *minX = p->min.x;
+  *minY = p->min.y;
+  *width = p->max.x - p->min.x;
+  *height = p->max.y - p->min.y;
   
   VG_RETURN(VG_NO_RETVAL);
+}
+
+VG_API_CALL VGfloat vgPathLength(VGPath path,
+                                 VGint startSegment, VGint numSegments)
+{
+  return 0.0f;
+}
+
+VG_API_CALL void vgPointAlongPath(VGPath path,
+                                  VGint startSegment, VGint numSegments,
+                                  VGfloat distance,
+                                  VGfloat * x, VGfloat * y,
+                                  VGfloat * tangentX, VGfloat * tangentY)
+{
 }

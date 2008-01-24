@@ -310,3 +310,34 @@ VGU_API_CALL VGUErrorCode vguArc(VGPath path,
   
   return err;
 }
+
+VGU_API_CALL VGUErrorCode vguComputeWarpQuadToSquare(VGfloat sx0, VGfloat sy0,
+                                                    VGfloat sx1, VGfloat sy1,
+                                                    VGfloat sx2, VGfloat sy2,
+                                                    VGfloat sx3, VGfloat sy3,
+                                                    VGfloat * matrix)
+{
+  return VGU_NO_ERROR;
+}
+
+VGU_API_CALL VGUErrorCode vguComputeWarpSquareToQuad(VGfloat dx0, VGfloat dy0,
+                                                    VGfloat dx1, VGfloat dy1,
+                                                    VGfloat dx2, VGfloat dy2,
+                                                    VGfloat dx3, VGfloat dy3,
+                                                    VGfloat * matrix)
+{
+  return VGU_NO_ERROR;
+}
+
+VGU_API_CALL VGUErrorCode vguComputeWarpQuadToQuad(VGfloat dx0, VGfloat dy0,
+                                                  VGfloat dx1, VGfloat dy1,
+                                                  VGfloat dx2, VGfloat dy2,
+                                                  VGfloat dx3, VGfloat dy3,
+												                          VGfloat sx0, VGfloat sy0,
+                                                  VGfloat sx1, VGfloat sy1,
+                                                  VGfloat sx2, VGfloat sy2,
+                                                  VGfloat sx3, VGfloat sy3,
+                                                  VGfloat * matrix)
+{
+  return VGU_NO_ERROR;
+}

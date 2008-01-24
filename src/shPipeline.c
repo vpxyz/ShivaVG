@@ -95,6 +95,7 @@ static void shDrawStroke(SHPath *p)
   glEnableClientState(GL_VERTEX_ARRAY);
   glVertexPointer(2, GL_FLOAT, 0, p->stroke.items);
   glDrawArrays(GL_TRIANGLES, 0, p->stroke.size);
+  glDisableClientState(GL_VERTEX_ARRAY);
 }
 
 /*-----------------------------------------------------------
@@ -105,7 +106,7 @@ static void shDrawStroke(SHPath *p)
 static void shDrawVertices(SHPath *p, GLenum mode)
 {
   int start = 0;
-  int size = 0;  
+  int size = 0;
   
   /* We separate vertex arrays by contours to properly
      handle the fill modes */
@@ -165,7 +166,7 @@ static void shDrawPaintMesh(VGContext *c, SHVector2 *min, SHVector2 *max,
   SET2V(pmin, (*min)); SUB2(pmin, K,K);
   SET2V(pmax, (*max)); ADD2(pmax, K,K);
 
-  /* Construct appropriate OpenGL primitves so as
+  /* Construct appropriate OpenGL primitives so as
      to fill the stencil mask with select paint */
 
   switch (p->type) {
@@ -203,9 +204,10 @@ static void shDrawPaintMesh(VGContext *c, SHVector2 *min, SHVector2 *max,
 VG_API_CALL void vgDrawPath(VGPath path, VGbitfield paintModes)
 {
   SHPath *p;
+  SHMatrix3x3 mi;
+  int invertible = 0;
   SHfloat mgl[16];
   SHPaint *fill, *stroke;
-
   
   VG_GETCONTEXT(VG_NO_RETVAL);
   
@@ -215,9 +217,15 @@ VG_API_CALL void vgDrawPath(VGPath path, VGbitfield paintModes)
   VG_RETURN_ERR_IF(paintModes & (~(VG_STROKE_PATH | VG_FILL_PATH)),
                    VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
   
-  /* Flatten segments and find boundbox */
   p = (SHPath*)path;
-  shFlattenPath(p);
+  
+  /* If user-to-surface matrix invertible tessellate in
+     surface space for better path resolution */
+  invertible = shInvertMatrix(&context->pathTransform, &mi);
+  if (invertible) {
+    shFlattenPath(p, 1);
+    shTransformVertices(&mi, p);
+  }else shFlattenPath(p, 0);
   shFindBoundbox(p);
   
   /* TODO: Turn antialiasing on/off */
@@ -275,7 +283,7 @@ VG_API_CALL void vgDrawPath(VGPath path, VGbitfield paintModes)
     
     if (1) {/*context->strokeLineWidth > 1.0f) {*/
 
-      /* Generate stroke triangles */
+      /* Generate stroke triangles in path space */
       shVector2ArrayClear(&p->stroke);
       shStrokePath(context, p);
 
@@ -285,7 +293,7 @@ VG_API_CALL void vgDrawPath(VGPath path, VGbitfield paintModes)
       glStencilOp(GL_KEEP, GL_INCR, GL_INCR);
       glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
       shDrawStroke(p);
-      
+
       /* Setup blending */
       updateBlendingStateGL(context,
                             stroke->type == VG_PAINT_TYPE_COLOR &&
@@ -327,6 +335,7 @@ VG_API_CALL void vgDrawPath(VGPath path, VGbitfield paintModes)
       glDisable(GL_LINE_SMOOTH);
     }
   }
+  
   
   glPopMatrix();
   

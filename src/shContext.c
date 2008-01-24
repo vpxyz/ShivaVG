@@ -276,6 +276,11 @@ VG_API_CALL void vgFinish(void)
   VG_RETURN(VG_NO_RETVAL);
 }
 
+VG_API_CALL void vgMask(VGImage mask, VGMaskOperation operation,
+                        VGint x, VGint y, VGint width, VGint height)
+{
+}
+
 VG_API_CALL void vgClear(VGint x, VGint y, VGint width, VGint height)
 {
   VG_GETCONTEXT(VG_NO_RETVAL);
@@ -480,4 +485,10 @@ VG_API_CALL void vgRotate(VGfloat angle)
   ROTATEMATR((*m), a);
   
   VG_RETURN(VG_NO_RETVAL);
+}
+
+VG_API_CALL VGHardwareQueryResult vgHardwareQuery(VGHardwareQueryType key,
+                                                  VGint setting)
+{
+  return VG_HARDWARE_UNACCELERATED;
 }

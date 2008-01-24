@@ -2,6 +2,7 @@
 Known bugs
 ----------
 
+- wrong implementation of image color component ordering
 - outofmemory in arrays silently ignored
 - blending doesn't use premultiplied colors (not porter-duff model)
 - gradient color ramp is not interpolated in linear space
