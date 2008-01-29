@@ -647,7 +647,8 @@ void shStrokePath(VGContext* c, SHPath *p)
     /* Direction vector */
     SET2(d, p2->x-p1->x, p2->y-p1->y);
     norm = NORM2(d);
-    DIV2(d, norm);
+    if (norm == 0.0f) d = dprev;
+    else DIV2(d, norm);
     
     /* Perpendicular vector */
     SET2(t, -d.y, d.x);

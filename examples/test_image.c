@@ -339,8 +339,16 @@ VGImage createImageFromJpeg(const char *filename)
   
   VGubyte *brow;
   VGubyte *drow;
-  unsigned int x;  
+  unsigned int x;
+  unsigned int lilEndianTest = 1;
+  VGImageFormat rgbaFormat;
+
+  /* Check for endianness */
+  if (((unsigned char*)&lilEndianTest)[0] == 1)
+    rgbaFormat = VG_lABGR_8888;
+  else rgbaFormat = VG_lRGBA_8888;
   
+  /* Try to open image file */
   infile = fopen(filename, "rb");
   if (infile == NULL) {
     printf("Failed opening '%s' for reading!\n", filename);
@@ -397,8 +405,8 @@ VGImage createImageFromJpeg(const char *filename)
   }
   
   /* Create VG image */
-  img = vgCreateImage(VG_sRGBA_8888, width, height, VG_IMAGE_QUALITY_BETTER);
-  vgImageSubData(img, data, dstride, VG_sRGBA_8888, 0, 0, width, height);
+  img = vgCreateImage(rgbaFormat, width, height, VG_IMAGE_QUALITY_BETTER);
+  vgImageSubData(img, data, dstride, rgbaFormat, 0, 0, width, height);
   
   /* Cleanup */
   jpeg_destroy_decompress(&jdc);

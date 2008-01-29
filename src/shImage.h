@@ -23,37 +23,41 @@
 
 #include "shDefs.h"
 
-typedef struct {
-  SHint                redBits;
-  SHint                redShift;
-  SHint                greenBits;
-  SHint                greenShift;
-  SHint                blueBits;
-  SHint                blueShift;
-  SHint                alphaBits;
-  SHint                alphaShift;
-  SHint                luminanceBits;
-  SHint                luminanceShift;
-  SHint                bitsPerPixel;
-  VGImageFormat        format;
-} SHImageFormatDesc;
+/*-----------------------------------------------------------
+ * ColorFormat holds the data necessary to pack/unpack color
+ * components from a pixel of each supported image format
+ *-----------------------------------------------------------*/
 
-typedef enum
+typedef struct
 {
-  lRGBA      = 0,
-  sRGBA      = 1,
-  lRGBA_PRE  = 2,
-  sRGBA_PRE  = 3,
-  lLA        = 4,
-  sLA        = 5,
-  lLA_PRE    = 6,
-  sLA_PRE    = 7
-} SHColorFormat;
+  VGImageFormat vgformat;
+  SHuint8 bytes;
+  
+  SHuint32 rmask;
+  SHuint8 rshift;
+  SHuint8 rmax;
+  
+  SHuint32 gmask;
+  SHuint8 gshift;
+  SHuint8 gmax;
+  
+  SHuint32 bmask;
+  SHuint8 bshift;
+  SHuint8 bmax;
+  
+  SHuint32 amask;
+  SHuint8 ashift;
+  SHuint8 amax;
+
+  GLenum glintformat;
+  GLenum glformat;
+  GLenum gltype;
+
+} SHImageFormatDesc;
 
 typedef struct
 {
   SHfloat r,g,b,a;
-  SHColorFormat f;
   
 } SHColor;
 
@@ -143,8 +147,8 @@ void SHImage_dtor(SHImage *i);
 #define INT2COLCOORD(i, max) ( (SHfloat)i / (SHfloat)max  )
 #define COL2INTCOORD(c, max) ( (SHuint)SH_FLOOR(c * (SHfloat)max + 0.5f) )
 
-void shStoreColor(SHColor *c, SHuint8 *data, SHImageFormatDesc *d);
-void shLoadColor(SHColor *c, SHuint8 *data, SHImageFormatDesc *d);
+void shStoreColor(SHColor *c, void *data, SHImageFormatDesc *f);
+void shLoadColor(SHColor *c, const void *data, SHImageFormatDesc *f);
 
 
 #endif /* __SHIMAGE_H */

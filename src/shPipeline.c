@@ -205,7 +205,6 @@ VG_API_CALL void vgDrawPath(VGPath path, VGbitfield paintModes)
 {
   SHPath *p;
   SHMatrix3x3 mi;
-  int invertible = 0;
   SHfloat mgl[16];
   SHPaint *fill, *stroke;
   
@@ -221,8 +220,7 @@ VG_API_CALL void vgDrawPath(VGPath path, VGbitfield paintModes)
   
   /* If user-to-surface matrix invertible tessellate in
      surface space for better path resolution */
-  invertible = shInvertMatrix(&context->pathTransform, &mi);
-  if (invertible) {
+  if (shInvertMatrix(&context->pathTransform, &mi)) {
     shFlattenPath(p, 1);
     shTransformVertices(&mi, p);
   }else shFlattenPath(p, 0);
@@ -365,9 +363,6 @@ VG_API_CALL void vgDrawImage(VGImage image)
   glPushMatrix();
   glMultMatrixf(mgl);
   
-  /* Setup blending */
-  updateBlendingStateGL(context, 0);
-  
   /* Clamp to edge for proper filtering, modulate for multiply mode */
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, i->texture);
@@ -424,9 +419,11 @@ VG_API_CALL void vgDrawImage(VGImage image)
     glVertex2i(i->width, i->height);
     glVertex2i(0, i->height);
     glEnd();
+
+    /* Setup blending */
+    updateBlendingStateGL(context, 0);
     
     /* Draw gradient mesh where stencil 1*/
-    glEnable(GL_BLEND);
     glEnable(GL_TEXTURE_2D);
     glStencilFunc(GL_EQUAL, 1, 1);
     glStencilOp(GL_ZERO,GL_ZERO,GL_ZERO);
@@ -450,6 +447,9 @@ VG_API_CALL void vgDrawImage(VGImage image)
     
   }else{/* Either normal mode or multiplying with a color-paint */
     
+    /* Setup blending */
+    updateBlendingStateGL(context, 0);
+
     /* Draw textured quad */
     glEnable(GL_TEXTURE_2D);
     

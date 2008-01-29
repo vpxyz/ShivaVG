@@ -258,10 +258,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\shHashBase.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\shImage.h"
 				>
 			</File>
