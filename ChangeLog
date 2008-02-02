@@ -1,5 +1,11 @@
 03 Feb 2008 Ivan Leben <ivan.leben@gmail.com>
 
+  * a patch by Vincenzo Pupillo fixes array constructor behavior
+    when it runs out of memory plus makes its destructor a bit
+    more robust
+
+03 Feb 2008 Ivan Leben <ivan.leben@gmail.com>
+
   * autogen.sh: added --force to autoreconf call
 
 03 Feb 2008 Ivan Leben <ivan.leben@gmail.com>
