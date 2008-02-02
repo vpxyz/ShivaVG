@@ -1,5 +1,10 @@
 03 Feb 2008 Ivan Leben <ivan.leben@gmail.com>
 
+  * Removed automake/autoconf generated files. Added autogen.sh
+    to generate them.
+
+03 Feb 2008 Ivan Leben <ivan.leben@gmail.com>
+
   * configure.in: changed order of checks for glut library and
     glXGetProcAddress in -lGL so that latter doesn't fail when
     glut is not installed.

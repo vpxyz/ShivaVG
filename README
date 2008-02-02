@@ -24,6 +24,7 @@ I. BUILD
 
  * Compiling under UNIX systems:
 
+   First run ./autogen.sh script to generate the required makefiles.
    Read the INSTALL file for more detailed (though generic) directions.
    This library uses the standard ./configure ; make. The example
    programs are automatically compiled. However, compilation of each
