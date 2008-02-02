@@ -150,6 +150,13 @@ AC_LINK_IFELSE([
 	[has_gl="yes"] && [echo "yes"],
 	[has_gl="no"] && [echo "no"])
 
+case "${host}" in
+*linux*)
+	AC_CHECK_LIB(
+		[GL], glXGetProcAddress,
+		[has_glx="yes"], [has_glx="no"]) ;;
+esac
+
 LDFLAGS="$LDFLAGS $GLU_LIB"
 
 echo -n "checking for GLU library... "
@@ -167,13 +174,6 @@ AC_LINK_IFELSE([
 	int main(void) {glutInit(); return 0;}],
 	[has_glut="yes"] && [echo "yes"],
 	[has_glut="no"] && [echo "no"])
-
-case "${host}" in
-*linux*)
-	AC_CHECK_LIB(
-		[GL], glXGetProcAddress,
-		[has_glx="yes"], [has_glx="no"]) ;;
-esac
 
 LDFLAGS=""
 

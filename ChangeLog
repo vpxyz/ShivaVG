@@ -1,3 +1,9 @@
+03 Feb 2008 Ivan Leben <ivan.leben@gmail.com>
+
+  * configure.in: changed order of checks for glut library and
+    glXGetProcAddress in -lGL so that latter doesn't fail when
+    glut is not installed.
+
 30 Jan 2008 Ivan Leben <ivan.leben@gmail.com>
 
   * shGeometry.c: shStrokePath() fixed to handle zero-length line
