@@ -1,5 +1,9 @@
 03 Feb 2008 Ivan Leben <ivan.leben@gmail.com>
 
+  * autogen.sh: added --force to autoreconf call
+
+03 Feb 2008 Ivan Leben <ivan.leben@gmail.com>
+
   * Removed automake/autoconf generated files. Added autogen.sh
     to generate them.
 
