@@ -188,7 +188,7 @@ void VGContext_dtor(VGContext *c)
   for (i=0; i<c->paths.size; ++i)
     SH_DELETEOBJ(SHPath, c->paths.items[i]);
   
-  for (i=0; i<c->images.size; ++i)
+  for (i=0; i<c->paints.size; ++i)
     SH_DELETEOBJ(SHPaint, c->paints.items[i]);
   
   for (i=0; i<c->images.size; ++i)

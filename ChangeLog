@@ -1,5 +1,11 @@
 03 Feb 2008 Ivan Leben <ivan.leben@gmail.com>
 
+  * shContest.c: fixed a bug in SHContext destructor where
+    resource deletion loop was iterating image array while
+    freeing paint objects
+
+03 Feb 2008 Ivan Leben <ivan.leben@gmail.com>
+
   * a patch by Vincenzo Pupillo fixes array constructor behavior
     when it runs out of memory plus makes its destructor a bit
     more robust
