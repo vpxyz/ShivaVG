@@ -1,5 +1,10 @@
 04 Feb 2008 Ivan Leben <ivan.leben@gmail.com>
 
+  * shImage.c: shCopyPixels uses memcpy when formats are
+    equal.
+
+04 Feb 2008 Ivan Leben <ivan.leben@gmail.com>
+
   * openvg.h: changed typedef of VGHandle to void*. Code
     compiles with no warnings on 64-bit systems now and
     it's much safer anyway.

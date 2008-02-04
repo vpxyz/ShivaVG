@@ -550,7 +550,8 @@ void shUpdateImageTexture(SHImage *i, VGContext *c)
   /* Store pixels to texture */
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   glBindTexture(GL_TEXTURE_2D, i->texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, i->texwidth, i->texheight, 0,
+  glTexImage2D(GL_TEXTURE_2D, 0, i->fd.glintformat,
+               i->texwidth, i->texheight, 0,
                i->fd.glformat, i->fd.gltype, i->data);
 }
 
@@ -771,16 +772,28 @@ void shCopyPixels(SHuint8 *dst, VGImageFormat dstFormat, SHint dstStride,
   if (dstStride == -1) dstStride = dwidth * dfd.bytes;
   if (srcStride == -1) srcStride = swidth * sfd.bytes;
   
-  /* Walk pixels and copy */
-  for (SY=sy, DY=dy; SY < sy+height; ++SY, ++DY) {
-    SD = src + SY * srcStride + sx * sfd.bytes;
-    DD = dst + DY * dstStride + dx * dfd.bytes;
+  if (srcFormat == dstFormat) {
     
-    for (SX=sx, DX=dx; SX < sx+width; ++SX, ++DX) {
-      shLoadColor(&c, SD, &sfd);
-      shStoreColor(&c, DD, &dfd);
-      SD += sfd.bytes; DD += dfd.bytes;
-    }}
+    /* Walk pixels and copy */
+    for (SY=sy, DY=dy; SY < sy+height; ++SY, ++DY) {
+      SD = src + SY * srcStride + sx * sfd.bytes;
+      DD = dst + DY * dstStride + dx * dfd.bytes;
+      memcpy(DD, SD, width * sfd.bytes);
+    }
+    
+  }else{
+  
+    /* Walk pixels and copy */
+    for (SY=sy, DY=dy; SY < sy+height; ++SY, ++DY) {
+      SD = src + SY * srcStride + sx * sfd.bytes;
+      DD = dst + DY * dstStride + dx * dfd.bytes;
+      
+      for (SX=sx, DX=dx; SX < sx+width; ++SX, ++DX) {
+        shLoadColor(&c, SD, &sfd);
+        shStoreColor(&c, DD, &dfd);
+        SD += sfd.bytes; DD += dfd.bytes;
+      }}
+  }
 }
 
 /*---------------------------------------------------------
