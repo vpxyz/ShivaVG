@@ -1,5 +1,8 @@
 #include "test.h"
 
+// FIXME unsafe
+#define min(x,y) ((x<y)?(x):(y))
+
 VGPath backdrop;
 VGPaint backdrop_p;
 VGImage kirpicz;
@@ -13,18 +16,30 @@ void display(float phase)
   vgSetfv(VG_CLEAR_COLOR, 4, cc);
   vgClear(0,0,testWidth(),testHeight());
 
-  /* Poor man's flip */
-  vgLoadIdentity();
-  vgScale(1,-1);
-  vgTranslate(0,-512);
+  /* Detecting the aspect ratio */
+  float ratio=min(testWidth()/13,testHeight()/8);
   
-//   drawKirpicz();
- 
+  /* Poor man's flip */
+  vgSeti(VG_MATRIX_MODE, VG_MATRIX_FILL_PAINT_TO_USER);
+  vgLoadIdentity();
+  vgScale(1.0/ratio,1.0/ratio);
+  
+  vgSeti(VG_MATRIX_MODE, VG_MATRIX_PATH_USER_TO_SURFACE);
+  vgLoadIdentity();
+  vgScale(ratio,-ratio);
+  vgTranslate(0,-8); /* TODO center */
+  
   
   vgSetPaint(backdrop_p, VG_FILL_PATH);
   vgDrawPath(backdrop,VG_FILL_PATH);
   vgSetPaint(wall_p, VG_FILL_PATH);
   vgDrawPath(wall,VG_FILL_PATH);
+}
+
+void reshapeFunc(int x,int y)
+{
+  createPaths();
+  createTextures();
 }
 
 void createPaths()
@@ -33,9 +48,12 @@ void createPaths()
   VGubyte segsbk[]= { 
     VG_MOVE_TO_ABS, VG_LINE_TO_REL, VG_LINE_TO_REL, VG_LINE_TO_REL, VG_CLOSE_PATH };
   VGfloat databk[]= {
-    0,0, 832,0, 0,512, -832,0  };
+    0,0, 13,0, 0,8, -13,0  };
   if (!backdrop)
+  {
     backdrop=testCreatePath();
+  }
+  else vgClearPath(backdrop, VG_PATH_CAPABILITY_ALL);
   vgAppendPathData(backdrop,sizeof(segsbk),segsbk,databk);
   
   VGubyte segwls[]= {
@@ -43,11 +61,13 @@ void createPaths()
     VG_MOVE_TO_ABS, VG_LINE_TO_REL, VG_LINE_TO_REL, VG_LINE_TO_REL, VG_LINE_TO_REL, VG_LINE_TO_REL, VG_LINE_TO_REL, VG_LINE_TO_REL, VG_CLOSE_PATH };
     
   VGfloat datawls[] = {
-    512,128, 320,0, 0,192, -128,0, 0,-64, -192,0,
-    0,128, 128,0, 0,256, 576,0, 0,64, 128,0, 0,64, -832,0 };
+    8,2, 5,0, 0,3, -2,0, 0,-1, -3,0,
+    0,2, 2,0, 0,4, 9,0, 0,1, 2,0, 0,1, -13,0 };
   
   if (!wall)
     wall=testCreatePath();
+  else
+    vgClearPath(wall, VG_PATH_CAPABILITY_ALL);
   vgAppendPathData(wall,sizeof(segwls),segwls,datawls);
 }
 
@@ -60,7 +80,7 @@ VGPath getRectangle(float x, float y, float w, float h)
   return ret;
 }
 
-void drawKirpicz()
+void drawKirpicz(int ratio)
 {
   VGfloat dark[] = { 0.1411765, 0.2666667, 0.3294118, 1.0 };
   VGfloat border[] = { 0.1686275, 0.5019608, 0.5647059, 0.4745098 };
@@ -69,6 +89,7 @@ void drawKirpicz()
   VGPaint stroke=vgCreatePaint();
   vgSetParameterfv(back, VG_PAINT_COLOR, 4, dark);
   
+  vgScale((float)ratio/64.0,(float)ratio/64.0);
   VGPath path=getRectangle(0,0,64,64);
   vgSetPaint(back, VG_FILL_PATH);
   vgDrawPath(path, VG_FILL_PATH);
@@ -110,28 +131,29 @@ void createTextures()
   vgSetParameteri(backdrop_p, VG_PAINT_TYPE, VG_PAINT_TYPE_PATTERN);
   vgSetParameteri(backdrop_p, VG_PAINT_PATTERN_TILING_MODE, VG_TILE_REPEAT);
   
-  if (!kirpicz)
-    kirpicz=vgCreateImage(VG_lRGBA_8888,64,64,VG_IMAGE_QUALITY_BETTER);
+  int ratio=min(testWidth()/13,testHeight()/8);
+  if (kirpicz)
+    vgDestroyImage(kirpicz);
+  kirpicz=vgCreateImage(VG_sRGB_565,ratio,ratio,VG_IMAGE_QUALITY_BETTER);
   /* Rendering takes place */
   VGfloat cc[] = {0,0,0,1};
   
   vgSetfv(VG_CLEAR_COLOR, 4, cc);
   vgClear(0,0,testWidth(),testHeight());
-  
-  drawKirpicz();
-  vgGetPixels(kirpicz,0,0,0,0,64,64);
+  vgLoadIdentity();
+  drawKirpicz(ratio);
+  vgGetPixels(kirpicz,0,0,0,0,ratio,ratio);
   
   vgPaintPattern(backdrop_p,kirpicz);
-//   vgClear(0,0,testWidth(),testHeight());
+
 }
 
 int main(int argc,char argv[])
 {
   testInit(argc, argv, 832,512, "ShivaVG: Electro Body scene test");
   testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc)display);
-  createPaths();
-  createTextures();
-
+  testCallback(TEST_CALLBACK_RESHAPE, (CallbackFunc)reshapeFunc);
+  reshapeFunc(832,512);
   testRun();
   return EXIT_SUCCESS;
 }
