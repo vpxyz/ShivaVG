@@ -51,6 +51,10 @@ if BUILD_BLEND
 noinst_PROGRAMS += test_blend
 endif
 
+if BUILD_EB
+noinst_PROGRAMS += test_eb
+endif
+
 test_vgu_SOURCES =\
 	${EXAMPLE_SRCS} test_vgu.c
 
@@ -78,6 +82,8 @@ test_pattern_SOURCES =\
 test_blend_SOURCES =\
 	${EXAMPLE_SRCS} test_blend.c
 
+test_eb_SOURCES =\
+	${EXAMPLE_SRCS} test_eb.c
 
 test_vgu_CFLAGS = ${EXAMPLE_CF}
 test_vgu_LDADD = ${EXAMPLE_LA}
@@ -114,3 +120,7 @@ test_pattern_LDFLAGS = ${EXAMPLE_LF}
 test_blend_CFLAGS = ${EXAMPLE_CF}
 test_blend_LDADD = ${EXAMPLE_LA}
 test_blend_LDFLAGS = ${EXAMPLE_LF}
+
+test_eb_CFLAGS = ${EXAMPLE_CF}
+test_eb_LDADD = ${EXAMPLE_LA}
+test_eb_LDFLAGS = ${EXAMPLE_LF}
