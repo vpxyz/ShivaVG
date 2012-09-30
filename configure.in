@@ -60,6 +60,11 @@ AC_ARG_WITH(
 	[  --with-example-blend          Build Blending example (default=yes)],
 	[build_test_blend=$withval], [build_test_blend="$build_test_all"])
 
+AC_ARG_WITH(
+        [example-eb],
+        [  --with-example-eb          Build Electory Body example (default=yes)],
+        [build_test_eb=$withval], [build_test_eb="$build_test_all"])
+	
 # ==============================================
 # Integer types
 
@@ -295,6 +300,7 @@ AM_CONDITIONAL([BUILD_TIGER],       [test "x$build_test_tiger" = "xyes"])
 AM_CONDITIONAL([BUILD_IMAGE],       [test "x$build_test_image" = "xyes"])
 AM_CONDITIONAL([BUILD_PATTERN],     [test "x$build_test_pattern" = "xyes"])
 AM_CONDITIONAL([BUILD_BLEND],       [test "x$build_test_blend" = "xyes"])
+AM_CONDITIONAL([BUILD_EB],       [test "x$build_test_eb" = "xyes"])
 
 AC_OUTPUT([
 Makefile
@@ -329,6 +335,7 @@ ShivaVG will be compiled with the following example programs
   Images                    ${build_test_image}
   Pattern paint             ${build_test_pattern}
   Blending                  ${build_test_blend}
+  Electoro Body             ${build_test_eb}
 "
 
 if test "x$has_glut_h" = "xno"; then

@@ -552,7 +552,10 @@ void shUpdateImageTexture(SHImage *i, VGContext *c)
   glBindTexture(GL_TEXTURE_2D, i->texture);
   glTexImage2D(GL_TEXTURE_2D, 0, i->fd.glintformat,
                i->texwidth, i->texheight, 0,
-               i->fd.glformat, i->fd.gltype, i->data);
+               i->fd.glformat, 0x8367/*i->fd.gltype*/, i->data); /* FIXME determine why the format is so silly */
+/*   short center=(i->texwidth*i->texheight)*2+2*i->texwidth; 
+//   printf("shUpdateImageTexture: 0x%x 0x%x 0x%x\n",i->fd.glintformat,i->fd.glformat, i->fd.gltype);
+//   printf("shUpdateImageTexture: %d %d %d %d\n",i->data[center],i->data[center+1],i->data[center+2],i->data[center+3]); */
 }
 
 /*----------------------------------------------------------
@@ -1085,6 +1088,11 @@ VG_API_CALL void vgGetPixels(VGImage dst, VGint dx, VGint dy,
 
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
   glReadPixels(sx, sy, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+  
+  /* FIXME we shouldnt be reading alpha */
+  int k;
+  for (k=3;k<i->width*i->height*4;k+=4)
+    pixels[k]=255;
   
   shCopyPixels(i->data, i->fd.vgformat, i->texwidth * i->fd.bytes,
                pixels, winfd.vgformat, -1,
