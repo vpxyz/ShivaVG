@@ -102,6 +102,8 @@ set(PACKAGE_TARNAME "shivavg") # TODO I don't really think we -need- that
 # Now generating the config.h and installing master includes
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/include/vg)
+# TODO this is really ugly, replace this with some intelligent way to detect glext availability
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Report on what's going to be built
 message("ShivaVG will be compiled with the following example programs\n"
