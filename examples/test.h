@@ -11,14 +11,15 @@
 #if defined(__APPLE__)
 #  include <OpenGL/gl.h>
 #  include <OpenGL/glu.h>
+#  include <OpenGL/glext.h>
 #  include <GLUT/glut.h>
 #else
 #  include <GL/gl.h>
 #  include <GL/glu.h>
 #  include <GL/glut.h>
+#  include "GL/glext.h"
 #endif
 
-#include "GL/glext.h"
 
 #include <vg/openvg.h>
 #include <vg/vgu.h>
