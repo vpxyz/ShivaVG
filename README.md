@@ -26,15 +26,18 @@ IV.   EXTENSIONS
 ### Compiling
 ShivaVG has now been converted to [CMake](http://www.cmake.org/).
   
-To compile it, obtain CMake from its website, generate project files for your favorite build system or IDE. 
+To compile it, obtain CMake from its website, generate project files for your favorite build system or IDE. <br>
+It is advisable to do so in a separate `build` directory to keep things clean.
+
+`$ mkdir build; cd build`
 
 For example using Make:
-`$ cmake -G "Unix Makefiles" && make`
+`cmake .. -G "Unix Makefiles" && make`
 
 Xcode/OS X:
-`$ cmake -G Xcode && xcodebuild`
+`$ cmake .. -G Xcode && xcodebuild`
 
-For Windows, generate Visual Studio project files with the CMake GUI. 
+For Windows, generate Visual Studio project files with the CMake GUI.
 
 ## II. TESTING
 
