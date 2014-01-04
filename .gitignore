@@ -2,3 +2,7 @@ Debug
 Release
 *.ncb
 *.vcproj.*.user
+CMakeFiles
+CMakeCache.txt
+CMakeScripts
+cmake_install.cmake
