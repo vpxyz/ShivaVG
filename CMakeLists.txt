@@ -1,7 +1,6 @@
 project(ShivaVG)
 # TODO test on Windows/MSVC
 # TODO test on Windows/MinGW
-# TODO test on MacOSX 
 # TODO separate targets for examples and install target
 # TODO update INSTALL/README etc
 cmake_minimum_required(VERSION 2.8)
