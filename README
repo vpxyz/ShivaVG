@@ -30,6 +30,7 @@ I. BUILD
    example program can be toggled by ./configure --with-example-xxx
    command where xxx denotes the name of the example. Run ./configure
    --help for a list of such options.
+   To initially generate the configure file, use `autoreconf -ifv`.
 
  * Compiling on Mac:
 

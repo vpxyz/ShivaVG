@@ -335,7 +335,7 @@ ShivaVG will be compiled with the following example programs
   Images                    ${build_test_image}
   Pattern paint             ${build_test_pattern}
   Blending                  ${build_test_blend}
-  Electoro Body             ${build_test_eb}
+  Electro Body             ${build_test_eb}
 "
 
 if test "x$has_glut_h" = "xno"; then
