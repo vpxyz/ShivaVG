@@ -1,5 +1,5 @@
 #include "test.h"
-#include <include/vg/openvg.h>
+#include <vg/openvg.h>
 
 // FIXME unsafe
 #define min(x,y) ((x<y)?(x):(y))

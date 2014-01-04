@@ -47,9 +47,9 @@
 /* Type definitions */
 
 #if defined(HAVE_CONFIG_H)
-#include "../config.h"
+#include <config.h>
 #
-#  if HAVE_INTTYPES_H
+#  if defined(HAVE_INTTYPES_H)
 #  include <inttypes.h>
 #  endif
 #
