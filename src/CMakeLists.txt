@@ -32,3 +32,5 @@ include_directories(${OPENGL_INCLUDE_DIR})
 add_library(OpenVG SHARED ${libOpenVG_SOURCES})
 target_link_libraries(OpenVG ${OPENGL_LIBRARIES})
 SET_TARGET_PROPERTIES( OpenVG PROPERTIES COMPILE_FLAGS -fPIC)
+
+install(TARGETS OpenVG DESTINATION lib)

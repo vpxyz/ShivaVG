@@ -127,3 +127,5 @@ if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
+
+install(DIRECTORY include/vg DESTINATION include)
