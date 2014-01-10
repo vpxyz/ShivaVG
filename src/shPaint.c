@@ -420,7 +420,7 @@ int shDrawLinearGradientMesh(SHPaint *p, SHVector2 *min, SHVector2 *max,
   SH_GETCONTEXT(0);
   if (mode == VG_FILL_PATH)
     m = &context->fillTransform;
-  else if (mode == VG_STROKE_PATH)
+  else // (mode == VG_STROKE_PATH)
     m = &context->strokeTransform;
   
   /* Gradient center and unit vectors */
@@ -535,7 +535,7 @@ int shDrawRadialGradientMesh(SHPaint *p, SHVector2 *min, SHVector2 *max,
   SHfloat startA=0.0f;
   
   int numsteps = 100;
-  float step = 2*PI/numsteps;
+  float step;
   SHVector2 tmin, tmax;
   SHVector2 min1, max1, min2, max2;
   
@@ -543,7 +543,7 @@ int shDrawRadialGradientMesh(SHPaint *p, SHVector2 *min, SHVector2 *max,
   SH_GETCONTEXT(0);
   if (mode == VG_FILL_PATH)
     m = &context->fillTransform;
-  else if (mode == VG_STROKE_PATH)
+  else // (mode == VG_STROKE_PATH)
     m = &context->strokeTransform;
   
   /* Move focus into circle if outside */
@@ -736,7 +736,7 @@ int shDrawPatternMesh(SHPaint *p, SHVector2 *min, SHVector2 *max,
   SH_GETCONTEXT(0);
   if (mode == VG_FILL_PATH)
     m = &context->fillTransform;
-  else if (mode == VG_STROKE_PATH)
+  else // (mode == VG_STROKE_PATH)
     m = &context->strokeTransform;
   
   /* Boundbox corners */

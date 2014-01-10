@@ -840,9 +840,7 @@ static void shSetParameter(VGContext *context, VGHandle object,
                            SHResourceType rtype, VGint ptype,
                            SHint count, const void *values, SHint floats)
 {
-  SHfloat fvalue = 0.0f;
   SHint ivalue = 0;
-  VGboolean bvalue = VG_FALSE;
   int i;
   
   /* Check for negative count */
@@ -853,9 +851,7 @@ static void shSetParameter(VGContext *context, VGHandle object,
   
   /* Pre-convert first value for non-vector params */
   if (count == 1) {
-    fvalue = shParamToFloat(values, floats, 0);
     ivalue = shParamToInt(values, floats, 0);
-    bvalue = (ivalue ? VG_TRUE : VG_FALSE);
   }
   
   switch (rtype)
