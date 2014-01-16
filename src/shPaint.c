@@ -635,11 +635,11 @@ int shDrawRadialGradientMesh(SHPaint *p, SHVector2 *min, SHVector2 *max,
       f.y >= min->y && f.y <= max->y) {
     
     /* Draw whole circle */
-    minOffset = 0.0f;
     startA = 0.0f;
     maxA = 2*PI;
     
-  }else{
+  }
+  else {
     
     /* Find most distant corner pair */
     for (i=0; i<3; ++i) {
