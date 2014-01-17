@@ -39,6 +39,16 @@ Xcode/OS X:
 
 For Windows, generate Visual Studio project files with the CMake GUI.
 
+#### Static Analysis
+To run the Clang Static Analyzer with CMake, obtain the latest analyzer from its [website](http://clang-analyzer.llvm.org/) and unpack it somewhere.<br>
+Also, unless you have a file called `ccc-analyzer` directly in your `checker-xyz` directory, obtain it [here](https://llvm.org/svn/llvm-project/cfe/trunk/tools/scan-build/ccc-analyzer). (It has to be executable (`chmod +x`) as well.)
+
+To tell CMake to use the Analyzer and check the code, do
+
+    $ cmake -DCMAKE_C_COMPILER=YOUR-PATH-TO-checker-xyz/ccc-analyzer -G "Unix Makefiles"
+    $ checker-xyz/scan-build make
+    
+
 ## II. TESTING
 
 There is no real testing suite yet. The example programs are there
