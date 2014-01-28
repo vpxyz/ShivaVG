@@ -1,5 +1,5 @@
 #include "test.h"
-#include <include/vg/openvg.h>
+#include <vg/openvg.h>
 
 // FIXME unsafe
 #define min(x,y) ((x<y)?(x):(y))
@@ -20,6 +20,7 @@ VGPath bevel_h;
 VGPaint bevel_l_p;
 VGPath bevel_l;
 
+void createTextures();
 
 void display(float phase)
 {
@@ -424,7 +425,7 @@ void createTextures()
   vgPaintPattern(wall_p,walls);
 }
 
-int main(int argc,char argv[])
+int main(int argc, char **argv)
 {
   testInit(argc, argv, 832,512, "ShivaVG: Electro Body scene test");
   testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc)display);

@@ -105,9 +105,8 @@ void updateOverlayString()
 
 void drag(int x, int y)
 {
-  VGfloat dx, dy;
+  VGfloat dy;
   y = testHeight() - y;
-  dx = x - clickX;
   dy = y - clickY;
   
   switch (mode) {

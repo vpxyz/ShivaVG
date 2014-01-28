@@ -41,7 +41,7 @@
 
 static const SHint shCoordsPerCommand[] = {
   0, /* VG_CLOSE_PATH */
-  2, /* VG_MOTE_TO */
+  2, /* VG_MOVE_TO */
   2, /* VG_LINE_TO */
   1, /* VG_HLINE_TO */
   1, /* VG_VLINE_TO */
@@ -677,7 +677,7 @@ void shProcessPathData(SHPath *p,
                        SegmentFunc callback,
                        void *userData)
 {
-  SHint i=0, s=0, d=0, c=0;
+  SHint i=0, s=0, d=0;
   SHuint command;
   SHuint segment;
   SHint segindex;
@@ -732,17 +732,16 @@ void shProcessPathData(SHPath *p,
     /* Place pen into first two coords */
     data[0] = pen.x;
     data[1] = pen.y;
-    c = 2;
     
     /* Unpack coordinates from path data */
     for (i=0; i<numcoords; ++i)
-      data[c++] = shRealCoordFromData(p->datatype, p->scale, p->bias,
-                                      p->data, d+i);
+      data[i + 2] = shRealCoordFromData(p->datatype, p->scale, p->bias, p->data, d+i);
     
     /* Simplify complex segments */
     switch (segment)
     {
     case VG_CLOSE_PATH:
+      assert(numcoords == 0);
       
       data[2] = start.x;
       data[3] = start.y;
@@ -755,6 +754,7 @@ void shProcessPathData(SHPath *p,
       
       break;
     case VG_MOVE_TO:
+      assert(numcoords == 2);
       
       if (absrel == VG_RELATIVE) {
         data[2] += pen.x; data[3] += pen.y;
@@ -769,6 +769,7 @@ void shProcessPathData(SHPath *p,
       
       break;
     case VG_LINE_TO:
+      assert(numcoords == 2);
       
       if (absrel == VG_RELATIVE) {
         data[2] += pen.x; data[3] += pen.y;
@@ -781,6 +782,7 @@ void shProcessPathData(SHPath *p,
       
       break;
     case VG_HLINE_TO:
+      assert(numcoords == 1);
       
       if (absrel == VG_RELATIVE)
         data[2] += pen.x;
@@ -798,6 +800,7 @@ void shProcessPathData(SHPath *p,
       
       break;
     case VG_VLINE_TO:
+      assert(numcoords == 1);
       
       if (absrel == VG_RELATIVE)
         data[2] += pen.y;
@@ -815,6 +818,7 @@ void shProcessPathData(SHPath *p,
       
       break;
     case VG_QUAD_TO:
+      assert(numcoords == 4);
       
       if (absrel == VG_RELATIVE) {
         data[2] += pen.x; data[3] += pen.y;
@@ -828,6 +832,7 @@ void shProcessPathData(SHPath *p,
       
       break;
     case VG_CUBIC_TO:
+      assert(numcoords == 6);
       
       if (absrel == VG_RELATIVE) {
         data[2] += pen.x; data[3] += pen.y;
@@ -842,6 +847,7 @@ void shProcessPathData(SHPath *p,
       
       break;
     case VG_SQUAD_TO:
+      assert(numcoords == 2);
       
       if (absrel == VG_RELATIVE) {
         data[2] += pen.x; data[3] += pen.y;
@@ -861,6 +867,7 @@ void shProcessPathData(SHPath *p,
       
       break;
     case VG_SCUBIC_TO:
+      assert(numcoords == 4);
       
       if (absrel == VG_RELATIVE) {
         data[2] += pen.x; data[3] += pen.y;
@@ -884,6 +891,7 @@ void shProcessPathData(SHPath *p,
       break;
     case VG_SCWARC_TO: case VG_SCCWARC_TO:
     case VG_LCWARC_TO: case VG_LCCWARC_TO:
+      assert(numcoords == 5);
       
       if (absrel == VG_RELATIVE) {
         data[5] += pen.x; data[6] += pen.y;
@@ -1222,10 +1230,22 @@ VG_API_CALL VGboolean vgInterpolatePath(VGPath dstPath, VGPath startPath,
   /* Allocate storage for processed path data */
   shProcessedDataCount(start, processFlags, &procSegCount1, &procDataCount1);
   shProcessedDataCount(end, processFlags, &procSegCount2, &procDataCount2);
-  procSegs1 = (SHuint8*)malloc(procSegCount1 * sizeof(SHuint8));
-  procSegs2 = (SHuint8*)malloc(procSegCount2 * sizeof(SHuint8));
-  procData1 = (SHfloat*)malloc(procDataCount1 * sizeof(SHfloat));
-  procData2 = (SHfloat*)malloc(procDataCount2 * sizeof(SHfloat));
+  if(procSegCount1 > 0) { // prevent allocation of 0 bytes (CERT MEM04-C)
+    procSegs1 = (SHuint8*)malloc(procSegCount1 * sizeof(SHuint8));
+    procData1 = (SHfloat*)malloc(procDataCount1 * sizeof(SHfloat));
+  }
+  else {
+    procSegs1 = NULL;
+    procData1 = NULL;
+  }
+  if(procSegCount2 > 0) {
+    procSegs2 = (SHuint8*)malloc(procSegCount2 * sizeof(SHuint8));
+    procData2 = (SHfloat*)malloc(procDataCount2 * sizeof(SHfloat));
+  }
+  else {
+    procSegs2 = NULL;
+    procData2 = NULL;
+  }
   if (!procSegs1 || !procSegs2 || !procData1 || !procData2) {
     free(procSegs1); free(procSegs2); free(procData1); free(procData2);
     VG_RETURN_ERR(VG_OUT_OF_MEMORY_ERROR, VG_FALSE);

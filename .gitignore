@@ -1,4 +1,1 @@
-Debug
-Release
-*.ncb
-*.vcproj.*.user
+build

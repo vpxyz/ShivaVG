@@ -1,5 +1,4 @@
-ShivaVG
-=============================
+# ShivaVG
 
 See AUTHORS for the list of contributors
 
@@ -7,49 +6,50 @@ ShivaVG is an open-source LGPL ANSI C implementation of the Khronos
 Group OpenVG specification.
 
 I.    BUILD
+
 II.   TESTING
+
 III.  IMPLEMENTATION STATUS
+
 IV.   EXTENSIONS
 
 
-I. BUILD
-=============================
+## I. BUILD
 
- * Prerequisites:
+### Prerequisites
 
    OpenGL development libraries and headers should be installed.
-   Othe than that, since it's ANSI C should compile with any modern
+   Other than that, since it's ANSI C should compile with any modern
    C compiler. jpeglib needs to be installed for example programs
    that use images.
 
- * Compiling under UNIX systems:
+### Compiling
+ShivaVG has now been converted to [CMake](http://www.cmake.org/).
+  
+To compile it, obtain CMake from its website, generate project files for your favorite build system or IDE. <br>
+It is advisable to do so in a separate `build` directory to keep things clean.
 
-   Read the INSTALL file for more detailed (though generic) directions.
-   This library uses the standard ./configure ; make. The example
-   programs are automatically compiled. However, compilation of each
-   example program can be toggled by ./configure --with-example-xxx
-   command where xxx denotes the name of the example. Run ./configure
-   --help for a list of such options.
+`$ mkdir build; cd build`
 
- * Compiling on Mac:
+For example using Make:
+`cmake .. -G "Unix Makefiles" && make`
 
-   No XCode project files provided yet. The easiest way is by just
-   using gcc, in which case look under UNIX compiling section.
+Xcode/OS X:
+`$ cmake .. -G Xcode && xcodebuild`
 
- * Compiling natively on Windows platform:
+For Windows, generate Visual Studio project files with the CMake GUI.
 
-   Solution files are provided for Visual C++ version 7 and 8. For
-   the example programs using images to compile, you will need the
-   appropriate build of jpeglib to match your Visual C++ version.
+#### Static Analysis
+To run the Clang Static Analyzer with CMake, obtain the latest analyzer from its [website](http://clang-analyzer.llvm.org/) and unpack it somewhere.<br>
+Also, unless you have a file called `ccc-analyzer` directly in your `checker-xyz` directory, obtain it [here](https://llvm.org/svn/llvm-project/cfe/trunk/tools/scan-build/ccc-analyzer). (It has to be executable (`chmod +x`) as well.)
 
- * Compiling in mingw / cygwin environment:
+To tell CMake to use the Analyzer and check the code, do
 
-   Might work just as fine as any UNIX-flavored system, but hasn't
-   been tested yet.
+    $ cmake -DCMAKE_C_COMPILER=YOUR-PATH-TO-checker-xyz/ccc-analyzer -G "Unix Makefiles"
+    $ checker-xyz/scan-build make
+    
 
-
-II. TESTING
-=============================
+## II. TESTING
 
 There is no real testing suite yet. The example programs are there
 just to play with what the implementation can currently do, but
@@ -57,45 +57,36 @@ can hardly provide any proper validation, since no reference images
 are provided. Here is a description of each example program and
 what features it highlights:
 
-* test_vgu
-
+* *test_vgu*<br>
   Constructs some path primitives using the VGU API.
-
-* test_tiger
-
+  
+* *test_tiger*<br>
   The most simple performance test. It draws the well known svg
   tiger using just simple stroke and fill of solid colors. It
   consists of 240 paths.
+  
+* *test_dash*<br>
+   Shows different stroke dashing modes.
 
-* test_dash
-
-  Shows different stroke dashing modes.
-
-* test_linear
-
+* *test_linear*<br>
   A rectangle drawn using 3-color linear gradient fill paint
 
-* test_radial
-
+* *test_radial*<br>
   A rectangle drawn using 3-color radial gradient fill paint
 
-* test_interpolate
-
+* *test_interpolate*<br>
   Interpolates between two paths - an apple and a pear.
 
-* test_image
-
-	Images are drawn using VG_DRAW_IMAGE_MULTIPLY image mode to be
+* *test_image*<br>
+  Images are drawn using `VG_DRAW_IMAGE_MULTIPLY` image mode to be
   multiplied with radial gradient fill paint.
 
-* test_pattern
-
+* *test_pattern*<br>
   An image is drawn in multiply mode with an image pattern fill
   paint.
 
 
-III. IMPLEMENTATION STATUS
-=============================
+## III. IMPLEMENTATION STATUS
 
 Khronos states in the OpenVG specification, that the contexts for all
 their client APIs are expected to be created via the EGL API. Since
@@ -112,12 +103,15 @@ itself would provide further clues.
 
 * General:
 
+```
 vgGetError ............................ FULLY implemented
 vgFlush ............................... FULLY implemented
 vgFinish .............................. FULLY implemented
+```
 
 * Getters and setters:
 
+```
 vgSet ................................. FULLY implemented
 vgSeti ................................ FULLY implemented
 vgSetfv ............................... FULLY implemented
@@ -136,9 +130,11 @@ vgGetParameteri ....................... FULLY implemented
 vgGetParameterVectorSize............... FULLY implemented
 vgGetParameterfv ...................... FULLY implemented
 vgGetParameteriv ...................... FULLY implemented
+```
 
 * Matrix Manipulation:
 
+```
 vgLoadIdentity ........................ FULLY implemented
 vgLoadMatrix .......................... FULLY implemented
 vgGetMatrix ........................... FULLY implemented
@@ -147,14 +143,18 @@ vgTranslate ........................... FULLY implemented
 vgScale ............................... FULLY implemented
 vgShear ............................... FULLY implemented
 vgRotate .............................. FULLY implemented
+```
 
 * Masking and Clearing:
 
+```
 vgMask ................................ NOT implemented
 vgClear ............................... FULLY implemented
+```
 
 * Paths:
 
+```
 vgCreatePath .......................... FULLY implemented
 vgClearPath ........................... FULLY implemented
 vgDestroyPath ......................... FULLY implemented
@@ -170,9 +170,11 @@ vgPointAlongPath ...................... NOT implemented
 vgPathBounds .......................... FULLY implemented
 vgPathTransformedBounds ............... FULLY implemented
 vgDrawPath ............................ PARTIALLY implemented
+```
 
 * Paint:
 
+```
 vgCreatePaint ......................... FULLY implemented
 vgDestroyPaint ........................ FULLY implemented
 vgSetPaint ............................ FULLY implemented
@@ -180,9 +182,11 @@ vgGetPaint ............................ FULLY implemented
 vgSetColor ............................ FULLY implemented
 vgGetColor ............................ FULLY implemented
 vgPaintPattern ........................ FULLY implemented
+```
 
 * Images:
 
+```
 vgCreateImage ......................... PARTIALLY implemented
 vgDestroyImage ........................ FULLY implemented
 vgClearImage .......................... FULLY implemented
@@ -197,26 +201,34 @@ vgWritePixels ......................... FULLY implemented
 vgGetPixels ........................... FULLY implemented
 vgReadPixels .......................... FULLY implemented
 vgCopyPixels .......................... FULLY implemented
+```
 
 * Image Filters:
 
+```
 vgColorMatrix ......................... NOT implemented
 vgConvolve ............................ NOT implemented
 vgSeparableConvolve ................... NOT implemented
 vgGaussianBlur ........................ NOT implemented
 vgLookup .............................. NOT implemented
 vgLookupSingle ........................ NOT implemented
+```
 
 * Hardware Queries:
 
+```
 vgHardwareQuery ....................... NOT implemented
+```
 
 * Renderer and Extension Information:
 
+```
 vgGetString ........................... FULLY implemented
+```
 
 * VGU
 
+```
 vguLine ............................... FULLY implemented
 vguPolygon ............................ FULLY implemented
 vguRect ............................... FULLY implemented
@@ -226,27 +238,24 @@ vguArc ................................ FULLY implemented
 vguComputeWarpQuadToSquare ............ NOT implemented
 vguComputeWarpSquareToQuad ............ NOT implemented
 vguComputeWarpQuadToQuad .............. NOT implemented
+```
 
 
-IV. EXTENSIONS
-=============================
+## IV. EXTENSIONS
 
 There are three extensions to the API that manipulate the OpenVG
 context as a temporary replacement for EGL:
 
-VGboolean vgCreateContextSH(VGint width, VGint height)
-
+* `VGboolean vgCreateContextSH(VGint width, VGint height)`<br>
   Creates an OpenVG context on top of an existing OpenGL context
   that should have been manually initialized by the user of the
   library. Width and height specify the size of the rendering
   surface. No multi-threading support has been implemented yet.
   The context is created once per process.
 
-void vgResizeSurfaceSH(VGint width, VGint height)
-
+* `void vgResizeSurfaceSH(VGint width, VGint height)`<br>
   Should be called whenever the size of the surface changes (e.g.
   the owner window of the OpenGL context is resized).
 
-void vgDestroyContextSH()
-
+* `void vgDestroyContextSH()`<br>
   Destroys the OpenVG context associated with the calling process.
