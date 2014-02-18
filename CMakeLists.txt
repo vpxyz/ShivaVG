@@ -22,7 +22,7 @@ option(BUILD_TIGER          "Build Tiger SVG example (default=yes)]"            
 option(BUILD_IMAGE          "Build Images example (default=yes)]"                       OFF)
 option(BUILD_PATTERN        "Build Pattern Paint example (default=yes)]"                OFF)
 option(BUILD_BLEND          "Build Blending example (default=yes)]"                     OFF)
-option(BUILD_EB             "Build Electory Body example (default=yes)]"                OFF)
+option(BUILD_EB             "Build Electro Body example (default=yes)]"                 OFF)
 # Setting the master option sets the rest
 if(BUILD_ALL_EXAMPLES)
     set(BUILD_VGU ON)
@@ -117,7 +117,7 @@ message("ShivaVG will be compiled with the following example programs\n"
         "  Images                    ${BUILD_IMAGE}\n"
         "  Pattern paint             ${BUILD_PATTERN}\n"
         "  Blending                  ${BUILD_BLEND}\n"
-        "  Electoro Body             ${BUILD_EB}\n")
+        "  Electro Body              ${BUILD_EB}\n")
 
 # Pick up subdirectories 
 # TODO see if include_directories work like a stack and whether we can avoid duplication
