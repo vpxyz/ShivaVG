@@ -166,6 +166,7 @@ SHfloat getMaxFloat();
 #else
 #  define GL_GLEXT_LEGACY /* don't include glext.h */
 #  include <GL/gl.h>
+#  include <GL/glext.h>
 #  include <GL/glu.h>
 #  include <GL/glx.h>
 #endif
