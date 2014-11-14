@@ -122,6 +122,16 @@ VG_API_CALL void vgSetPaint(VGPaint paint, VGbitfield paintModes)
   VG_RETURN(VG_NO_RETVAL);
 }
 
+VG_API_CALL VGPaint vgGetPaint(VGPaintMode paintMode)
+{
+  VG_GETCONTEXT(VG_NO_RETVAL);
+
+  if (paintMode & VG_STROKE_PATH)
+    VG_RETURN((VGPaint) context->strokePaint);
+  if (paintMode & VG_FILL_PATH)
+    VG_RETURN((VGPaint) context->fillPaint);
+}
+
 VG_API_CALL void vgPaintPattern(VGPaint paint, VGImage pattern)
 {
   VG_GETCONTEXT(VG_NO_RETVAL);
