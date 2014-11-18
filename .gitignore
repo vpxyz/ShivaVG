@@ -17,3 +17,14 @@ configure
 install-sh
 ltmain.sh
 missing
+
+Makefile
+config.h
+config.log
+config.status
+examples/.deps
+examples/Makefile
+libtool
+src/.deps
+src/Makefile
+stamp-h1
