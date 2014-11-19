@@ -925,7 +925,25 @@ VG_API_CALL void vgPathTransformedBounds(VGPath path,
 VG_API_CALL VGfloat vgPathLength(VGPath path,
                                  VGint startSegment, VGint numSegments)
 {
-  return 0.0f;
+  SHPath *p = NULL;
+  VG_GETCONTEXT(VG_NO_RETVAL);
+
+  VG_RETURN_ERR_IF(!shIsValidPath(context, path),
+                   VG_BAD_HANDLE_ERROR, -1.0f);
+
+  p = (SHPath *)path;
+  VG_RETURN_ERR_IF(!(p->caps & VG_PATH_CAPABILITY_PATH_LENGTH),
+                   VG_PATH_CAPABILITY_ERROR, -1.0f);
+
+  VG_RETURN_ERR_IF(startSegment < 0, VG_ILLEGAL_ARGUMENT_ERROR, -1.0f);
+  VG_RETURN_ERR_IF(numSegments <= 0, VG_ILLEGAL_ARGUMENT_ERROR, -1.0f);
+  VG_RETURN_ERR_IF(startSegment >= p->segCount,
+                   VG_ILLEGAL_ARGUMENT_ERROR, -1.0f);
+  VG_RETURN_ERR_IF((startSegment + numSegments-1 < 0),
+                   VG_ILLEGAL_ARGUMENT_ERROR, -1.0f);
+  VG_RETURN_ERR_IF((startSegment + numSegments-1 >= p->segCount),
+                   VG_ILLEGAL_ARGUMENT_ERROR, -1.0f);
+
 }
 
 VG_API_CALL void vgPointAlongPath(VGPath path,
