@@ -1303,3 +1303,149 @@ VG_API_CALL VGboolean vgInterpolatePath(VGPath dstPath, VGPath startPath,
   
   VG_RETURN_ERR(VG_NO_ERROR, VG_TRUE);
 }
+
+
+SHfloat shPathLength(SHPath *p, SHuint startIndex, SHuint numSegments)
+{
+  SHuint command,
+       segment,
+       segindex;
+  SHint numcoords = 0,
+        curcoord = 0,
+        curSegment,i;
+  VGPathAbsRel absrel;
+  SHVector2 start; /* start of the current contour */
+  SHVector2 pen; /* current pen position */
+  SHfloat data[SH_PATH_MAX_COORDS],
+          sum=0;
+
+
+
+  /* Reset points */
+  SET2(start, 0,0);
+  SET2(pen, 0,0);
+
+
+    /* fast-forward to current segment. 
+  need to go through previous segments to find the proper
+  place in the data array for current coords, and to properly
+  place the start and pen when we start tracing length
+  */
+  for (curSegment=0; curSegment<startIndex; curSegment++){
+    command = (p->segs[curSegment]);
+    absrel = (command & 1);
+    segment = (command & 0x1E);
+    segindex = (segment >> 1);
+    numcoords = shCoordsPerCommand[segindex];
+
+    /* Unpack coordinates from path data */
+    for (i=0; i<numcoords; i++)
+      data[i] = shRealCoordFromData(p->datatype, p->scale, p->bias,
+                                      p->data, curcoord+i);
+
+    switch(segment) {
+      case VG_CLOSE_PATH:
+        SET2V(pen,start);
+      case VG_LINE_TO:
+        if (absrel == VG_RELATIVE) {
+          data[0] += pen.x; data[1] += pen.y;
+        }
+        SET2(pen,data[0],data[1]);
+        break;
+      case VG_HLINE_TO:
+        if (absrel == VG_RELATIVE) {
+          data[0] += pen.x;
+        }
+        pen.x = data[0];
+        break;
+      case VG_VLINE_TO:
+        if (absrel == VG_RELATIVE) {
+          data[0] += pen.y;
+        }
+        pen.y = data[0];
+        break;
+      case VG_QUAD_TO:
+      case VG_CUBIC_TO:
+      case VG_SQUAD_TO:
+      case VG_SCUBIC_TO:
+      case VG_SCCWARC_TO:
+      case VG_SCWARC_TO:
+      case VG_LCCWARC_TO:
+      case VG_LCWARC_TO:
+      case VG_MOVE_TO:
+        if (absrel == VG_RELATIVE){
+          data[0] += pen.x; data[1] += pen.y;
+        }
+        SET2(pen,data[0],data[1]);
+        SET2V(start,pen);
+        break;
+    }
+
+
+    curcoord += numcoords;
+  }
+
+
+  curSegment=startIndex;
+  while (numSegments--){
+    command = (p->segs[curSegment++]);
+    absrel = (command & 1);
+    segment = (command & 0x1E);
+    segindex = (segment >> 1);
+    numcoords = shCoordsPerCommand[segindex];
+
+    /* Unpack coordinates from path data */
+    for (i=0; i<numcoords; i++)
+      data[i] = shRealCoordFromData(p->datatype, p->scale, p->bias,
+                                      p->data, curcoord+i);
+
+    switch (segment) {
+      case VG_CLOSE_PATH:
+        sum += SH_DIST(pen.x,pen.y,start.x,start.y);
+        break;
+      case VG_LINE_TO:
+        if (absrel == VG_RELATIVE){
+          data[0] += pen.x;
+          data[1] += pen.y;
+        }
+        sum += SH_DIST(pen.x,pen.y,data[0],data[1]);
+        break;
+      case VG_HLINE_TO:
+        if (absrel == VG_RELATIVE) {
+          data[0] += pen.x;
+        }
+        sum += SH_ABS( (data[0]-pen.x) );
+        SET2(pen,data[0],pen.y);
+        break;
+      case VG_VLINE_TO:
+        if (absrel == VG_RELATIVE) {
+          data[0] += pen.y;
+        }
+        sum += SH_ABS( (data[0]-pen.y) );
+        SET2(pen,pen.x,data[0]);
+        break;
+      case VG_QUAD_TO:
+      case VG_CUBIC_TO:
+      case VG_SQUAD_TO:
+      case VG_SCUBIC_TO:
+      case VG_SCCWARC_TO:
+      case VG_SCWARC_TO:
+      case VG_LCCWARC_TO:
+      case VG_LCWARC_TO:
+        break;
+
+      /* MOVE_TO does not count to total */
+      case VG_MOVE_TO:
+        if (absrel == VG_RELATIVE) {
+          data[0] += pen.x; data[1] += pen.y;
+        }
+        SET2(pen,data[0],data[1]);
+        SET2V(start,pen);
+        break;
+    }
+
+    curcoord += numcoords;
+  }
+
+  return sum;
+}

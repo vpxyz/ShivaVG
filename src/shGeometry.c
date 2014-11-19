@@ -944,6 +944,7 @@ VG_API_CALL VGfloat vgPathLength(VGPath path,
   VG_RETURN_ERR_IF((startSegment + numSegments-1 >= p->segCount),
                    VG_ILLEGAL_ARGUMENT_ERROR, -1.0f);
 
+  VG_RETURN((VGfloat) shPathLength(path, startSegment, numSegments));
 }
 
 VG_API_CALL void vgPointAlongPath(VGPath path,

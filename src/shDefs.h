@@ -133,6 +133,7 @@ SHfloat getMaxFloat();
 #define SH_NEARZERO(a) (a >= -0.0001 && a < 0.0001)
 #define SH_SWAP(a,b) {SHfloat t=a; a=b; b=t;}
 #define SH_CLAMP(a,min,max) {if (a<min) a=min; if (a>max) a=max; }
+#define SH_DIST(a,b,x,y) SH_SQRT( ((x-a)*(x-a)) + ((y-b)*(y-b))  )
 
 #define SH_NEWOBJ(type,obj) { obj = (type*)malloc(sizeof(type)); if(obj) type ## _ctor(obj); }
 #define SH_INITOBJ(type,obj){ type ## _ctor(&obj); }

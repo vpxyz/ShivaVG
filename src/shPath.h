@@ -131,6 +131,7 @@ void shProcessPathData(SHPath *p, int flags,
                        SegmentFunc callback,
                        void *userData);
 
+SHfloat shPathLength(SHPath *p, SHuint startIndex, SHuint numSegments);
 
 /* Pointer-to-path array */
 #define _ITEM_T SHPath*
