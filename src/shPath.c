@@ -1481,8 +1481,24 @@ SHfloat shPathLength(SHPath *p, SHuint startIndex, SHuint numSegments)
         SET2(pen,pen.x,data[0]);
         break;
       case VG_QUAD_TO:
+        if (absrel == VG_RELATIVE) {
+          data[0] += pen.x; data[1] += pen.y;
+          data[2] += pen.x; data[3] += pen.y;
+        }
+        sum += shBezQuadLen(pen.x,pen.y,
+                            data[0],data[1],
+                            data[2],data[3]);
+        break;
       case VG_CUBIC_TO:
+        break;
       case VG_SQUAD_TO:
+        if (absrel == VG_RELATIVE) {
+          data[0] += pen.x; data[1] += pen.y;
+        }
+        sum += shBezQuadLen(pen.x,pen.y,
+                            2*data[0]-pen.x,2*data[1]-pen.y,
+                            data[0],data[1]);
+        break;
       case VG_SCUBIC_TO:
       case VG_SCCWARC_TO:
       case VG_SCWARC_TO:
