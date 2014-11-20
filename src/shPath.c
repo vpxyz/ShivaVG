@@ -41,7 +41,7 @@
 
 static const SHint shCoordsPerCommand[] = {
   0, /* VG_CLOSE_PATH */
-  2, /* VG_MOTE_TO */
+  2, /* VG_MOVE_TO */
   2, /* VG_LINE_TO */
   1, /* VG_HLINE_TO */
   1, /* VG_VLINE_TO */
@@ -529,7 +529,7 @@ VG_API_CALL void vgModifyPathCoords(VGPath dstPath, VGint startIndex,
 }
 
 /*------------------------------------------------------------
- * Converts standart endpoint arc parametrization into center
+ * Converts standard endpoint arc parametrization into center
  * arc parametrization for further internal processing
  *------------------------------------------------------------*/
 
