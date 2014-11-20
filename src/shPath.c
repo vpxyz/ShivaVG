@@ -1346,6 +1346,8 @@ SHfloat shPathLength(SHPath *p, SHuint startIndex, SHuint numSegments)
     switch(segment) {
       case VG_CLOSE_PATH:
         SET2V(pen,start);
+        break;
+      case VG_SQUAD_TO:
       case VG_LINE_TO:
         if (absrel == VG_RELATIVE) {
           data[0] += pen.x; data[1] += pen.y;
@@ -1364,14 +1366,28 @@ SHfloat shPathLength(SHPath *p, SHuint startIndex, SHuint numSegments)
         }
         pen.y = data[0];
         break;
-      case VG_QUAD_TO:
-      case VG_CUBIC_TO:
-      case VG_SQUAD_TO:
       case VG_SCUBIC_TO:
+      case VG_QUAD_TO:
+        if (absrel == VG_RELATIVE) {
+          data[2] += pen.x; data[3] += pen.y;
+        }
+        SET2(pen,data[2],data[3]);
+        break;
+      case VG_CUBIC_TO:
+        if (absrel == VG_RELATIVE) {
+          data[4] += pen.x; data[5] += pen.y;
+        }
+        SET2(pen,data[4],data[5]);
+        break;
       case VG_SCCWARC_TO:
       case VG_SCWARC_TO:
       case VG_LCCWARC_TO:
       case VG_LCWARC_TO:
+        if (absrel == VG_RELATIVE) {
+          data[3] += pen.x; data[4] += pen.y;
+        }
+        SET2(pen,data[3],data[4]);
+        break;
       case VG_MOVE_TO:
         if (absrel == VG_RELATIVE){
           data[0] += pen.x; data[1] += pen.y;
@@ -1385,6 +1401,10 @@ SHfloat shPathLength(SHPath *p, SHuint startIndex, SHuint numSegments)
     curcoord += numcoords;
   }
 
+
+  /*
+    Step through actual segments requested
+  */
 
   curSegment=startIndex;
   while (numSegments--){
