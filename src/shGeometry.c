@@ -842,6 +842,86 @@ void shFindBoundbox(SHPath *p)
   }
 }
 
+/*-------------------------------------------------
+ * Approximates path length of Quadratic Bezier
+ *-------------------------------------------------*/
+static float shBezQuadLen(float x0, float y0,
+                          float x1, float y1,
+                          float x2, float y2)
+{
+  SHVector2 p0, p1, p2;
+  SHVector2 a,b;
+  float A,B,C,
+        Sabc, A_2, A_32, C_2, BA;
+
+  SET2(p0,x0,y0);
+  SET2(p1,x1,y1);
+  SET2(p2,x2,y2);
+
+
+  a.x = p0.x - 2*p1.x + p2.x;
+  a.y = p0.y - 2*p1.y + p2.y;
+  b.x = 2*p1.x - 2*p0.x;
+  b.y = 2*p1.y - 2*p0.y;
+  A = 4*(a.x*a.x + a.y*a.y);
+  B = 4*(a.x*b.x + a.y*b.y);
+  C = b.x*b.x + b.y*b.y;
+
+  Sabc = 2*SH_SQRT(A+B+C);
+  A_2 = SH_SQRT(A);
+  A_32 = 2*A*A_2;
+  C_2 = 2*SH_SQRT(C);
+  BA = B/A_2;
+
+  return ( A_32*Sabc + A_2*B*(Sabc-C_2) + (4*C*A-B*B)*SH_LOG( (2*A_2+BA+Sabc)/(BA+C_2) ) )/(4*A_32);
+}
+
+/*--------------------------------------------------------
+ * Calculates the path length of a segment
+ *--------------------------------------------------------*/
+
+static void shPathLength(SHPath *p, VGPathSegment segment,
+                               VGPathCommand originalCommand,
+                               SHfloat *data, void *userData)
+{
+  SHfloat *sum         = (SHfloat*) ((void**)userData)[0];
+  SHint *startSegment  = (SHint*)   ((void**)userData)[1];
+  SHint *numSegments   = (SHint*)   ((void**)userData)[2];
+  SHuint *curSegment   = (SHuint*)  ((void**)userData)[3];
+
+  /* skip segments before "start" position */
+  if (*curSegment < *startSegment){
+    (*curSegment)++;
+    return;
+  }
+  /* stop working once we pass requested number of segments */
+  if (*curSegment >= *startSegment + *numSegments){
+    return;
+  }
+
+  switch (segment) {
+    case VG_CLOSE_PATH:
+      *sum += SH_DIST(data[0],data[1],data[2],data[3]);
+      break;
+    case VG_MOVE_TO:
+      break;
+    case VG_LINE_TO:
+      *sum += SH_DIST(data[0],data[1],data[2],data[3]);
+      break;
+    case VG_QUAD_TO:
+      *sum += shBezQuadLen(data[0],data[1],data[2],data[3],data[4],data[5]);
+      break;
+    case VG_CUBIC_TO:
+    case VG_SCCWARC_TO:
+    case VG_SCWARC_TO:
+    case VG_LCCWARC_TO:
+    case VG_LCWARC_TO:
+      break;
+  }
+
+  (*curSegment)++;
+}
+
 /*--------------------------------------------------------
  * Outputs a tight bounding box of a path in path's own
  * coordinate system.
@@ -925,6 +1005,9 @@ VG_API_CALL void vgPathTransformedBounds(VGPath path,
 VG_API_CALL VGfloat vgPathLength(VGPath path,
                                  VGint startSegment, VGint numSegments)
 {
+  void *userData[4];
+  VGfloat sum =0;
+  SHuint i =0;
   SHPath *p = NULL;
   VG_GETCONTEXT(VG_NO_RETVAL);
 
@@ -944,7 +1027,15 @@ VG_API_CALL VGfloat vgPathLength(VGPath path,
   VG_RETURN_ERR_IF((startSegment + numSegments-1 >= p->segCount),
                    VG_ILLEGAL_ARGUMENT_ERROR, -1.0f);
 
-  VG_RETURN((VGfloat) shPathLength(path, startSegment, numSegments));
+  userData[0] = &sum;
+  userData[1] = &startSegment;
+  userData[2] = &numSegments;
+  userData[3] = &i;
+
+  shProcessPathData(p, SH_PROCESS_SIMPLIFY_CURVES | SH_PROCESS_SIMPLIFY_LINES,
+                    shPathLength, userData);
+
+  VG_RETURN(sum);
 }
 
 VG_API_CALL void vgPointAlongPath(VGPath path,
