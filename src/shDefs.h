@@ -111,6 +111,7 @@ SHfloat getMaxFloat();
 #define SH_ATAN   (float)atan
 #define SH_FLOOR  (float)floor
 #define SH_CEIL   (float)ceil
+#define SH_LOG    (float)log
 #define SH_ASSERT assert
 
 #if defined(__isnan) || (defined(__APPLE__) && (__GNUC__ == 3))

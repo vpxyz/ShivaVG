@@ -354,6 +354,42 @@ static int shResizePathData(SHPath *p, SHint newSegCount, SHint newDataCount,
   return 1;
 }
 
+
+/*-------------------------------------------------
+ * Approximates path length of Quadratic Bezier
+ *-------------------------------------------------*/
+static float shBezQuadLen(float x0, float y0,
+                          float x1, float y1,
+                          float x2, float y2)
+{
+  SHVector2 p0, p1, p2;
+  SHVector2 a,b;
+  float A,B,C,
+        Sabc, A_2, A_32, C_2, BA;
+
+  SET2(p0,x0,y0);
+  SET2(p1,x1,y1);
+  SET2(p2,x2,y2);
+
+
+  a.x = p0.x - 2*p1.x + p2.x;
+  a.y = p0.y - 2*p1.y + p2.y;
+  b.x = 2*p1.x - 2*p0.x;
+  b.y = 2*p1.y - 2*p0.y;
+  A = 4*(a.x*a.x + a.y*a.y);
+  B = 4*(a.x*b.x + a.y*b.y);
+  C = b.x*b.x + b.y*b.y;
+
+  Sabc = 2*SH_SQRT(A+B+C);
+  A_2 = SH_SQRT(A);
+  A_32 = 2*A*A_2;
+  C_2 = 2*SH_SQRT(C);
+  BA = B/A_2;
+
+  return ( A_32*Sabc + A_2*B*(Sabc-C_2) + (4*C*A-B*B)*SH_LOG( (2*A_2+BA+Sabc)/(BA+C_2) ) )/(4*A_32);
+}
+
+
 /*-------------------------------------------------------------
  * Appends path data from source to destination path resource
  *-------------------------------------------------------------*/
