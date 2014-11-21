@@ -1,3 +1,7 @@
+21 Nov 2014 Dan Panzarella <alsoelp@gmail.com>
+ 
+  * finish vgGetPathLength for all segment types
+
 20 Nov 2014 Dan Panzarella <alsoelp@gmail.com>
 
   * calculate vgGetPathLength for all but cubic beziers and arcs
