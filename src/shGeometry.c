@@ -890,6 +890,13 @@ static void shPathLength(SHPath *p, VGPathSegment segment,
   SHint *numSegments   = (SHint*)   ((void**)userData)[2];
   SHuint *curSegment   = (SHuint*)  ((void**)userData)[3];
 
+  SHPath *q = NULL;
+  SHVertex v;
+  SHCubic cubic;
+  SHArc arc;
+  SHint contour = 0;
+  int i;
+
   /* skip segments before "start" position */
   if (*curSegment < *startSegment){
     (*curSegment)++;
@@ -909,6 +916,31 @@ static void shPathLength(SHPath *p, VGPathSegment segment,
       *sum += shBezQuadLen(data[0],data[1],data[2],data[3],data[4],data[5]);
       break;
     case VG_CUBIC_TO:
+      /* temporary path to store vertexes without messing up user's path */
+      SH_NEWOBJ(SHPath, q); /* @todo: out of memory error here? */
+
+      /* segment start as first vertex */
+      v.point.x = data[0]; v.point.y = data[1]; v.flags=0;
+      shAddVertex(q, &v, &contour);
+
+      /* recursively find vertex points along segment */
+      SET2(cubic.p1, data[0], data[1]);
+      SET2(cubic.p2, data[2], data[3]);
+      SET2(cubic.p3, data[4], data[5]);
+      SET2(cubic.p4, data[6], data[7]);
+      shSubrecurseCubic(q, &cubic, &contour);
+
+      /* final segment point as vertex */
+      v.point.x = data[6]; v.point.y = data[7];
+      shAddVertex(q,&v,&contour);
+
+      /* add linear distance from each vertex */
+      for (i=0; i<q->vertices.size - 1; i++) {
+        *sum += SH_DIST(q->vertices.items[i].point.x,q->vertices.items[i].point.y,
+                       q->vertices.items[i+1].point.x, q->vertices.items[i+1].point.y);
+      }
+      SH_DELETEOBJ(SHPath, (SHPath*)q);
+      break;
     case VG_SCCWARC_TO:
     case VG_SCWARC_TO:
     case VG_LCCWARC_TO:
@@ -1007,6 +1039,10 @@ VG_API_CALL VGfloat vgPathLength(VGPath path,
   void *userData[4];
   VGfloat sum =0;
   SHuint i =0;
+  SHint processFlags =
+    SH_PROCESS_SIMPLIFY_LINES |
+    SH_PROCESS_SIMPLIFY_CURVES |
+    SH_PROCESS_CENTRALIZE_ARCS;
   SHPath *p = NULL;
   VG_GETCONTEXT(VG_NO_RETVAL);
 
@@ -1031,8 +1067,7 @@ VG_API_CALL VGfloat vgPathLength(VGPath path,
   userData[2] = &numSegments;
   userData[3] = &i;
 
-  shProcessPathData(p, SH_PROCESS_SIMPLIFY_CURVES | SH_PROCESS_SIMPLIFY_LINES,
-                    shPathLength, userData);
+  shProcessPathData(p, processFlags, shPathLength, userData);
 
   VG_RETURN(sum);
 }
