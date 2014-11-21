@@ -894,6 +894,7 @@ static void shPathLength(SHPath *p, VGPathSegment segment,
   SHVertex v;
   SHCubic cubic;
   SHArc arc;
+  SHVector2 c, ux, uy;
   SHint contour = 0;
   int i;
 
@@ -945,6 +946,33 @@ static void shPathLength(SHPath *p, VGPathSegment segment,
     case VG_SCWARC_TO:
     case VG_LCCWARC_TO:
     case VG_LCWARC_TO:
+      SH_NEWOBJ(SHPath, q);
+
+      /* segment start as first vertex */
+      v.point.x = data[0]; v.point.y = data[1]; v.flags=0;
+      shAddVertex(q, &v, &contour);
+
+      /* Recurse subdivision */
+      SET2(arc.p1, data[0], data[1]);
+      SET2(arc.p2, data[10], data[11]);
+      arc.a1 = data[8]; arc.a2 = data[9];
+      SET2(c,  data[2], data[3]);
+      SET2(ux, data[4], data[5]);
+      SET2(uy, data[6], data[7]);     
+      shSubrecurseArc(q, &arc, &c, &ux, &uy, &contour);
+
+
+      /* final segment point as vertex */
+      v.point.x = data[10]; v.point.y = data[11];
+      shAddVertex(q,&v,&contour);
+
+      /* add linear distance from each vertex */
+      for (i=0; i<q->vertices.size-1; i++) {
+        *sum += SH_DIST(q->vertices.items[i].point.x,q->vertices.items[i].point.y,
+                       q->vertices.items[i+1].point.x, q->vertices.items[i+1].point.y);
+      }
+
+      SH_DELETEOBJ(SHPath, (SHPath*)q);
       break;
     case VG_MOVE_TO: /* no drawn path, not counted in length */
       break;
