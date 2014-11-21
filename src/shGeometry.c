@@ -61,7 +61,7 @@ static void shSubrecurseQuad(SHPath *p, SHQuad *quad, SHint *contourStart)
     SET2V(dif, q->p2); SUB2V(dif, mid); ABS2(dif);
     
     /* Cancel if the curve is flat enough */
-    if (dif.x + dif.y <= 1.0f || qindex == SH_MAX_RECURSE_DEPTH-1) {
+    if (dif.x + dif.y <= SH_PATH_ESTIMATE_QUALITY || qindex == SH_MAX_RECURSE_DEPTH-1) {
 
       /* Add subdivision point */
       v.point = q->p3; v.flags = 0;
@@ -116,7 +116,7 @@ static void shSubrecurseCubic(SHPath *p, SHCubic *cubic, SHint *contourStart)
     if (dy1 < dy2) dy1 = dy2;
     
     /* Cancel if the curve is flat enough */
-    if (dx1+dy1 <= 1.0 || cindex == SH_MAX_RECURSE_DEPTH-1) {
+    if (dx1+dy1 <= SH_PATH_ESTIMATE_QUALITY || cindex == SH_MAX_RECURSE_DEPTH-1) {
       
       /* Add subdivision point */
       v.point = c->p4; v.flags = 0;
@@ -187,7 +187,7 @@ static void shSubrecurseArc(SHPath *p, SHArc *arc,
     if (dy < 0.0f) dy = -dy;
     
     /* Stop if flat enough */
-    if (dx+dy <= 1.0f || aindex == SH_MAX_RECURSE_DEPTH-1) {
+    if (dx+dy <= SH_PATH_ESTIMATE_QUALITY || aindex == SH_MAX_RECURSE_DEPTH-1) {
       
       /* Add middle subdivision point */
       v.point = c1; v.flags = 0;
