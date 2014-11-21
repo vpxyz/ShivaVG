@@ -845,6 +845,7 @@ void shFindBoundbox(SHPath *p)
 /*-------------------------------------------------
  * Approximates path length of Quadratic Bezier
  *-------------------------------------------------*/
+
 static float shBezQuadLen(float x0, float y0,
                           float x1, float y1,
                           float x2, float y2)
@@ -901,10 +902,6 @@ static void shPathLength(SHPath *p, VGPathSegment segment,
 
   switch (segment) {
     case VG_CLOSE_PATH:
-      *sum += SH_DIST(data[0],data[1],data[2],data[3]);
-      break;
-    case VG_MOVE_TO:
-      break;
     case VG_LINE_TO:
       *sum += SH_DIST(data[0],data[1],data[2],data[3]);
       break;
@@ -916,6 +913,8 @@ static void shPathLength(SHPath *p, VGPathSegment segment,
     case VG_SCWARC_TO:
     case VG_LCCWARC_TO:
     case VG_LCWARC_TO:
+      break;
+    case VG_MOVE_TO: /* no drawn path, not counted in length */
       break;
   }
 
