@@ -61,7 +61,7 @@ static void shSubrecurseQuad(SHPath *p, SHQuad *quad, SHint *contourStart)
     SET2V(dif, q->p2); SUB2V(dif, mid); ABS2(dif);
     
     /* Cancel if the curve is flat enough */
-    if (dif.x + dif.y <= 1.0f || qindex == SH_MAX_RECURSE_DEPTH-1) {
+    if (dif.x + dif.y <= SH_PATH_ESTIMATE_QUALITY || qindex == SH_MAX_RECURSE_DEPTH-1) {
 
       /* Add subdivision point */
       v.point = q->p3; v.flags = 0;
@@ -116,7 +116,7 @@ static void shSubrecurseCubic(SHPath *p, SHCubic *cubic, SHint *contourStart)
     if (dy1 < dy2) dy1 = dy2;
     
     /* Cancel if the curve is flat enough */
-    if (dx1+dy1 <= 1.0 || cindex == SH_MAX_RECURSE_DEPTH-1) {
+    if (dx1+dy1 <= SH_PATH_ESTIMATE_QUALITY || cindex == SH_MAX_RECURSE_DEPTH-1) {
       
       /* Add subdivision point */
       v.point = c->p4; v.flags = 0;
@@ -187,7 +187,7 @@ static void shSubrecurseArc(SHPath *p, SHArc *arc,
     if (dy < 0.0f) dy = -dy;
     
     /* Stop if flat enough */
-    if (dx+dy <= 1.0f || aindex == SH_MAX_RECURSE_DEPTH-1) {
+    if (dx+dy <= SH_PATH_ESTIMATE_QUALITY || aindex == SH_MAX_RECURSE_DEPTH-1) {
       
       /* Add middle subdivision point */
       v.point = c1; v.flags = 0;
@@ -842,6 +842,145 @@ void shFindBoundbox(SHPath *p)
   }
 }
 
+/*-------------------------------------------------
+ * Approximates path length of Quadratic Bezier
+ *-------------------------------------------------*/
+
+static float shBezQuadLen(float x0, float y0,
+                          float x1, float y1,
+                          float x2, float y2)
+{
+  SHVector2 p0, p1, p2;
+  SHVector2 a,b;
+  float A,B,C,
+        Sabc, A_2, A_32, C_2, BA;
+
+  SET2(p0,x0,y0);
+  SET2(p1,x1,y1);
+  SET2(p2,x2,y2);
+
+
+  a.x = p0.x - 2*p1.x + p2.x;
+  a.y = p0.y - 2*p1.y + p2.y;
+  b.x = 2*p1.x - 2*p0.x;
+  b.y = 2*p1.y - 2*p0.y;
+  A = 4*(a.x*a.x + a.y*a.y);
+  B = 4*(a.x*b.x + a.y*b.y);
+  C = b.x*b.x + b.y*b.y;
+
+  Sabc = 2*SH_SQRT(A+B+C);
+  A_2 = SH_SQRT(A);
+  A_32 = 2*A*A_2;
+  C_2 = 2*SH_SQRT(C);
+  BA = B/A_2;
+
+  return ( A_32*Sabc + A_2*B*(Sabc-C_2) + (4*C*A-B*B)*SH_LOG( (2*A_2+BA+Sabc)/(BA+C_2) ) )/(4*A_32);
+}
+
+/*--------------------------------------------------------
+ * Calculates the path length of a segment
+ *--------------------------------------------------------*/
+
+static void shPathLength(SHPath *p, VGPathSegment segment,
+                               VGPathCommand originalCommand,
+                               SHfloat *data, void *userData)
+{
+  SHfloat *sum         = (SHfloat*) ((void**)userData)[0];
+  SHint *startSegment  = (SHint*)   ((void**)userData)[1];
+  SHint *numSegments   = (SHint*)   ((void**)userData)[2];
+  SHuint *curSegment   = (SHuint*)  ((void**)userData)[3];
+
+  SHPath *q = NULL;
+  SHVertex v;
+  SHCubic cubic;
+  SHArc arc;
+  SHVector2 c, ux, uy;
+  SHint contour = 0;
+  int i;
+
+  /* skip segments before "start" position */
+  if (*curSegment < *startSegment){
+    (*curSegment)++;
+    return;
+  }
+  /* stop working once we pass requested number of segments */
+  if (*curSegment >= *startSegment + *numSegments){
+    return;
+  }
+
+  switch (segment) {
+    case VG_CLOSE_PATH:
+    case VG_LINE_TO:
+      *sum += SH_DIST(data[0],data[1],data[2],data[3]);
+      break;
+    case VG_QUAD_TO:
+      *sum += shBezQuadLen(data[0],data[1],data[2],data[3],data[4],data[5]);
+      break;
+    case VG_CUBIC_TO:
+      /* temporary path to store vertexes without messing up user's path */
+      SH_NEWOBJ(SHPath, q); /* @todo: out of memory error here? */
+
+      /* segment start as first vertex */
+      v.point.x = data[0]; v.point.y = data[1]; v.flags=0;
+      shAddVertex(q, &v, &contour);
+
+      /* recursively find vertex points along segment */
+      SET2(cubic.p1, data[0], data[1]);
+      SET2(cubic.p2, data[2], data[3]);
+      SET2(cubic.p3, data[4], data[5]);
+      SET2(cubic.p4, data[6], data[7]);
+      shSubrecurseCubic(q, &cubic, &contour);
+
+      /* final segment point as vertex */
+      v.point.x = data[6]; v.point.y = data[7];
+      shAddVertex(q,&v,&contour);
+
+      /* add linear distance from each vertex */
+      for (i=0; i<q->vertices.size - 1; i++) {
+        *sum += SH_DIST(q->vertices.items[i].point.x,q->vertices.items[i].point.y,
+                       q->vertices.items[i+1].point.x, q->vertices.items[i+1].point.y);
+      }
+      SH_DELETEOBJ(SHPath, (SHPath*)q);
+      break;
+    case VG_SCCWARC_TO:
+    case VG_SCWARC_TO:
+    case VG_LCCWARC_TO:
+    case VG_LCWARC_TO:
+      SH_NEWOBJ(SHPath, q);
+
+      /* segment start as first vertex */
+      v.point.x = data[0]; v.point.y = data[1]; v.flags=0;
+      shAddVertex(q, &v, &contour);
+
+      /* Recurse subdivision */
+      SET2(arc.p1, data[0], data[1]);
+      SET2(arc.p2, data[10], data[11]);
+      arc.a1 = data[8]; arc.a2 = data[9];
+      SET2(c,  data[2], data[3]);
+      SET2(ux, data[4], data[5]);
+      SET2(uy, data[6], data[7]);     
+      shSubrecurseArc(q, &arc, &c, &ux, &uy, &contour);
+
+
+      /* final segment point as vertex */
+      v.point.x = data[10]; v.point.y = data[11];
+      shAddVertex(q,&v,&contour);
+
+      /* add linear distance from each vertex */
+      for (i=0; i<q->vertices.size-1; i++) {
+        *sum += SH_DIST(q->vertices.items[i].point.x,q->vertices.items[i].point.y,
+                       q->vertices.items[i+1].point.x, q->vertices.items[i+1].point.y);
+      }
+
+      SH_DELETEOBJ(SHPath, (SHPath*)q);
+      break;
+    case VG_MOVE_TO: /* no drawn path, not counted in length */
+      break;
+  }
+
+  (*curSegment)++;
+}
+
 /*--------------------------------------------------------
  * Outputs a tight bounding box of a path in path's own
  * coordinate system.
@@ -925,7 +1064,40 @@ VG_API_CALL void vgPathTransformedBounds(VGPath path,
 VG_API_CALL VGfloat vgPathLength(VGPath path,
                                  VGint startSegment, VGint numSegments)
 {
-  return 0.0f;
+  void *userData[4];
+  VGfloat sum =0;
+  SHuint i =0;
+  SHint processFlags =
+    SH_PROCESS_SIMPLIFY_LINES |
+    SH_PROCESS_SIMPLIFY_CURVES |
+    SH_PROCESS_CENTRALIZE_ARCS;
+  SHPath *p = NULL;
+  VG_GETCONTEXT(VG_NO_RETVAL);
+
+  VG_RETURN_ERR_IF(!shIsValidPath(context, path),
+                   VG_BAD_HANDLE_ERROR, -1.0f);
+
+  p = (SHPath *)path;
+  VG_RETURN_ERR_IF(!(p->caps & VG_PATH_CAPABILITY_PATH_LENGTH),
+                   VG_PATH_CAPABILITY_ERROR, -1.0f);
+
+  VG_RETURN_ERR_IF(startSegment < 0, VG_ILLEGAL_ARGUMENT_ERROR, -1.0f);
+  VG_RETURN_ERR_IF(numSegments <= 0, VG_ILLEGAL_ARGUMENT_ERROR, -1.0f);
+  VG_RETURN_ERR_IF(startSegment >= p->segCount,
+                   VG_ILLEGAL_ARGUMENT_ERROR, -1.0f);
+  VG_RETURN_ERR_IF((startSegment + numSegments-1 < 0),
+                   VG_ILLEGAL_ARGUMENT_ERROR, -1.0f);
+  VG_RETURN_ERR_IF((startSegment + numSegments-1 >= p->segCount),
+                   VG_ILLEGAL_ARGUMENT_ERROR, -1.0f);
+
+  userData[0] = &sum;
+  userData[1] = &startSegment;
+  userData[2] = &numSegments;
+  userData[3] = &i;
+
+  shProcessPathData(p, processFlags, shPathLength, userData);
+
+  VG_RETURN(sum);
 }
 
 VG_API_CALL void vgPointAlongPath(VGPath path,

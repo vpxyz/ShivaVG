@@ -131,7 +131,6 @@ void shProcessPathData(SHPath *p, int flags,
                        SegmentFunc callback,
                        void *userData);
 
-
 /* Pointer-to-path array */
 #define _ITEM_T SHPath*
 #define _ARRAY_T SHPathArray

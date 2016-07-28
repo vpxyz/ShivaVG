@@ -354,6 +354,7 @@ static int shResizePathData(SHPath *p, SHint newSegCount, SHint newDataCount,
   return 1;
 }
 
+
 /*-------------------------------------------------------------
  * Appends path data from source to destination path resource
  *-------------------------------------------------------------*/
@@ -528,7 +529,7 @@ VG_API_CALL void vgModifyPathCoords(VGPath dstPath, VGint startIndex,
 }
 
 /*------------------------------------------------------------
- * Converts standart endpoint arc parametrization into center
+ * Converts standard endpoint arc parametrization into center
  * arc parametrization for further internal processing
  *------------------------------------------------------------*/
 
