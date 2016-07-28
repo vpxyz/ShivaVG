@@ -1,3 +1,23 @@
+21 Nov 2014 Dan Panzarella <alsoelp@gmail.com>
+ 
+  * finish vgGetPathLength for all segment types
+
+20 Nov 2014 Dan Panzarella <alsoelp@gmail.com>
+
+  * calculate vgGetPathLength for all but cubic beziers and arcs
+
+18 Nov 2014 Dan Panzarella <alsoelp@gmail.com>
+
+  * straighten out build artifacts with gitignore
+
+14 Nov 2014 Dan Panzarella <alsoelp@gmail.com>
+
+  * shPaint.c: implement vgGetPaint
+
+13 Nov 2014 Dan Panzarella <alsoelp@gmail.com>
+
+  * shDefs.h: fix compiling on recent Arch Linux
+
 04 Feb 2008 Ivan Leben <ivan.leben@gmail.com>
 
   * shImage.c: shCopyPixels uses memcpy when formats are

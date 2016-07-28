@@ -165,7 +165,7 @@ vgAppendPathData ...................... FULLY implemented
 vgModifyPathCoords .................... FULLY implemented
 vgTransformPath ....................... FULLY implemented
 vgInterpolatePath ..................... FULLY implemented
-vgPathLength .......................... NOT implemented
+vgPathLength .......................... FULLY implemented
 vgPointAlongPath ...................... NOT implemented
 vgPathBounds .......................... FULLY implemented
 vgPathTransformedBounds ............... FULLY implemented
