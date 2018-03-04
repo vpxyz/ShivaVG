@@ -1,18 +1,15 @@
 cmake_minimum_required(VERSION 2.8)
 # TODO headers as dependencies
 # TODO images as dependencies
-include_directories(${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR})
+include_directories(${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} ${JPEG_INCLUDE_DIR})
 
 set(EXAMPLE_SRCS test.c)
 set(EXAMPLE_HRRS test.h)
-set(EXAMPLE_LIBS ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+set(EXAMPLE_LIBS ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES})
+set(EXAMPLE_INCLUDE ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 set(EXAMPLE_tiger_SRC test_tiger_paths.c)
-set(EXAMPLE_image_INCLUDES ${JPEG_INCLUDE_DIR})
-set(EXAMPLE_image_LIBS ${JPEG_LIBRARIES})
-set(EXAMPLE_pattern_INCLUDES ${JPEG_INCLUDE_DIR})
-set(EXAMPLE_pattern_LIBS ${JPEG_LIBRARIES})
 
-foreach (example vgu dash linear radial interpolate tiger image pattern blend eb)
+foreach (example vgu dash linear radial interpolate tiger image pattern blend eb warp)
     string(TOUPPER ${example} EXAMPLE)
     if(BUILD_${EXAMPLE})
         include_directories(${EXAMPLE_${example}_INCLUDES})

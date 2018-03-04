@@ -27,45 +27,45 @@
  *--------------------------------------------------------------*/
 typedef struct
 {
-  SHfloat x,y;
+   SHfloat x, y;
 } SHVector2;
 
-void SHVector2_ctor(SHVector2 *v);
-void SHVector2_dtor(SHVector2 *v);
+void SHVector2_ctor(SHVector2 * v);
+void SHVector2_dtor(SHVector2 * v);
 
 typedef struct
 {
-  SHfloat x,y,z;
+   SHfloat x, y, z;
 } SHVector3;
 
-void SHVector3_ctor(SHVector3 *v);
-void SHVector3_dtor(SHVector3 *v);
+void SHVector3_ctor(SHVector3 * v);
+void SHVector3_dtor(SHVector3 * v);
 
 typedef struct
 {
-  SHfloat x,y,z,w;
+   SHfloat x, y, z, w;
 } SHVector4;
 
-void SHVector4_ctor(SHVector4 *v);
-void SHVector4_dtor(SHVector4 *v);
+void SHVector4_ctor(SHVector4 * v);
+void SHVector4_dtor(SHVector4 * v);
 
 typedef struct
 {
-  SHfloat x,y,w,h;
+   SHfloat x, y, w, h;
 } SHRectangle;
 
-void SHRectangle_ctor(SHRectangle *r);
-void SHRectangle_dtor(SHRectangle *r);
-void shRectangleSet(SHRectangle *r, SHfloat x,
+void SHRectangle_ctor(SHRectangle * r);
+void SHRectangle_dtor(SHRectangle * r);
+void shRectangleSet(SHRectangle * r, SHfloat x,
                     SHfloat y, SHfloat w, SHfloat h);
 
 typedef struct
 {
-  SHfloat m[3][3];
+   SHfloat m[3][3];
 } SHMatrix3x3;
 
-void SHMatrix3x3_ctor(SHMatrix3x3 *m);
-void SHMatrix3x3_dtor(SHMatrix3x3 *m);
+void SHMatrix3x3_ctor(SHMatrix3x3 * m);
+void SHMatrix3x3_dtor(SHMatrix3x3 * m);
 
 /*------------------------------------------------------------
  * Vector Arrays
@@ -182,14 +182,35 @@ int i,j; \
   for(j=0;j<3;j++) \
     mat.m[i][j] /= s; }
 
-#define MULMATMAT(m1, m2, mout) { \
-int i,j; \
-  for(i=0;i<3;i++) \
-  for(j=0;j<3;j++) \
-    mout.m[i][j] = \
-      m1.m[i][0] * m2.m[0][j] + \
-      m1.m[i][1] * m2.m[1][j] + \
-      m1.m[i][2] * m2.m[2][j]; }
+#define MULMATMAT(m1,m2,mout) { \
+                mout.m[0][0] = m1.m[0][0]*m2.m[0][0];   \
+                mout.m[0][1] = m1.m[0][0]*m2.m[0][1];   \
+                mout.m[0][2] = m1.m[0][0]*m2.m[0][2];   \
+                mout.m[0][0] += m1.m[0][1]*m2.m[1][0];  \
+                mout.m[0][1] += m1.m[0][1]*m2.m[1][1];  \
+                mout.m[0][2] += m1.m[0][1]*m2.m[1][2];  \
+                mout.m[0][0] += m1.m[0][2]*m2.m[2][0];  \
+                mout.m[0][1] += m1.m[0][2]*m2.m[2][1];  \
+                mout.m[0][2] += m1.m[0][2]*m2.m[2][2];  \
+                mout.m[1][0] = m1.m[1][0]*m2.m[0][0];   \
+                mout.m[1][1] = m1.m[1][0]*m2.m[0][1];   \
+                mout.m[1][2] = m1.m[1][0]*m2.m[0][2];   \
+                mout.m[1][0] += m1.m[1][1]*m2.m[1][0];  \
+                mout.m[1][1] += m1.m[1][1]*m2.m[1][1];  \
+                mout.m[1][2] += m1.m[1][1]*m2.m[1][2];  \
+                mout.m[1][0] += m1.m[1][2]*m2.m[2][0];  \
+                mout.m[1][1] += m1.m[1][2]*m2.m[2][1];  \
+                mout.m[1][2] += m1.m[1][2]*m2.m[2][2];  \
+                mout.m[2][0] = m1.m[2][0]*m2.m[0][0];   \
+                mout.m[2][1] = m1.m[2][0]*m2.m[0][1];   \
+                mout.m[2][2] = m1.m[2][0]*m2.m[0][2];   \
+                mout.m[2][0] += m1.m[2][1]*m2.m[1][0];  \
+                mout.m[2][1] += m1.m[2][1]*m2.m[1][1];  \
+                mout.m[2][2] += m1.m[2][1]*m2.m[1][2];  \
+                mout.m[2][0] += m1.m[2][2]*m2.m[2][0];  \
+                mout.m[2][1] += m1.m[2][2]*m2.m[2][1];  \
+                mout.m[2][2] += m1.m[2][2]*m2.m[2][2];  \
+}
 
 #define IDMAT(mat) SETMAT(mat, 1,0,0, 0,1,0, 0,0,1)
 
@@ -244,32 +265,32 @@ SHfloat cosa=SH_COS(a), sina=SH_SIN(a); \
   SETMATMAT(mat, temp); }
 
 #define TRANSFORM2TO(v, mat, vout) { \
-vout.x = v.x*mat.m[0][0] + v.y*mat.m[0][1] + 1*mat.m[0][2]; \
+  vout.x = v.x*mat.m[0][0] + v.y*mat.m[0][1] + 1*mat.m[0][2]; \
   vout.y = v.x*mat.m[1][0] + v.y*mat.m[1][1] + 1*mat.m[1][2]; }
 
 #define TRANSFORM2(v, mat) { \
 SHVector2 temp; TRANSFORM2TO(v, mat, temp); v = temp; }
 
 #define TRANSFORM2DIRTO(v, mat, vout) { \
-vout.x = v.x*mat.m[0][0] + v.y*mat.m[0][1]; \
+  vout.x = v.x*mat.m[0][0] + v.y*mat.m[0][1]; \
   vout.y = v.x*mat.m[1][0] + v.y*mat.m[1][1]; }
 
 #define TRANSFORM2DIR(v, mat) { \
 SHVector2 temp; TRANSFORM2DIRTO(v, mat, temp); v = temp; }
 
+#define DET2X2(a,b,c,d) (a * d - b * c)
 
 /*--------------------------------------------------------
  * Additional functions
  *--------------------------------------------------------- */
 
-void shMatrixToGL(SHMatrix3x3 *m, SHfloat mgl[16]);
+void shMatrixToGL(SHMatrix3x3 * m, SHfloat mgl[16]);
 
-SHint shInvertMatrix(SHMatrix3x3 *m, SHMatrix3x3 *mout);
+SHint shInvertMatrix(SHMatrix3x3 * m, SHMatrix3x3 * mout);
 
-SHfloat shVectorOrientation(SHVector2 *v);
+SHfloat shVectorOrientation(SHVector2 * v);
 
-int shLineLineXsection(SHVector2 *o1, SHVector2 *v1,
-                       SHVector2 *o2, SHVector2 *v2,
-                       SHVector2 *xsection);
+int shLineLineXsection(SHVector2 * o1, SHVector2 * v1,
+                       SHVector2 * o2, SHVector2 * v2, SHVector2 * xsection);
 
-#endif/* __SHVECTORS_H */
+#endif /* __SHVECTORS_H */

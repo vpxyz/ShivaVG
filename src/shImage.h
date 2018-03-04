@@ -30,39 +30,39 @@
 
 typedef struct
 {
-  VGImageFormat vgformat;
-  SHuint8 bytes;
-  
-  SHuint32 rmask;
-  SHuint8 rshift;
-  SHuint8 rmax;
-  
-  SHuint32 gmask;
-  SHuint8 gshift;
-  SHuint8 gmax;
-  
-  SHuint32 bmask;
-  SHuint8 bshift;
-  SHuint8 bmax;
-  
-  SHuint32 amask;
-  SHuint8 ashift;
-  SHuint8 amax;
+   VGImageFormat vgformat;
+   SHuint8 bytes;
 
-  GLenum glintformat;
-  GLenum glformat;
-  GLenum gltype;
+   SHuint32 rmask;
+   SHuint8 rshift;
+   SHuint8 rmax;
+
+   SHuint32 gmask;
+   SHuint8 gshift;
+   SHuint8 gmax;
+
+   SHuint32 bmask;
+   SHuint8 bshift;
+   SHuint8 bmax;
+
+   SHuint32 amask;
+   SHuint8 ashift;
+   SHuint8 amax;
+
+   GLenum glintformat;
+   GLenum glformat;
+   GLenum gltype;
 
 } SHImageFormatDesc;
 
 typedef struct
 {
-  SHfloat r,g,b,a;
-  
+   SHfloat r, g, b, a;
+
 } SHColor;
 
-void SHColor_ctor(SHColor *c);
-void SHColor_dtor(SHColor *c);
+void SHColor_ctor(SHColor * c);
+void SHColor_dtor(SHColor * c);
 
 #define _ITEM_T SHColor
 #define _ARRAY_T SHColorArray
@@ -72,21 +72,21 @@ void SHColor_dtor(SHColor *c);
 
 typedef struct
 {
-  SHuint8 *data;
-  SHint width;
-  SHint height;
-  SHImageFormatDesc fd;
-  
-  SHint texwidth;
-  SHint texheight;
-  SHfloat texwidthK;
-  SHfloat texheightK;
-  GLuint texture;
-  
+   SHuint8 *data;
+   SHint width;
+   SHint height;
+   SHImageFormatDesc fd;
+
+   SHint texwidth;
+   SHint texheight;
+   SHfloat texwidthK;
+   SHfloat texheightK;
+   GLuint texture;
+
 } SHImage;
 
-void SHImage_ctor(SHImage *i);
-void SHImage_dtor(SHImage *i);
+void SHImage_ctor(SHImage * i);
+void SHImage_dtor(SHImage * i);
 
 #define _ITEM_T SHImage*
 #define _ARRAY_T SHImageArray
@@ -147,8 +147,8 @@ void SHImage_dtor(SHImage *i);
 #define INT2COLCOORD(i, max) ( (SHfloat)i / (SHfloat)max  )
 #define COL2INTCOORD(c, max) ( (SHuint)SH_FLOOR(c * (SHfloat)max + 0.5f) )
 
-void shStoreColor(SHColor *c, void *data, SHImageFormatDesc *f);
-void shLoadColor(SHColor *c, const void *data, SHImageFormatDesc *f);
+void shStoreColor(SHColor * c, void *data, SHImageFormatDesc * f);
+void shLoadColor(SHColor * c, const void *data, SHImageFormatDesc * f);
 
 
 #endif /* __SHIMAGE_H */

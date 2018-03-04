@@ -25,7 +25,7 @@ IV.   EXTENSIONS
 
 ### Compiling
 ShivaVG has now been converted to [CMake](http://www.cmake.org/).
-  
+
 To compile it, obtain CMake from its website, generate project files for your favorite build system or IDE. <br>
 It is advisable to do so in a separate `build` directory to keep things clean.
 
@@ -40,14 +40,19 @@ Xcode/OS X:
 For Windows, generate Visual Studio project files with the CMake GUI.
 
 #### Static Analysis
-To run the Clang Static Analyzer with CMake, obtain the latest analyzer from its [website](http://clang-analyzer.llvm.org/) and unpack it somewhere.<br>
-Also, unless you have a file called `ccc-analyzer` directly in your `checker-xyz` directory, obtain it [here](https://llvm.org/svn/llvm-project/cfe/trunk/tools/scan-build/ccc-analyzer). (It has to be executable (`chmod +x`) as well.)
+To run the Clang Static Analyzer with CMake, obtain the latest analyzer from its [website](http://clang-analyzer.llvm.org/) and unpack it somewhere.
+
 
 To tell CMake to use the Analyzer and check the code, do
 
-    $ cmake -DCMAKE_C_COMPILER=YOUR-PATH-TO-checker-xyz/ccc-analyzer -G "Unix Makefiles"
-    $ checker-xyz/scan-build make
-    
+```
+    $ export CCC_CC=clang
+    $ export CCC_CXX=clang++
+    $ scan-build cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -G "Unix Makefiles" ..
+    $ scan-build make
+
+```
+
 
 ## II. TESTING
 
@@ -57,34 +62,36 @@ can hardly provide any proper validation, since no reference images
 are provided. Here is a description of each example program and
 what features it highlights:
 
-* *test_vgu*<br>
+* *test_vgu*
   Constructs some path primitives using the VGU API.
-  
-* *test_tiger*<br>
+
+* *test_tiger*
   The most simple performance test. It draws the well known svg
   tiger using just simple stroke and fill of solid colors. It
   consists of 240 paths.
-  
-* *test_dash*<br>
+
+* *test_dash*
    Shows different stroke dashing modes.
 
-* *test_linear*<br>
+* *test_linear*
   A rectangle drawn using 3-color linear gradient fill paint
 
-* *test_radial*<br>
+* *test_radial*
   A rectangle drawn using 3-color radial gradient fill paint
 
-* *test_interpolate*<br>
+* *test_interpolate*
   Interpolates between two paths - an apple and a pear.
 
-* *test_image*<br>
+* *test_image*
   Images are drawn using `VG_DRAW_IMAGE_MULTIPLY` image mode to be
   multiplied with radial gradient fill paint.
 
-* *test_pattern*<br>
+* *test_pattern*
   An image is drawn in multiply mode with an image pattern fill
   paint.
 
+* *test_warp*
+  An image is drawn using Warp effect.
 
 ## III. IMPLEMENTATION STATUS
 
@@ -235,27 +242,26 @@ vguRect ............................... FULLY implemented
 vguRoundRect .......................... FULLY implemented
 vguEllipse ............................ FULLY implemented
 vguArc ................................ FULLY implemented
-vguComputeWarpQuadToSquare ............ NOT implemented
-vguComputeWarpSquareToQuad ............ NOT implemented
-vguComputeWarpQuadToQuad .............. NOT implemented
+vguComputeWarpQuadToSquare ............ FULLY implemented
+vguComputeWarpSquareToQuad ............ FULLY implemented
+vguComputeWarpQuadToQuad .............. FULLY implemented
 ```
-
 
 ## IV. EXTENSIONS
 
 There are three extensions to the API that manipulate the OpenVG
 context as a temporary replacement for EGL:
 
-* `VGboolean vgCreateContextSH(VGint width, VGint height)`<br>
+* `VGboolean vgCreateContextSH(VGint width, VGint height)`
   Creates an OpenVG context on top of an existing OpenGL context
   that should have been manually initialized by the user of the
   library. Width and height specify the size of the rendering
   surface. No multi-threading support has been implemented yet.
   The context is created once per process.
 
-* `void vgResizeSurfaceSH(VGint width, VGint height)`<br>
+* `void vgResizeSurfaceSH(VGint width, VGint height)`
   Should be called whenever the size of the surface changes (e.g.
   the owner window of the OpenGL context is resized).
 
-* `void vgDestroyContextSH()`<br>
+* `void vgDestroyContextSH()`
   Destroys the OpenVG context associated with the calling process.

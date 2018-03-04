@@ -8,20 +8,21 @@ VGPaint dstFill;
 VGImage isrc;
 VGImage idst;
 
-VGfloat srcColor[4] = {0.4, 0.6, 1.0, 1};
-VGfloat dstColor[4] = {1, 1, 0.3, 1};
+VGfloat srcColor[4] = { 0.4, 0.6, 1.0, 1 };
+VGfloat dstColor[4] = { 1, 1, 0.3, 1 };
 
 #ifndef IMAGE_DIR
-#  define IMAGE_DIR "./"
+#define IMAGE_DIR "./"
 #endif
 
 VGBlendMode blends[5] = {
-  VG_BLEND_SRC,
-  VG_BLEND_SRC_OVER,
-  VG_BLEND_DST_OVER,
-  VG_BLEND_SRC_IN,
-  VG_BLEND_DST_IN
+   VG_BLEND_SRC,
+   VG_BLEND_SRC_OVER,
+   VG_BLEND_DST_OVER,
+   VG_BLEND_SRC_IN,
+   VG_BLEND_DST_IN
 };
+
 /*
 void createOperands()
 {
@@ -54,33 +55,35 @@ void createOperands()
                   0,0, dstImage.width, dstImage.height);
 }*/
 
-void display(float interval)
+void
+display(float interval)
 {
-  VGfloat clear[] = {0,0,0,0};
-  
-  vgSetfv(VG_CLEAR_COLOR, 4, clear);
-  vgClear(0, 0, testWidth(), testHeight());
+   VGfloat clear[] = { 0, 0, 0, 0 };
 
-  vgSeti(VG_MATRIX_MODE, VG_MATRIX_PATH_USER_TO_SURFACE);
-  vgLoadIdentity();
-  
-  vgSeti(VG_BLEND_MODE, VG_BLEND_SRC_OVER);
-  vgDrawImage(idst);
-  vgSeti(VG_BLEND_MODE, VG_BLEND_SRC_IN);
-  vgDrawImage(isrc);
+   vgSetfv(VG_CLEAR_COLOR, 4, clear);
+   vgClear(0, 0, testWidth(), testHeight());
+
+   vgSeti(VG_MATRIX_MODE, VG_MATRIX_PATH_USER_TO_SURFACE);
+   vgLoadIdentity();
+
+   vgSeti(VG_BLEND_MODE, VG_BLEND_SRC_OVER);
+   vgDrawImage(idst);
+   vgSeti(VG_BLEND_MODE, VG_BLEND_SRC_IN);
+   vgDrawImage(isrc);
 }
 
-int main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
-  /*picuInit();*/
+   /*picuInit(); */
 
-  testInit(argc, argv, 400,400, "ShivaVG: Blending Test");
-  testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc)display);
-  testOverlayColor(1,1,1,1);
-  testOverlayString("Not implemented yet");
+   testInit(argc, argv, 400, 400, "ShivaVG: Blending Test");
+   testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
+   testOverlayColor(1, 1, 1, 1);
+   testOverlayString("Not implemented yet");
 
-  /*createOperands();*/
-  testRun();
-  
-  return EXIT_SUCCESS;
+   /*createOperands(); */
+   testRun();
+
+   return EXIT_SUCCESS;
 }

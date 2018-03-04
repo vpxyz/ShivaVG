@@ -8,6 +8,7 @@ include(CheckIncludeFiles)
 include(CheckLibraryExists)
 include(CheckTypeSize)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
+set(CMAKE_C_FLAGS "-std=c99")
 
 # Processing the generator options
 # TODO: can we have a master option that will turn others in UI?
@@ -23,6 +24,7 @@ option(BUILD_IMAGE          "Build Images example (default=yes)]"               
 option(BUILD_PATTERN        "Build Pattern Paint example (default=yes)]"                OFF)
 option(BUILD_BLEND          "Build Blending example (default=yes)]"                     OFF)
 option(BUILD_EB             "Build Electro Body example (default=yes)]"                 OFF)
+option(BUILD_WARP           "Build Warp image example (default=yes)]"                   OFF)
 # Setting the master option sets the rest
 if(BUILD_ALL_EXAMPLES)
     set(BUILD_VGU ON)
@@ -35,9 +37,10 @@ if(BUILD_ALL_EXAMPLES)
     set(BUILD_PATTERN ON)
     set(BUILD_BLEND ON)
     set(BUILD_EB ON)
+    set(BUILD_WARP ON)
 endif()
 set(BUILD_EXAMPLES BUILD_VGU OR BUILD_DASH OR BUILD_LINEAR OR BUILD_RADIAL OR BUILD_INTERPOLATE OR BUILD_TIGER OR 
-    BUILD_IMAGE OR BUILD_PATTERN OR BUILD_BLEND OR BUILD_EB)
+    BUILD_IMAGE OR BUILD_PATTERN OR BUILD_BLEND OR BUILD_EB OR BUILD_WARP)
 
 # Finding packages
 # TODO: EGL/OpenGLES and friends?
@@ -117,8 +120,9 @@ message("ShivaVG will be compiled with the following example programs\n"
         "  Images                    ${BUILD_IMAGE}\n"
         "  Pattern paint             ${BUILD_PATTERN}\n"
         "  Blending                  ${BUILD_BLEND}\n"
-        "  Electro Body              ${BUILD_EB}\n")
-
+        "  Electro Body              ${BUILD_EB}\n"
+        "  Warp Image                ${BUILD_WARP}\n")
+      
 # Pick up subdirectories 
 # TODO see if include_directories work like a stack and whether we can avoid duplication
 # TODO break subdir execution of somebody tries to run them directly

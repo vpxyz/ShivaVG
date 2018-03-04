@@ -27,9 +27,9 @@
 
 #define SH_PATH_ESTIMATE_QUALITY 1.0f
 
-void shFlattenPath(SHPath *p, SHint surfaceSpace);
-void shStrokePath(VGContext* c, SHPath *p);
-void shTransformVertices(SHMatrix3x3 *m, SHPath *p);
-void shFindBoundbox(SHPath *p);
+void shFlattenPath(SHPath * p, SHint surfaceSpace);
+void shStrokePath(VGContext * c, SHPath * p);
+void shTransformVertices(SHMatrix3x3 * m, SHPath * p);
+void shFindBoundbox(SHPath * p);
 
 #endif /* __SH_GEOMETRY_H */
