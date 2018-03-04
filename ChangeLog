@@ -1,5 +1,9 @@
+04 Mar 2018 Vincenzo Pupillo <v.pupillo@gmail.com>
+
+  * VGU now are fully implemented
+
 21 Nov 2014 Dan Panzarella <alsoelp@gmail.com>
- 
+
   * finish vgGetPathLength for all segment types
 
 20 Nov 2014 Dan Panzarella <alsoelp@gmail.com>
