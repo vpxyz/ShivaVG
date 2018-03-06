@@ -5,12 +5,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library in the file COPYING;
  * if not, write to the Free Software Foundation, Inc.,
@@ -24,7 +24,6 @@
 #include "shDefs.h"
 #include "shContext.h"
 #include <stdio.h>
-#include <stdbool.h>
 #include <math.h>
 #include <string.h>
 #include <alloca.h>
@@ -116,9 +115,8 @@ vguPolygon(VGPath path, const VGfloat * points, VGint count, VGboolean closed)
    VGubyte *comm = NULL;
    VGUErrorCode err = VGU_NO_ERROR;
 
-   if (points == NULL || count <= 0)
+   if (points == NULL || count <= 0 || SH_IS_NOT_ALIGNED(points))
       return VGU_ILLEGAL_ARGUMENT_ERROR;
-   /* TODO: check points array alignment */
 
    comm = (VGubyte *) malloc((count + 1) * sizeof(VGubyte));
    if (comm == NULL)
