@@ -480,8 +480,6 @@ vguComputeWarpQuadToQuad(VGfloat dx0, VGfloat dy0,
     * avoid unnecessary copy and transpose
     *
     * B == stoq and A == qtos
-    * TODO: questaroba può essere riscritta in maniera da rendere più lineare l'accesso alla memoria.
-    * La macro MM serve solo per rendere più leggibile il prodotto di matrici
     */
 
 #define MM(a,i,b,j) a[i][0]*b[0][j] + a[i][1]*b[1][j] + a[i][2]*b[2][j]
