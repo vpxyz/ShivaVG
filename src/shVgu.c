@@ -26,7 +26,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-#include <alloca.h>
 
 static VGUErrorCode
 shAppend(VGPath path, SHint commSize, const VGubyte * comm,
@@ -375,15 +374,20 @@ vguComputeWarpQuadToSquare(VGfloat sx0, VGfloat sy0,
    if (ret == VGU_BAD_WARP_ERROR)
       return VGU_BAD_WARP_ERROR;
 
-   SHMatrix3x3 *mat = (SHMatrix3x3 *) alloca(sizeof(SHMatrix3x3));
+   SHMatrix3x3 *mat = (SHMatrix3x3 *) malloc(sizeof(SHMatrix3x3));
+
+   if (mat == NULL)
+      return VGU_OUT_OF_MEMORY_ERROR;
 
    int nonsingular = shInvertMatrix(&m, mat);
 
-   if (!nonsingular)
+   if (!nonsingular) {
+      free(mat);
       return VGU_BAD_WARP_ERROR;
+   }
 
    memcpy(matrix, mat, sizeof(SHMatrix3x3));
-
+   free(mat);
    return VGU_NO_ERROR;
 }
 
