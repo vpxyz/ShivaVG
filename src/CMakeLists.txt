@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 # TODO headers as dependencies
 # TODO shared/static switch CMake-style
-set(libOpenVG_SOURCES 
+set(libOpenVG_SOURCES
     shExtensions.c
     shArrays.c
     shVectors.c

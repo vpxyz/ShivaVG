@@ -129,9 +129,9 @@ SHfloat getMaxFloat();
 #define PI 3.141592654f
 #define SH_DEG2RAD(a) (a * PI / 180.0f)
 #define SH_RAD2DEG(a) (a * 180.0f / PI)
-#define SH_ABS(a) ((a < 0.0f) ? -a : a)
-#define SH_MAX(a,b) ((a > b) ? a : b)
-#define SH_MIN(a,b) ((a < b) ? a : b)
+#define SH_ABS(a) fabsf(a)
+#define SH_MAX(a,b) fmaxf(a,b)
+#define SH_MIN(a,b) fminf(a,b)
 #define SH_NEARZERO(a) (a >= -0.0001 && a < 0.0001)
 #define SH_SWAP(a,b) {SHfloat t=a; a=b; b=t;}
 #define SH_CLAMP(a,min,max) {if (a<min) a=min; if (a>max) a=max; }
