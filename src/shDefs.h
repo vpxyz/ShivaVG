@@ -104,15 +104,15 @@ SHfloat getMaxFloat();
 
 /* Portable function definitions */
 
-#define SH_SQRT   (float)sqrt
-#define SH_COS    (float)cos
-#define SH_SIN    (float)sin
-#define SH_ACOS   (float)acos
-#define SH_ASIN   (float)asin
-#define SH_ATAN   (float)atan
-#define SH_FLOOR  (float)floor
-#define SH_CEIL   (float)ceil
-#define SH_LOG    (float)log
+#define SH_SQRT   sqrtf
+#define SH_COS    cosf
+#define SH_SIN    sinf
+#define SH_ACOS   acosf
+#define SH_ASIN   asinf
+#define SH_ATAN   atanf
+#define SH_FLOOR  floorf
+#define SH_CEIL   ceilf
+#define SH_LOG    logf
 #define SH_ASSERT assert
 
 #if defined(__isnan) || (defined(__APPLE__) && (__GNUC__ == 3))
