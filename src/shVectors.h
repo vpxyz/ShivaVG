@@ -165,10 +165,8 @@ mat.m[0][0] = m00; mat.m[0][1] = m01; mat.m[0][2] = m02; \
   mat.m[2][0] = m20; mat.m[2][1] = m21; mat.m[2][2] = m22; }
 
 #define SETMATMAT(m1, m2) { \
-int i,j; \
-  for(i=0;i<3;i++) \
-  for(j=0;j<3;j++) \
-    m1.m[i][j] = m2.m[i][j]; }
+   m1 = m2; \
+}
 
 #define MULMATS(mat, s) { \
 int i,j; \
