@@ -88,7 +88,7 @@ void SHMatrix3x3_dtor(SHMatrix3x3 * m);
 
 #define SET2V(v1,v2) { v1.x=v2.x; v1.y=v2.y; }
 #define SET3V(v1,v2) { v1.x=v2.x; v1.y=v2.y; v1.z=v2.z; }
-#define SET4V(v1,v2) { v1.x=v2.x; v1.y=v2.y; v1.z=v2.z; v1.w=v2.w; }
+#define SET4V(v1,v2) { v1 = v2; }
 
 #define EQ2(v,xx,yy)       ( v.x==xx && v.y==yy )
 #define EQ3(v,xx,yy,zz)    ( v.x==xx && v.y==yy && v.z==zz )
