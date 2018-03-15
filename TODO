@@ -20,7 +20,6 @@ Incomplete functionality:
 - child images
 - VG_DRAW_IMAGE_STENCIL
 - _PRE and BW_1 image formats
-- VGU warp matrices
 - EGL (image drawing targets)
 - boundbox / point-on-path / tangent-on-path queries
 - RENDERING_QUALITY_FASTER == RENDERING_QUALITY_BETTER
