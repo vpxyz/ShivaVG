@@ -5,12 +5,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library in the file COPYING;
  * if not, write to the Free Software Foundation, Inc.,
@@ -62,8 +62,8 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
 
    /* Find component ordering and size */
    switch (vg & 0x1F) {
-   case 0:                     /* VG_sRGBX_8888 */
-   case 7:                     /* VG_lRGBX_8888 */
+   case VG_sRGBX_8888:
+   case VG_lRGBX_8888:
       f->bytes = 4;
       f->rmask = 0xFF000000;
       f->rshift = 24;
@@ -78,10 +78,10 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
       f->ashift = 0;
       f->amax = 1;
       break;
-   case 1:                     /* VG_sRGBA_8888 */
-   case 2:                     /* VG_sRGBA_8888_PRE */
-   case 8:                     /* VG_lRGBA_8888 */
-   case 9:                     /* VG_lRGBA_8888_PRE */
+   case VG_sRGBA_8888:
+   case VG_sRGBA_8888_PRE:
+   case VG_lRGBA_8888:
+   case VG_lRGBA_8888_PRE:
       f->bytes = 4;
       f->rmask = 0xFF000000;
       f->rshift = 24;
@@ -96,7 +96,7 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
       f->ashift = 0;
       f->amax = 255;
       break;
-   case 3:                     /* VG_sRGB_565 */
+   case VG_sRGB_565:
       f->bytes = 2;
       f->rmask = 0xF800;
       f->rshift = 11;
@@ -111,7 +111,7 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
       f->ashift = 0;
       f->amax = 1;
       break;
-   case 4:                     /* VG_sRGBA_5551 */
+   case VG_sRGBA_5551:
       f->bytes = 2;
       f->rmask = 0xF800;
       f->rshift = 11;
@@ -126,7 +126,7 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
       f->ashift = 0;
       f->amax = 1;
       break;
-   case 5:                     /* VG_sRGBA_4444 */
+   case VG_sRGBA_4444:
       f->bytes = 2;
       f->rmask = 0xF000;
       f->rshift = 12;
@@ -141,8 +141,8 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
       f->ashift = 0;
       f->amax = 15;
       break;
-   case 6:                     /* VG_sL_8 */
-   case 10:                    /* VG_lL_8 */
+   case VG_sL_8:
+   case VG_lL_8:
       f->bytes = 1;
       f->rmask = 0xFF;
       f->rshift = 0;
@@ -157,7 +157,7 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
       f->ashift = 0;
       f->amax = 1;
       break;
-   case 11:                    /* VG_A_8 */
+   case VG_A_8:
       f->bytes = 1;
       f->rmask = 0x0;
       f->rshift = 0;
@@ -172,7 +172,7 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
       f->ashift = 0;
       f->amax = 255;
       break;
-   case 12:                    /* VG_BW_1 */
+   case VG_BW_1:
       f->bytes = 1;
       f->rmask = 0x0;
       f->rshift = 0;
@@ -388,10 +388,10 @@ void
 shStoreColor(SHColor * c, void *data, SHImageFormatDesc * f)
 {
    /*
-      TODO: unsupported formats:
-      - s and l both behave linearly
-      - 1-bit black & white (BW_1)
-    */
+     TODO: unsupported formats:
+     - s and l both behave linearly
+     - 1-bit black & white (BW_1)
+   */
 
    SHfloat l = 0.0f;
    SHuint32 out = 0x0;
@@ -443,10 +443,10 @@ void
 shLoadColor(SHColor * c, const void *data, SHImageFormatDesc * f)
 {
    /*
-      TODO: unsupported formats:
-      - s and l both behave linearly
-      - 1-bit black & white (BW_1)
-    */
+     TODO: unsupported formats:
+     - s and l both behave linearly
+     - 1-bit black & white (BW_1)
+   */
 
    SHuint32 in = 0x0;
 
@@ -535,19 +535,19 @@ shUpdateImageTextureSize(SHImage * i)
    /* TODO: might be dropped out if it works without  */
 
    /*i->texwidth = 1;
-      while (i->texwidth < i->width)
-      i->texwidth *= 2;
+     while (i->texwidth < i->width)
+     i->texwidth *= 2;
 
-      i->texheight = 1;
-      while (i->texheight < i->height)
-      i->texheight *= 2;
+     i->texheight = 1;
+     while (i->texheight < i->height)
+     i->texheight *= 2;
 
-      i->texwidthK  = (SHfloat)i->width  / i->texwidth;
-      i->texheightK = (SHfloat)i->height / i->texheight; */
+     i->texwidthK  = (SHfloat)i->width  / i->texwidth;
+     i->texheightK = (SHfloat)i->height / i->texheight; */
 }
 
 /*--------------------------------------------------
- * Downloads the image data from OpenVG into 
+ * Downloads the image data from OpenVG into
  * an OpenGL texture
  *--------------------------------------------------*/
 
@@ -598,7 +598,7 @@ shUpdateImageTexture(SHImage * i, VGContext * c)
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
    glBindTexture(GL_TEXTURE_2D, i->texture);
    glTexImage2D(GL_TEXTURE_2D, 0, i->fd.glintformat, i->texwidth, i->texheight, 0, i->fd.glformat, 0x8367 /*i->fd.gltype */ , i->data); /* FIXME determine why the format is so silly */
-/*   short center=(i->texwidth*i->texheight)*2+2*i->texwidth; 
+/*   short center=(i->texwidth*i->texheight)*2+2*i->texwidth;
 //   printf("shUpdateImageTexture: 0x%x 0x%x 0x%x\n",i->fd.glintformat,i->fd.glformat, i->fd.gltype);
 //   printf("shUpdateImageTexture: %d %d %d %d\n",i->data[center],i->data[center+1],i->data[center+2],i->data[center+3]); */
 }
@@ -768,32 +768,32 @@ shCopyPixels(SHuint8 * dst, VGImageFormat dstFormat, SHint dstStride,
    shSetupImageFormat(srcFormat, &sfd);
 
    /*
-      In order to optimize the copying loop and remove the
-      if statements from it to check whether target pixel
-      is in the source and destination surface, we clamp
-      copy rectangle in advance. This is quite a tedious
-      task though. Here is a picture of the scene. Note that
-      (dx,dy) is actually an offset of the copy rectangle
-      (clamped to src surface) from the (0,0) point on dst
-      surface. A negative (dx,dy) (as in this picture) also
-      affects src coords of the copy rectangle which have
-      to be readjusted again (sx,sy,width,height).
+     In order to optimize the copying loop and remove the
+     if statements from it to check whether target pixel
+     is in the source and destination surface, we clamp
+     copy rectangle in advance. This is quite a tedious
+     task though. Here is a picture of the scene. Note that
+     (dx,dy) is actually an offset of the copy rectangle
+     (clamped to src surface) from the (0,0) point on dst
+     surface. A negative (dx,dy) (as in this picture) also
+     affects src coords of the copy rectangle which have
+     to be readjusted again (sx,sy,width,height).
 
-      src
-      *----------------------*
-      | (sx,sy)  copy rect   |
-      | *-----------*        |
-      | |\(dx, dy)  |        |          dst
-      | | *------------------------------*
-      | | |xxxxxxxxx|        |           |
-      | | |xxxxxxxxx|        |           |
-      | *-----------*        |           |
-      |   |   (width,height) |           |
-      *----------------------*           |
-      |           (swidth,sheight)   |
-      *------------------------------*
-      (dwidth,dheight)
-    */
+     src
+     *----------------------*
+     | (sx,sy)  copy rect   |
+     | *-----------*        |
+     | |\(dx, dy)  |        |          dst
+     | | *------------------------------*
+     | | |xxxxxxxxx|        |           |
+     | | |xxxxxxxxx|        |           |
+     | *-----------*        |           |
+     |   |   (width,height) |           |
+     *----------------------*           |
+     |           (swidth,sheight)   |
+     *------------------------------*
+     (dwidth,dheight)
+   */
 
    /* Cancel if copy rect out of src bounds */
    if (sx >= swidth || sy >= sheight)
