@@ -126,7 +126,7 @@ SHfloat getMaxFloat();
 
 /* Helper macros */
 
-#define PI 3.141592654f
+#define PI 3.141592f
 #define SH_DEG2RAD(a) (a * PI / 180.0f)
 #define SH_RAD2DEG(a) (a * 180.0f / PI)
 #define SH_ABS(a) fabsf(a)
