@@ -528,10 +528,12 @@ shStrokeJoinRound(SHPath * p, SHVector2 * c,
 static void
 shStrokeCapRound(SHPath * p, SHVector2 * c, SHVector2 * t, SHint start)
 {
-   SHint a;
+   /* SHint a; */
+   SHfloat a;
    SHfloat ang, cosa, sina;
    SHVector2 p1, p2;
-   SHint steps = 12;
+   /* SHint steps = 12; */
+   SHfloat steps = 12.0f;
    SHVector2 tt;
 
    /* Revert perpendicular vector if start cap */
@@ -543,7 +545,8 @@ shStrokeCapRound(SHPath * p, SHVector2 * c, SHVector2 * t, SHint start)
    SET2V(p1, (*c));
    ADD2V(p1, tt);
 
-   for (a = 1; a <= steps; ++a) {
+   /* for (a = 1; a <= steps; ++a) { */
+   for (a = 1.0f; a <= steps; ++a) {
 
       /* Rotate perpendicular vector around and
          find next offset point from center */

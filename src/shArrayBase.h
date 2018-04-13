@@ -97,6 +97,7 @@ void JN(_ARRAY_T, _dtor) (_ARRAY_T * a)
 void JN(_FUNC_T, Clear) (_ARRAY_T * a)
 #ifdef _ARRAY_DEFINE
 {
+   a->outofmemory = 0;
    a->size = 0;
 }
 #else
@@ -112,13 +113,11 @@ void JN(_FUNC_T, Clear) (_ARRAY_T * a)
 int JN(_FUNC_T, Realloc) (_ARRAY_T * a, SHint newsize)
 #ifdef _ARRAY_DEFINE
 {
-   _ITEM_T *newitems = 0;
-
    SH_ASSERT(newsize > 0);
    if (newsize == a->capacity)
       return 1;
 
-   newitems = (_ITEM_T *) malloc(newsize * sizeof(_ITEM_T));
+   _ITEM_T *newitems = (_ITEM_T *) malloc(newsize * sizeof(_ITEM_T));
 
    if (!newitems) {
       a->outofmemory = 1;
@@ -181,13 +180,11 @@ int JN(_FUNC_T, Reserve) (_ARRAY_T * a, SHint newsize)
 int JN(_FUNC_T, ReserveAndCopy) (_ARRAY_T * a, SHint newsize)
 #ifdef _ARRAY_DEFINE
 {
-   _ITEM_T *newitems = 0;
-
    SH_ASSERT(newsize >= 0);
    if (newsize <= a->capacity)
       return 1;
 
-   newitems = (_ITEM_T *) realloc(a->items, newsize * sizeof(_ITEM_T));
+   _ITEM_T *newitems = (_ITEM_T *) realloc(a->items, newsize * sizeof(_ITEM_T));
 
    if (!newitems) {
       a->outofmemory = 1;
@@ -331,8 +328,7 @@ _ITEM_T *JN(_FUNC_T, AtP) (_ARRAY_T * a, SHint index)
 SHint JN(_FUNC_T, Find) (_ARRAY_T * a, _ITEM_T item)
 #ifdef _ARRAY_DEFINE
 {
-   int i;
-   for (i = 0; i < a->size; ++i) {
+   for (int i = 0; i < a->size; ++i) {
 #ifdef _COMPARE_T
       if (_COMPARE_T(a->items[i], item))
          return i;
@@ -351,10 +347,9 @@ SHint JN(_FUNC_T, Find) (_ARRAY_T * a, _ITEM_T item)
 void JN(_FUNC_T, RemoveAt) (_ARRAY_T * a, SHint index)
 #ifdef _ARRAY_DEFINE
 {
-   int i;
    SH_ASSERT(index >= 0);
    SH_ASSERT(index < a->size);
-   for (i = index; i < a->size - 1; ++i)
+   for (int i = index; i < a->size - 1; ++i)
       a->items[i] = a->items[i + 1];
    a->size--;
 }
