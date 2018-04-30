@@ -177,6 +177,8 @@ shValidInputFloat2Int(VGfloat f)
 static SHint
 shParamToInt(const void *values, SHint floats, SHint index)
 {
+   SH_ASSERT(values != NULL);
+   
    if (floats)
       return shValidInputFloat2Int(((const VGfloat *) values)[index]);
    else
@@ -191,6 +193,8 @@ shParamToInt(const void *values, SHint floats, SHint index)
 static VGfloat
 shParamToFloat(const void *values, SHint floats, SHint index)
 {
+   SH_ASSERT(values != NULL);
+   
    if (floats)
       return shValidInputFloat(((const VGfloat *) values)[index]);
    else
@@ -205,6 +209,8 @@ shParamToFloat(const void *values, SHint floats, SHint index)
 static void
 shIntToParam(SHint i, SHint count, void *output, SHint floats, SHint index)
 {
+   SH_ASSERT(output != NULL);
+   
    if (index >= count)
       return;
    if (floats)
@@ -224,6 +230,9 @@ shFloatToParam(SHfloat f, SHint count, void *output, SHint floats,
 {
    if (index >= count)
       return;
+
+   SH_ASSERT(output != NULL);
+
    if (floats)
       ((VGfloat *) output)[index] = (VGfloat) f;
    else
@@ -242,7 +251,6 @@ shSet(VGContext * context, VGParamType type, SHint count,
    SHfloat fvalue = 0.0f;
    SHint ivalue = 0;
    VGboolean bvalue = VG_FALSE;
-   int i = 0;
 
    /* Check for negative count */
    SH_RETURN_ERR_IF(count < 0, VG_ILLEGAL_ARGUMENT_ERROR, SH_NO_RETVAL);
@@ -257,6 +265,8 @@ shSet(VGContext * context, VGParamType type, SHint count,
       ivalue = shParamToInt(values, floats, 0);
       bvalue = (ivalue ? VG_TRUE : VG_FALSE);
    }
+
+   SH_ASSERT(context != NULL);
 
    switch (type) {
    case VG_MATRIX_MODE:
@@ -371,7 +381,7 @@ shSet(VGContext * context, VGParamType type, SHint count,
 
       /* TODO: limit by the VG_MAX_DASH_COUNT value */
       shFloatArrayClear(&context->strokeDashPattern);
-      for (i = 0; i < count; ++i)
+      for (int i = 0; i < count; ++i)
          shFloatArrayPushBack(&context->strokeDashPattern,
                               shParamToFloat(values, floats, i));
       break;
@@ -399,7 +409,7 @@ shSet(VGContext * context, VGParamType type, SHint count,
 
       SH_RETURN_ERR_IF(count % 4, VG_ILLEGAL_ARGUMENT_ERROR, SH_NO_RETVAL);
       shRectArrayClear(&context->scissor);
-      for (i = 0; i < count && i < SH_MAX_SCISSOR_RECTS; i += 4) {
+      for (int i = 0; i < count && i < SH_MAX_SCISSOR_RECTS; i += 4) {
          SHRectangle r;
          r.x = shParamToFloat(values, floats, i + 0);
          r.y = shParamToFloat(values, floats, i + 1);
@@ -508,12 +518,11 @@ static void
 shGet(VGContext * context, VGParamType type, SHint count, void *values,
       SHint floats)
 {
-   int i;
-
    /* Check for invalid array / count */
    SH_RETURN_ERR_IF(!values
                     || count <= 0, VG_ILLEGAL_ARGUMENT_ERROR, SH_NO_RETVAL);
 
+   SH_ASSERT(context != NULL && values != NULL);
    switch (type) {
    case VG_MATRIX_MODE:
       SH_RETURN_ERR_IF(count != 1, VG_ILLEGAL_ARGUMENT_ERROR, SH_NO_RETVAL);
@@ -616,7 +625,7 @@ shGet(VGContext * context, VGParamType type, SHint count, void *values,
       SH_RETURN_ERR_IF(count > context->strokeDashPattern.size,
                        VG_ILLEGAL_ARGUMENT_ERROR, SH_NO_RETVAL);
 
-      for (i = 0; i < context->strokeDashPattern.size; ++i)
+      for (int i = 0; i < context->strokeDashPattern.size; ++i)
          shFloatToParam(context->strokeDashPattern.items[i],
                         count, values, floats, i);
 
@@ -644,7 +653,7 @@ shGet(VGContext * context, VGParamType type, SHint count, void *values,
       SH_RETURN_ERR_IF(count > context->scissor.size * 4,
                        VG_ILLEGAL_ARGUMENT_ERROR, SH_NO_RETVAL);
 
-      for (i = 0; i < context->scissor.size; ++i) {
+      for (int i = 0; i < context->scissor.size; ++i) {
          shIntToParam((SHint) context->scissor.items[i].x, count, values,
                       floats, i * 4 + 0);
          shIntToParam((SHint) context->scissor.items[i].y, count, values,
@@ -796,7 +805,7 @@ vgGetiv(VGParamType type, VGint count, VGint * values)
 VG_API_CALL VGint
 vgGetVectorSize(VGParamType type)
 {
-   int retval = 0;
+   VGint retval = 0;
    VG_GETCONTEXT(retval);
 
    switch (type) {

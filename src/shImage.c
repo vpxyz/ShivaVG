@@ -53,6 +53,8 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
    SHuint32 amsbBit = 0;
    SHuint32 bgrBit = 0;
 
+   SH_ASSERT(f != NULL);
+   
    /* Store VG format name */
    f->vgformat = vg;
 
@@ -396,14 +398,15 @@ shStoreColor(SHColor * c, void *data, SHImageFormatDesc * f)
    SHfloat l = 0.0f;
    SHuint32 out = 0x0;
 
+   SH_ASSERT(c != NULL && data != NULL && f != NULL);
+   
    if (f->vgformat == VG_lL_8 || f->vgformat == VG_sL_8) {
 
       /* Grayscale (luminosity) conversion as defined by the spec */
       l = 0.2126f * c->r + 0.7152f * c->g + 0.0722f * c->r;
       out = (SHuint32) (l * (SHfloat) f->rmax + 0.5f);
 
-   }
-   else {
+   } else {
 
       /* Pack color components */
       out +=
@@ -450,6 +453,8 @@ shLoadColor(SHColor * c, const void *data, SHImageFormatDesc * f)
 
    SHuint32 in = 0x0;
 
+   SH_ASSERT(c != NULL && data != NULL);
+   
    /* Load from buffer */
    switch (f->bytes) {
    case 4:
@@ -488,6 +493,8 @@ shLoadColor(SHColor * c, const void *data, SHImageFormatDesc * f)
 void
 SHColor_ctor(SHColor * c)
 {
+   SH_ASSERT(c != NULL);
+   
    c->r = 0.0f;
    c->g = 0.0f;
    c->b = 0.0f;
@@ -502,6 +509,8 @@ SHColor_dtor(SHColor * c)
 void
 SHImage_ctor(SHImage * i)
 {
+   SH_ASSERT(i != NULL);
+   
    i->data = NULL;
    i->width = 0;
    i->height = 0;
@@ -511,6 +520,8 @@ SHImage_ctor(SHImage * i)
 void
 SHImage_dtor(SHImage * i)
 {
+   SH_ASSERT(i != NULL);
+   
    if (i->data != NULL)
       free(i->data);
 
@@ -526,6 +537,8 @@ SHImage_dtor(SHImage * i)
 void
 shUpdateImageTextureSize(SHImage * i)
 {
+   SH_ASSERT(i != NULL);
+   
    i->texwidth = i->width;
    i->texheight = i->height;
    i->texwidthK = 1.0f;
@@ -557,6 +570,8 @@ shUpdateImageTexture(SHImage * i, VGContext * c)
    SHint potwidth;
    SHint potheight;
    SHint8 *potdata;
+
+   SH_ASSERT(i != NULL && c != NULL);
 
    /* Find nearest power of two size */
 
@@ -695,6 +710,7 @@ vgClearImage(VGImage image, VGint x, VGint y, VGint width, VGint height)
    SHColor clear;
    SHuint8 *data;
    SHint X, Y, ix, iy, dx, dy, stride;
+
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    VG_RETURN_ERR_IF(!shIsValidImage(context, image),
@@ -760,6 +776,8 @@ shCopyPixels(SHuint8 * dst, VGImageFormat dstFormat, SHint dstStride,
 
    SHImageFormatDesc dfd;
    SHImageFormatDesc sfd;
+
+   SH_ASSERT(src != NULL && dst != NULL);
 
    /* Setup image format descriptors */
    SH_ASSERT(shIsSupportedImageFormat(dstFormat));
@@ -840,8 +858,7 @@ shCopyPixels(SHuint8 * dst, VGImageFormat dstFormat, SHint dstStride,
          memcpy(DD, SD, width * sfd.bytes);
       }
 
-   }
-   else {
+   } else {
 
       /* Walk pixels and copy */
       for (SY = sy, DY = dy; SY < sy + height; ++SY, ++DY) {
@@ -871,6 +888,7 @@ vgImageSubData(VGImage image,
                VGint x, VGint y, VGint width, VGint height)
 {
    SHImage *i;
+
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    VG_RETURN_ERR_IF(!shIsValidImage(context, image),
@@ -914,6 +932,7 @@ vgGetImageSubData(VGImage image,
                   VGint x, VGint y, VGint width, VGint height)
 {
    SHImage *i;
+
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    VG_RETURN_ERR_IF(!shIsValidImage(context, image),
@@ -1117,6 +1136,7 @@ vgGetPixels(VGImage dst, VGint dx, VGint dy,
    SHImage *i;
    SHuint8 *pixels;
    SHImageFormatDesc winfd;
+
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    VG_RETURN_ERR_IF(!shIsValidImage(context, dst),
@@ -1144,8 +1164,7 @@ vgGetPixels(VGImage dst, VGint dx, VGint dy,
    glReadPixels(sx, sy, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
    /* FIXME we shouldnt be reading alpha */
-   int k;
-   for (k = 3; k < i->width * i->height * 4; k += 4)
+   for (int k = 3; k < i->width * i->height * 4; k += 4)
       pixels[k] = 255;
 
    shCopyPixels(i->data, i->fd.vgformat, i->texwidth * i->fd.bytes,
@@ -1172,6 +1191,7 @@ vgReadPixels(void *data, VGint dataStride,
 {
    SHuint8 *pixels;
    SHImageFormatDesc winfd;
+
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    /* Reject invalid formats */

@@ -134,8 +134,8 @@ VGContext *shGetContext();
 #define VG_NO_RETVAL
 
 #define VG_GETCONTEXT(RETVAL) \
-  VGContext *context = shGetContext(); \
-  if (!context) return RETVAL;
+   VGContext *context = shGetContext();       \
+      if (!context) return RETVAL;
 
 #define VG_RETURN(RETVAL) \
   { return RETVAL; }

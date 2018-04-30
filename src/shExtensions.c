@@ -50,6 +50,7 @@ fallbackMultiTexCoord2f(GLenum target, GLfloat x, GLfloat y)
 static int
 checkExtension(const char *extensions, const char *name)
 {
+   SH_ASSERT(extensions != NULL && name != NULL);
    int nlen = (int) strlen(name);
    int elen = (int) strlen(extensions);
    const char *e = extensions;
@@ -79,6 +80,7 @@ typedef void (*PFVOID) ();
 PFVOID
 shGetProcAddress(const char *name)
 {
+   SH_ASSERT(name != NULL);
 #if defined(_WIN32)
    return (PFVOID) wglGetProcAddress(name);
 #elif defined(__APPLE__)
@@ -92,6 +94,7 @@ shGetProcAddress(const char *name)
 void
 shLoadExtensions(VGContext * c)
 {
+   SH_ASSERT(c != NULL);
    const char *ext = (const char *) glGetString(GL_EXTENSIONS);
 
    /* GL_TEXTURE_CLAMP_TO_EDGE */
@@ -127,8 +130,7 @@ shLoadExtensions(VGContext * c)
           c->pglMultiTexCoord2f == NULL)
          c->isGLAvailable_Multitexture = 0;
 
-   }
-   else {                       /* Unavailable */
+   } else {                       /* Unavailable */
       c->isGLAvailable_Multitexture = 0;
       c->pglActiveTexture = (SH_PGLACTIVETEXTURE) fallbackActiveTexture;
       c->pglMultiTexCoord1f = (SH_PGLMULTITEXCOORD1F) fallbackMultiTexCoord1f;

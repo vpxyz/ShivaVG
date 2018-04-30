@@ -27,6 +27,7 @@
 static int
 shAddVertex(SHPath * p, SHVertex * v, SHint * contourStart)
 {
+   SH_ASSERT(p != NULL && v != NULL && contourStart != NULL);
    /* Assert contour was open */
    SH_ASSERT((*contourStart) >= 0);
 
@@ -52,6 +53,9 @@ shSubrecurseQuad(SHPath * p, SHQuad * quad, SHint * contourStart)
    SHQuad quads[SH_MAX_RECURSE_DEPTH];
    SHQuad *q, *qleft, *qright;
    SHint qindex = 0;
+
+   SH_ASSERT(p != NULL && quad != NULL && contourStart != NULL);
+
    quads[0] = *quad;
 
    while (qindex >= 0) {
@@ -80,8 +84,7 @@ shSubrecurseQuad(SHPath * p, SHQuad * quad, SHint * contourStart)
             return;
          --qindex;
 
-      }
-      else {
+      } else {
 
          /* Left recursion goes on top of stack! */
          qright = q;
@@ -120,6 +123,9 @@ shSubrecurseCubic(SHPath * p, SHCubic * cubic, SHint * contourStart)
    SHCubic cubics[SH_MAX_RECURSE_DEPTH];
    SHCubic *c, *cleft, *cright;
    SHint cindex = 0;
+
+   SH_ASSERT(p != NULL && cubic != NULL && contourStart != NULL);
+   
    cubics[0] = *cubic;
 
    while (cindex >= 0) {
@@ -209,6 +215,8 @@ shSubrecurseArc(SHPath * p, SHArc * arc,
    SHArc arcs[SH_MAX_RECURSE_DEPTH];
    SHArc *a, *aleft, *aright;
    SHint aindex = 0;
+
+   SH_ASSERT(p != NULL && arc != NULL && c != NULL && ux != NULL && uy != NULL && contourStart != NULL);
    arcs[0] = *arc;
 
    while (aindex >= 0) {
@@ -286,6 +294,8 @@ shSubdivideSegment(SHPath * p, VGPathSegment segment,
                    VGPathCommand originalCommand,
                    SHfloat * data, void *userData)
 {
+   SH_ASSERT(p != NULL && data != NULL && userData != NULL);
+   
    SHVertex v;
    SHint *contourStart = ((SHint **) userData)[0];
    SHint *surfaceSpace = ((SHint **) userData)[1];
@@ -425,6 +435,8 @@ shFlattenPath(SHPath * p, SHint surfaceSpace)
       SH_PROCESS_SIMPLIFY_CURVES |
       SH_PROCESS_CENTRALIZE_ARCS | SH_PROCESS_REPAIR_ENDS;
 
+   SH_ASSERT( p != NULL);
+   
    userData[0] = &contourStart;
    userData[1] = &surfaceSpace;
 
@@ -440,6 +452,7 @@ static void
 shPushStrokeQuad(SHPath * p, SHVector2 * p1, SHVector2 * p2,
                  SHVector2 * p3, SHVector2 * p4)
 {
+   SH_ASSERT(p != NULL && p1 != NULL && p2 != NULL && p3 != NULL && p4 != NULL);
    shVector2ArrayPushBackP(&p->stroke, p1);
    shVector2ArrayPushBackP(&p->stroke, p2);
    shVector2ArrayPushBackP(&p->stroke, p3);
@@ -455,6 +468,7 @@ shPushStrokeQuad(SHPath * p, SHVector2 * p1, SHVector2 * p2,
 static void
 shPushStrokeTri(SHPath * p, SHVector2 * p1, SHVector2 * p2, SHVector2 * p3)
 {
+   SH_ASSERT(p != NULL && p1 != NULL && p2 != NULL && p3 != NULL);
    shVector2ArrayPushBackP(&p->stroke, p1);
    shVector2ArrayPushBackP(&p->stroke, p2);
    shVector2ArrayPushBackP(&p->stroke, p3);
@@ -472,6 +486,7 @@ shStrokeJoinMiter(SHPath * p, SHVector2 * c,
                   SHVector2 * o1, SHVector2 * d1,
                   SHVector2 * o2, SHVector2 * d2)
 {
+   SH_ASSERT(p != NULL && c != NULL && o1 != NULL && o2 != NULL && d1 != NULL && d2 != NULL);
    /* Init miter top to first point in case lines are colinear */
    SHVector2 x;
    SET2V(x, (*o1));
@@ -501,6 +516,8 @@ shStrokeJoinRound(SHPath * p, SHVector2 * c,
    SHVector2 p1, p2;
    SHfloat a, ang, cosa, sina;
 
+   SH_ASSERT(p != NULL && c != NULL && pstart != NULL && pend != NULL && tstart != NULL && tend != NULL);
+   
    /* Find angle between lines */
    ang = ANGLE2((*tstart), (*tend));
 
@@ -536,6 +553,8 @@ shStrokeCapRound(SHPath * p, SHVector2 * c, SHVector2 * t, SHint start)
    SHfloat steps = 12.0f;
    SHVector2 tt;
 
+   SH_ASSERT(p != NULL && c != NULL && t != NULL);
+
    /* Revert perpendicular vector if start cap */
    SET2V(tt, (*t));
    if (start)
@@ -567,6 +586,7 @@ shStrokeCapSquare(SHPath * p, SHVector2 * c, SHVector2 * t, SHint start)
 {
    SHVector2 tt, p1, p2, p3, p4;
 
+   SH_ASSERT(p != NULL && c != NULL && t != NULL);
    /* Revert perpendicular vector if start cap */
    SET2V(tt, (*t));
    if (start)
@@ -597,6 +617,8 @@ shStrokeCapSquare(SHPath * p, SHVector2 * c, SHVector2 * t, SHint start)
 void
 shStrokePath(VGContext * c, SHPath * p)
 {
+   SH_ASSERT(c != NULL && p != NULL);
+   
    /* Line width and vertex count */
    SHfloat w = c->strokeLineWidth / 2;
    SHfloat mlimit = c->strokeMiterLimit;
@@ -917,9 +939,9 @@ void
 shTransformVertices(SHMatrix3x3 * m, SHPath * p)
 {
    SHVector2 *v;
-   int i = 0;
-
-   for (i = p->vertices.size - 1; i >= 0; --i) {
+   SH_ASSERT(m != NULL && p != NULL);
+   
+   for (int i = p->vertices.size - 1; i >= 0; --i) {
       v = (&p->vertices.items[i].point);
       TRANSFORM2((*v), (*m));
    }
@@ -934,7 +956,7 @@ shTransformVertices(SHMatrix3x3 * m, SHPath * p)
 void
 shFindBoundbox(SHPath * p)
 {
-   int i;
+   SH_ASSERT(p != NULL);
 
    if (p->vertices.size == 0) {
       SET2(p->min, 0, 0);
@@ -945,7 +967,7 @@ shFindBoundbox(SHPath * p)
    p->min.x = p->max.x = p->vertices.items[0].point.x;
    p->min.y = p->max.y = p->vertices.items[0].point.y;
 
-   for (i = 0; i < p->vertices.size; ++i) {
+   for (int i = 0; i < p->vertices.size; ++i) {
 
       SHVector2 *v = &p->vertices.items[i].point;
       if (v->x < p->min.x)
@@ -1002,6 +1024,7 @@ static void
 shPathLength(SHPath * p, VGPathSegment segment,
              VGPathCommand originalCommand, SHfloat * data, void *userData)
 {
+   SH_ASSERT(p != NULL && data != NULL && userData != NULL);
    SHfloat *sum = (SHfloat *) ((void **) userData)[0];
    SHint *startSegment = (SHint *) ((void **) userData)[1];
    SHint *numSegments = (SHint *) ((void **) userData)[2];
@@ -1013,7 +1036,6 @@ shPathLength(SHPath * p, VGPathSegment segment,
    SHArc arc;
    SHVector2 c, ux, uy;
    SHint contour = 0;
-   int i;
 
    /* skip segments before "start" position */
    if (*curSegment < *startSegment) {
@@ -1057,7 +1079,7 @@ shPathLength(SHPath * p, VGPathSegment segment,
       shAddVertex(q, &v, &contour);
 
       /* add linear distance from each vertex */
-      for (i = 0; i < q->vertices.size - 1; i++) {
+      for (int i = 0; i < q->vertices.size - 1; i++) {
          *sum +=
             SH_DIST(q->vertices.items[i].point.x,
                     q->vertices.items[i].point.y,
@@ -1095,7 +1117,7 @@ shPathLength(SHPath * p, VGPathSegment segment,
       shAddVertex(q, &v, &contour);
 
       /* add linear distance from each vertex */
-      for (i = 0; i < q->vertices.size - 1; i++) {
+      for (int i = 0; i < q->vertices.size - 1; i++) {
          *sum +=
             SH_DIST(q->vertices.items[i].point.x,
                     q->vertices.items[i].point.y,
@@ -1123,6 +1145,7 @@ vgPathBounds(VGPath path,
              VGfloat * width, VGfloat * height)
 {
    SHPath *p = NULL;
+
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    VG_RETURN_ERR_IF(!shIsValidPath(context, path),
@@ -1163,6 +1186,7 @@ vgPathTransformedBounds(VGPath path,
                         VGfloat * width, VGfloat * height)
 {
    SHPath *p = NULL;
+
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    VG_RETURN_ERR_IF(!shIsValidPath(context, path),
@@ -1204,7 +1228,8 @@ vgPathLength(VGPath path, VGint startSegment, VGint numSegments)
       SH_PROCESS_SIMPLIFY_LINES |
       SH_PROCESS_SIMPLIFY_CURVES | SH_PROCESS_CENTRALIZE_ARCS;
    SHPath *p = NULL;
-   VG_GETCONTEXT(VG_NO_RETVAL);
+
+   VG_GETCONTEXT(-1.0f); // return -1.0f if an error occurs
 
    VG_RETURN_ERR_IF(!shIsValidPath(context, path),
                     VG_BAD_HANDLE_ERROR, -1.0f);

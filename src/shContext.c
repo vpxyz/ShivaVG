@@ -100,7 +100,6 @@ vgDestroyContextSH()
 VGContext *
 shGetContext()
 {
-   SH_ASSERT(g_context);
    return g_context;
 }
 
@@ -113,6 +112,8 @@ void shLoadExtensions(VGContext * c);
 void
 VGContext_ctor(VGContext * c)
 {
+   SH_ASSERT(c != NULL);
+
    /* Surface info */
    c->surfaceWidth = 0;
    c->surfaceHeight = 0;
@@ -188,19 +189,20 @@ VGContext_ctor(VGContext * c)
 void
 VGContext_dtor(VGContext * c)
 {
-   int i;
+
+   SH_ASSERT(c != NULL);
 
    SH_DEINITOBJ(SHRectArray, c->scissor);
    SH_DEINITOBJ(SHFloatArray, c->strokeDashPattern);
 
    /* Destroy resources */
-   for (i = 0; i < c->paths.size; ++i)
+   for (int i = 0; i < c->paths.size; ++i)
       SH_DELETEOBJ(SHPath, c->paths.items[i]);
 
-   for (i = 0; i < c->paints.size; ++i)
+   for (int i = 0; i < c->paints.size; ++i)
       SH_DELETEOBJ(SHPaint, c->paints.items[i]);
 
-   for (i = 0; i < c->images.size; ++i)
+   for (int i = 0; i < c->images.size; ++i)
       SH_DELETEOBJ(SHImage, c->images.items[i]);
 }
 
@@ -211,6 +213,7 @@ VGContext_dtor(VGContext * c)
 SHint
 shIsValidPath(VGContext * c, VGHandle h)
 {
+   SH_ASSERT(c != NULL && h != NULL);
    int index = shPathArrayFind(&c->paths, (SHPath *) h);
    return (index == -1) ? 0 : 1;
 }
@@ -218,6 +221,7 @@ shIsValidPath(VGContext * c, VGHandle h)
 SHint
 shIsValidPaint(VGContext * c, VGHandle h)
 {
+   SH_ASSERT(c != NULL);
    int index = shPaintArrayFind(&c->paints, (SHPaint *) h);
    return (index == -1) ? 0 : 1;
 }
@@ -225,6 +229,7 @@ shIsValidPaint(VGContext * c, VGHandle h)
 SHint
 shIsValidImage(VGContext * c, VGHandle h)
 {
+   SH_ASSERT(c != NULL);
    int index = shImageArrayFind(&c->images, (SHImage *) h);
    return (index == -1) ? 0 : 1;
 }
@@ -239,13 +244,10 @@ shGetResourceType(VGContext * c, VGHandle h)
 {
    if (shIsValidPath(c, h))
       return SH_RESOURCE_PATH;
-
    else if (shIsValidPaint(c, h))
       return SH_RESOURCE_PAINT;
-
    else if (shIsValidImage(c, h))
       return SH_RESOURCE_IMAGE;
-
    else
       return SH_RESOURCE_INVALID;
 }
@@ -258,6 +260,7 @@ shGetResourceType(VGContext * c, VGHandle h)
 void
 shSetError(VGContext * c, VGErrorCode e)
 {
+   SH_ASSERT(c != NULL);
    if (c->error == VG_NO_ERROR)
       c->error = e;
 }
@@ -345,6 +348,7 @@ vgClear(VGint x, VGint y, VGint width, VGint height)
 SHMatrix3x3 *
 shCurrentMatrix(VGContext * c)
 {
+   SH_ASSERT(c != NULL);
    switch (c->matrixMode) {
    case VG_MATRIX_PATH_USER_TO_SURFACE:
       return &c->pathTransform;
@@ -382,6 +386,7 @@ VG_API_CALL void
 vgLoadMatrix(const VGfloat * mm)
 {
    SHMatrix3x3 *m;
+
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    VG_RETURN_ERR_IF(!mm, VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
@@ -411,7 +416,7 @@ VG_API_CALL void
 vgGetMatrix(VGfloat * mm)
 {
    SHMatrix3x3 *m;
-   int i, j, k = 0;
+
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    VG_RETURN_ERR_IF(!mm, VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
@@ -419,8 +424,9 @@ vgGetMatrix(VGfloat * mm)
 
    m = shCurrentMatrix(context);
 
-   for (i = 0; i < 3; ++i)
-      for (j = 0; j < 3; ++j)
+   int k = 0;
+   for (int i = 0; i < 3; ++i)
+      for (int j = 0; j < 3; ++j)
          mm[k++] = m->m[j][i];
 
    VG_RETURN(VG_NO_RETVAL);
@@ -436,6 +442,7 @@ VG_API_CALL void
 vgMultMatrix(const VGfloat * mm)
 {
    SHMatrix3x3 *m, mul, temp;
+
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    VG_RETURN_ERR_IF(!mm, VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
@@ -444,12 +451,8 @@ vgMultMatrix(const VGfloat * mm)
    m = shCurrentMatrix(context);
 
    if (context->matrixMode == VG_MATRIX_IMAGE_USER_TO_SURFACE) {
-
-      SETMAT(mul,
-             mm[0], mm[3], mm[6], mm[1], mm[4], mm[7], mm[2], mm[5], mm[8]);
-   }
-   else {
-
+      SETMAT(mul, mm[0], mm[3], mm[6], mm[1], mm[4], mm[7], mm[2], mm[5], mm[8]);
+   } else {
       SETMAT(mul, mm[0], mm[3], mm[6], mm[1], mm[4], mm[7], 0.0f, 0.0f, 1.0f);
    }
 

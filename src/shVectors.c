@@ -30,6 +30,7 @@
 void
 SHVector2_ctor(SHVector2 * v)
 {
+   SH_ASSERT(v != NULL);
    v->x = 0.0f;
    v->y = 0.0f;
 }
@@ -42,6 +43,7 @@ SHVector2_dtor(SHVector2 * v)
 void
 SHVector3_ctor(SHVector3 * v)
 {
+   SH_ASSERT(v != NULL);
    v->x = 0.0f;
    v->y = 0.0f;
    v->z = 0.0f;
@@ -55,6 +57,7 @@ SHVector3_dtor(SHVector3 * v)
 void
 SHVector4_ctor(SHVector4 * v)
 {
+   SH_ASSERT(v != NULL);
    v->x = 0.0f;
    v->y = 0.0f;
    v->z = 0.0f;
@@ -69,6 +72,7 @@ SHVector4_dtor(SHVector4 * v)
 void
 SHRectangle_ctor(SHRectangle * r)
 {
+   SH_ASSERT(r != NULL);
    r->x = 0.0f;
    r->y = 0.0f;
    r->w = 0.0f;
@@ -83,6 +87,7 @@ SHRectangle_dtor(SHRectangle * r)
 void
 shRectangleSet(SHRectangle * r, SHfloat x, SHfloat y, SHfloat w, SHfloat h)
 {
+   SH_ASSERT(r != NULL);
    r->x = x;
    r->y = y;
    r->w = w;
@@ -92,6 +97,7 @@ shRectangleSet(SHRectangle * r, SHfloat x, SHfloat y, SHfloat w, SHfloat h)
 void
 SHMatrix3x3_ctor(SHMatrix3x3 * mt)
 {
+   SH_ASSERT(mt != NULL);
    IDMAT((*mt));
 }
 
@@ -103,6 +109,7 @@ SHMatrix3x3_dtor(SHMatrix3x3 * mt)
 void
 shMatrixToGL(SHMatrix3x3 * m, SHfloat mgl[16])
 {
+   SH_ASSERT(m != NULL);
    /* When 2D vectors are specified OpenGL defaults Z to 0.0f so we
       have to shift the third column of our 3x3 matrix to right */
    mgl[0] = m->m[0][0];
@@ -126,6 +133,7 @@ shMatrixToGL(SHMatrix3x3 * m, SHfloat mgl[16])
 int
 shInvertMatrix(SHMatrix3x3 * m, SHMatrix3x3 * mout)
 {
+   SH_ASSERT(m != NULL && mout != NULL);
    /* Calculate determinant */
    SHfloat D0 = m->m[1][1] * m->m[2][2] - m->m[2][1] * m->m[1][2];
    SHfloat D1 = m->m[2][0] * m->m[1][2] - m->m[1][0] * m->m[2][2];
@@ -154,6 +162,7 @@ shInvertMatrix(SHMatrix3x3 * m, SHMatrix3x3 * mout)
 SHfloat
 shVectorOrientation(SHVector2 * v)
 {
+   SH_ASSERT(v != NULL);
    SHfloat norm = (SHfloat) NORM2((*v));
    SHfloat cosa = v->x / norm;
    SHfloat sina = v->y / norm;
@@ -164,6 +173,7 @@ int
 shLineLineXsection(SHVector2 * o1, SHVector2 * v1,
                    SHVector2 * o2, SHVector2 * v2, SHVector2 * xsection)
 {
+   SH_ASSERT(o1 != NULL && o2 != NULL && v1 != NULL && v2 != NULL);
    SHfloat rightU = o2->x - o1->x;
    SHfloat rightD = o2->y - o1->y;
 

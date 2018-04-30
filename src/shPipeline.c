@@ -48,6 +48,7 @@ updateBlendingStateGL(VGContext * c, int alphaIsOne)
       as well as SRC is optimized by turning OpenGL
       blending off. In other cases its turned on. */
 
+   SH_ASSERT(c != NULL);
    switch (c->blendMode) {
    case VG_BLEND_SRC:
       glBlendFunc(GL_ONE, GL_ZERO);
@@ -107,6 +108,8 @@ updateBlendingStateGL(VGContext * c, int alphaIsOne)
 static void
 shDrawStroke(SHPath * p)
 {
+
+   SH_ASSERT(p != NULL);
    glEnableClientState(GL_VERTEX_ARRAY);
    glVertexPointer(2, GL_FLOAT, 0, p->stroke.items);
    glDrawArrays(GL_TRIANGLES, 0, p->stroke.size);
@@ -124,6 +127,7 @@ shDrawVertices(SHPath * p, GLenum mode)
    int start = 0;
    int size = 0;
 
+   SH_ASSERT(p != NULL);
    /* We separate vertex arrays by contours to properly
       handle the fill modes */
    glEnableClientState(GL_VERTEX_ARRAY);
@@ -146,6 +150,8 @@ static void
 shDrawBoundBox(VGContext * c, SHPath * p, VGPaintMode mode)
 {
    SHfloat K = 1.0f;
+
+   SH_ASSERT(c != NULL && p != NULL);
    if (mode == VG_STROKE_PATH)
       K = SH_CEIL(c->strokeMiterLimit * c->strokeLineWidth) + 1.0f;
 
@@ -171,6 +177,7 @@ shDrawPaintMesh(VGContext * c, SHVector2 * min, SHVector2 * max,
    SHVector2 pmin, pmax;
    SHfloat K = 1.0f;
 
+   SH_ASSERT(c != NULL && min != NULL && max != NULL);
    /* Pick the right paint */
    if (mode == VG_FILL_PATH) {
       p = (c->fillPaint ? c->fillPaint : &c->defaultPaint);
@@ -225,16 +232,15 @@ shIsTessCacheValid(VGContext * c, SHPath * p)
    SHMatrix3x3 mi, mchange;
    VGboolean valid = VG_TRUE;
 
+   SH_ASSERT(c != NULL && p != NULL);
+
    if (p->cacheDataValid == VG_FALSE) {
       valid = VG_FALSE;
-   }
-   else if (p->cacheTransformInit == VG_FALSE) {
+   } else if (p->cacheTransformInit == VG_FALSE) {
       valid = VG_FALSE;
-   }
-   else if (shInvertMatrix(&p->cacheTransform, &mi) == VG_FALSE) {
+   } else if (shInvertMatrix(&p->cacheTransform, &mi) == VG_FALSE) {
       valid = VG_FALSE;
-   }
-   else {
+   } else {
       /* TODO: Compare change matrix for any scale or shear  */
       MULMATMAT(c->pathTransform, mi, mchange);
       SET2(X, mi.m[0][0], mi.m[1][0]);
@@ -261,16 +267,15 @@ shIsStrokeCacheValid(VGContext * c, SHPath * p)
 {
    VGboolean valid = VG_TRUE;
 
+   SH_ASSERT(c != NULL && p != NULL);
+
    if (p->cacheStrokeInit == VG_FALSE) {
       valid = VG_FALSE;
-   }
-   else if (p->cacheStrokeTessValid == VG_FALSE) {
+   } else if (p->cacheStrokeTessValid == VG_FALSE) {
       valid = VG_FALSE;
-   }
-   else if (c->strokeDashPattern.size > 0) {
+   } else if (c->strokeDashPattern.size > 0) {
       valid = VG_FALSE;
-   }
-   else if (p->cacheStrokeLineWidth != c->strokeLineWidth ||
+   } else if (p->cacheStrokeLineWidth != c->strokeLineWidth ||
             p->cacheStrokeCapStyle != c->strokeCapStyle ||
             p->cacheStrokeJoinStyle != c->strokeJoinStyle ||
             p->cacheStrokeMiterLimit != c->strokeMiterLimit) {

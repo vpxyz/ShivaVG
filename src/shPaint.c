@@ -41,19 +41,23 @@
 void
 SHPaint_ctor(SHPaint * p)
 {
-   int i;
+   SH_ASSERT(p != NULL);
 
    p->type = VG_PAINT_TYPE_COLOR;
    CSET(p->color, 0, 0, 0, 1);
+
    SH_INITOBJ(SHStopArray, p->instops);
    SH_INITOBJ(SHStopArray, p->stops);
+
    p->premultiplied = VG_FALSE;
    p->spreadMode = VG_COLOR_RAMP_SPREAD_PAD;
    p->tilingMode = VG_TILE_FILL;
-   for (i = 0; i < 4; ++i)
+   
+   for (int i = 0; i < 4; ++i)
       p->linearGradient[i] = 0.0f;
-   for (i = 0; i < 5; ++i)
+   for (int i = 0; i < 5; ++i)
       p->radialGradient[i] = 0.0f;
+   
    p->pattern = VG_INVALID_HANDLE;
 
    glGenTextures(1, &p->texture);
@@ -65,6 +69,8 @@ SHPaint_ctor(SHPaint * p)
 void
 SHPaint_dtor(SHPaint * p)
 {
+   SH_ASSERT(p != NULL);
+   
    SH_DEINITOBJ(SHStopArray, p->instops);
    SH_DEINITOBJ(SHStopArray, p->stops);
 
@@ -95,6 +101,8 @@ vgDestroyPaint(VGPaint paint)
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    /* Check if handle valid */
+   SH_ASSERT(paint != NULL);
+
    index = shPaintArrayFind(&context->paints, (SHPaint *) paint);
    VG_RETURN_ERR_IF(index == -1, VG_BAD_HANDLE_ERROR, VG_NO_RETVAL);
 
@@ -108,6 +116,7 @@ vgDestroyPaint(VGPaint paint)
 VG_API_CALL void
 vgSetPaint(VGPaint paint, VGbitfield paintModes)
 {
+
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    /* Check if handle valid */
@@ -131,12 +140,14 @@ vgSetPaint(VGPaint paint, VGbitfield paintModes)
 VG_API_CALL VGPaint
 vgGetPaint(VGPaintMode paintMode)
 {
-   VG_GETCONTEXT(VG_NO_RETVAL);
+   VG_GETCONTEXT(VG_INVALID_HANDLE);
 
    if (paintMode & VG_STROKE_PATH)
       VG_RETURN((VGPaint) context->strokePaint);
    if (paintMode & VG_FILL_PATH)
       VG_RETURN((VGPaint) context->fillPaint);
+
+   return (VGPaint) VG_ILLEGAL_ARGUMENT_ERROR;
 }
 
 VG_API_CALL void
@@ -170,6 +181,8 @@ shUpdateColorRampTexture(SHPaint * p)
    SHColor dc, c;
    SHfloat k;
 
+   SH_ASSERT(p != NULL);
+   
    /* Write first pixel color */
    stop1 = &p->stops.items[0];
    CSTORE_RGBA1D_F(stop1->color, rgba, x1);
@@ -209,13 +222,13 @@ shValidateInputStops(SHPaint * p)
 {
    SHStop *instop, stop;
    SHfloat lastOffset = 0.0f;
-   int i;
 
+   SH_ASSERT(p != NULL);
    shStopArrayClear(&p->stops);
    shStopArrayReserve(&p->stops, p->instops.size);
 
    /* Assure input stops are properly defined */
-   for (i = 0; i < p->instops.size; ++i) {
+   for (int i = 0; i < p->instops.size; ++i) {
 
       /* Copy stop color */
       instop = &p->instops.items[i];
@@ -277,6 +290,9 @@ shGenerateStops(SHPaint * p, SHfloat minOffset, SHfloat maxOffset,
    SHfloat ostep = 0.0f;
    SHint istep = 1;
    SHint istart = 0;
+
+   SH_ASSERT(p != NULL);
+   
    SHint iend = p->stops.size - 1;
    SHint minDone = 0;
    SHint maxDone = 0;
@@ -375,6 +391,8 @@ shGenerateStops(SHPaint * p, SHfloat minOffset, SHfloat maxOffset,
 void
 shSetGradientTexGLState(SHPaint * p)
 {
+   SH_ASSERT(p != NULL);
+   
    glBindTexture(GL_TEXTURE_1D, p->texture);
    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -398,6 +416,8 @@ shSetGradientTexGLState(SHPaint * p)
 void
 shSetPatternTexGLState(SHPaint * p, VGContext * c)
 {
+   SH_ASSERT(p != NULL && c != NULL);
+   
    glBindTexture(GL_TEXTURE_2D, ((SHImage *) p->pattern)->texture);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -434,6 +454,8 @@ shDrawLinearGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    SHint i;
    SHfloat n;
 
+   SH_ASSERT(p != NULL && min != NULL && max != NULL);
+   
    SHfloat x1 = p->linearGradient[0];
    SHfloat y1 = p->linearGradient[1];
    SHfloat x2 = p->linearGradient[2];
@@ -561,6 +583,8 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    SHint i, j;
    float a, n;
 
+   SH_ASSERT(p != NULL && min != NULL && max != NULL);
+   
    SHfloat cx = p->radialGradient[0];
    SHfloat cy = p->radialGradient[1];
    SHfloat fx = p->radialGradient[2];
@@ -696,8 +720,7 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       startA = 0.0f;
       maxA = 2 * PI;
 
-   }
-   else {
+   } else {
 
       /* Find most distant corner pair */
       for (i = 0; i < 3; ++i) {
@@ -797,7 +820,8 @@ shDrawPatternMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    SHVector2 corners[4];
    VGfloat sx, sy;
    SHImage *img;
-   int i;
+
+   SH_ASSERT(p != NULL && min != NULL && max != NULL);
 
    /* Pick paint transform matrix */
    SH_GETCONTEXT(0);
@@ -820,7 +844,7 @@ shDrawPatternMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       SHColor *c = &context->tileFillColor;
       glColor4fv((GLfloat *) c);
       glBegin(GL_QUADS);
-      for (i = 0; i < 4; ++i)
+      for (int i = 0; i < 4; ++i)
          glVertex2fv((GLfloat *) & corners[i]);
       glEnd();
       return 1;
@@ -846,7 +870,7 @@ shDrawPatternMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    glEnable(GL_TEXTURE_2D);
    glBegin(GL_QUADS);
 
-   for (i = 0; i < 4; ++i) {
+   for (int i = 0; i < 4; ++i) {
       glMultiTexCoord2f(texUnit, corners[i].x, corners[i].y);
       glVertex2fv((GLfloat *) & corners[i]);
    }
