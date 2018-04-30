@@ -9,7 +9,7 @@ How to speed up image upload / manipulation
 First, manipulation can be speeded up by modifying shCopyPixels
 to copy lines using memcpy directly when source and target
 formats are equal. If stride is same too, than we can memcpy
-the whole block of memory.
+the whole block of memory. -> DONE
 
 2) What about mapping image manipulation directly to OpenGL
 texture manipulation calls? Which formats could support this?

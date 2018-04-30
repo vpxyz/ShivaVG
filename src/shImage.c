@@ -769,7 +769,6 @@ shCopyPixels(SHuint8 * dst, VGImageFormat dstFormat, SHint dstStride,
              SHint width, SHint height)
 {
    SHint dxold, dyold;
-   SHint SX, SY, DX, DY;
    const SHuint8 *SD;
    SHuint8 *DD;
    SHColor c;
@@ -851,28 +850,34 @@ shCopyPixels(SHuint8 * dst, VGImageFormat dstFormat, SHint dstStride,
 
    if (srcFormat == dstFormat) {
 
+      /* If the stride are the same, we can copy the whole block */
+      if (srcStride == dstStride) {
+         memcpy(dst, src, width * height * dfd.bytes);
+         return ;
+      }
+
       /* Walk pixels and copy */
-      for (SY = sy, DY = dy; SY < sy + height; ++SY, ++DY) {
+      for (SHint SY = sy, DY = dy; SY < sy + height; ++SY, ++DY) {
          SD = src + SY * srcStride + sx * sfd.bytes;
          DD = dst + DY * dstStride + dx * dfd.bytes;
          memcpy(DD, SD, width * sfd.bytes);
       }
+      return ;
+   }
 
-   } else {
+   /* Walk pixels and copy */
+   for (SHint SY = sy, DY = dy; SY < sy + height; ++SY, ++DY) {
+      SD = src + SY * srcStride + sx * sfd.bytes;
+      DD = dst + DY * dstStride + dx * dfd.bytes;
 
-      /* Walk pixels and copy */
-      for (SY = sy, DY = dy; SY < sy + height; ++SY, ++DY) {
-         SD = src + SY * srcStride + sx * sfd.bytes;
-         DD = dst + DY * dstStride + dx * dfd.bytes;
-
-         for (SX = sx, DX = dx; SX < sx + width; ++SX, ++DX) {
-            shLoadColor(&c, SD, &sfd);
-            shStoreColor(&c, DD, &dfd);
-            SD += sfd.bytes;
-            DD += dfd.bytes;
-         }
+      for (SHint SX = sx, DX = dx; SX < sx + width; ++SX, ++DX) {
+         shLoadColor(&c, SD, &sfd);
+         shStoreColor(&c, DD, &dfd);
+         SD += sfd.bytes;
+         DD += dfd.bytes;
       }
    }
+
 }
 
 /*---------------------------------------------------------
