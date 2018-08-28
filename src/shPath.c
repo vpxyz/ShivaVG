@@ -19,7 +19,7 @@
  */
 
 #define VG_API_EXPORT
-#include "openvg.h"
+#include <VG/openvg.h>
 #include "shContext.h"
 #include "shPath.h"
 #include <string.h>

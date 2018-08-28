@@ -21,8 +21,8 @@
 #endif
 
 
-#include <vg/openvg.h>
-#include <vg/vgu.h>
+#include <VG/openvg.h>
+#include <VG/vgu.h>
 
 
 typedef enum

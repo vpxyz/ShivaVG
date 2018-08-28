@@ -1,4 +1,4 @@
-#include <vg/openvg.h>
+#include <VG/openvg.h>
 
 /* Path no.0 ===========================================*/
 const VGubyte commands0[] = {

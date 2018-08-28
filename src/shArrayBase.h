@@ -37,6 +37,8 @@
 #define __SHARRAYBASE_H
 
 #include "shDefs.h"
+#include <VG/openvg.h>
+#include <string.h>
 
 #define VAL(x,y) x ## y
 #define JN(x,y) VAL(x,y)
@@ -55,53 +57,53 @@ typedef struct
    _ITEM_T *items;
    SHint32 capacity;
    SHint32 size;
-   SHint outofmemory;
 
 } _ARRAY_T;
 #endif
 
 
-void JN(_ARRAY_T, _ctor) (_ARRAY_T * a)
+VGErrorCode JN(_ARRAY_T, _ctor) (_ARRAY_T * a)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL);
    a->items = (_ITEM_T *) malloc(sizeof(_ITEM_T));
 
-   if (!a->items) {
-      a->outofmemory = 1;
+   if (a->items == NULL) {
       a->capacity = 0;
       a->size = 0;
-      return;
+      return VG_OUT_OF_MEMORY_ERROR;
    }
 
-   a->outofmemory = 0;
    a->capacity = 1;
    a->size = 0;
+   return VG_NO_ERROR;
 }
 #else
 ;
 #endif
 
 
-void JN(_ARRAY_T, _dtor) (_ARRAY_T * a)
+VGErrorCode JN(_ARRAY_T, _dtor) (_ARRAY_T * a)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL);
-   if (a->items) {
+   if (a->items != NULL) {
       free(a->items);
       a->items = NULL;
    }
+   return VG_NO_ERROR;
 }
 #else
 ;
 #endif
 
-void JN(_FUNC_T, Clear) (_ARRAY_T * a)
+VGErrorCode JN(_FUNC_T, Clear) (_ARRAY_T * a)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL);
-   a->outofmemory = 0;
+   a->items = (_ITEM_T *) memset(a->items, 0, a->capacity * sizeof(_ITEM_T));
    a->size = 0;
+   return VG_NO_ERROR;
 }
 #else
 ;
@@ -113,28 +115,26 @@ void JN(_FUNC_T, Clear) (_ARRAY_T * a)
  * the items are not preserved.
  *--------------------------------------------------------*/
 
-int JN(_FUNC_T, Realloc) (_ARRAY_T * a, SHint newsize)
+VGErrorCode JN(_FUNC_T, Realloc) (_ARRAY_T * a, SHint newsize)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL && newsize > 0);
    if (newsize == a->capacity)
-      return 1;
+      return VG_NO_ERROR;
 
    _ITEM_T *newitems = (_ITEM_T *) malloc(newsize * sizeof(_ITEM_T));
 
-   if (!newitems) {
-      a->outofmemory = 1;
-      return 0;
+   if (newitems == NULL) {
+      return VG_OUT_OF_MEMORY_ERROR;
    }
 
-   if (a->items)
+   if (a->items != NULL)
       free(a->items);
 
-   a->outofmemory = 0;
    a->items = newitems;
    a->capacity = newsize;
    a->size = 0;
-   return 1;
+   return VG_NO_ERROR;
 }
 #else
 ;
@@ -146,30 +146,26 @@ int JN(_FUNC_T, Realloc) (_ARRAY_T * a, SHint newsize)
  * of reallocation items are not preserved.
  *------------------------------------------------------*/
 
-int JN(_FUNC_T, Reserve) (_ARRAY_T * a, SHint newsize)
+VGErrorCode JN(_FUNC_T, Reserve) (_ARRAY_T * a, SHint newsize)
 #ifdef _ARRAY_DEFINE
 {
-   _ITEM_T *newitems = 0;
-
    SH_ASSERT(a != NULL && newsize >= 0);
    if (newsize <= a->capacity)
-      return 1;
+      return VG_NO_ERROR;
 
-   newitems = (_ITEM_T *) malloc(newsize * sizeof(_ITEM_T));
+   _ITEM_T *newitems = (_ITEM_T *) malloc(newsize * sizeof(_ITEM_T));
 
-   if (!newitems) {
-      a->outofmemory = 1;
-      return 0;
+   if (newitems == NULL) {
+      return VG_OUT_OF_MEMORY_ERROR;
    }
 
-   if (a->items)
+   if (a->items != NULL)
       free(a->items);
 
-   a->outofmemory = 0;
    a->items = newitems;
    a->capacity = newsize;
    a->size = 0;
-   return 1;
+   return VG_NO_ERROR;
 }
 #else
 ;
@@ -180,71 +176,67 @@ int JN(_FUNC_T, Reserve) (_ARRAY_T * a, SHint newsize)
  * of reallocation items are copied.
  *------------------------------------------------------*/
 
-int JN(_FUNC_T, ReserveAndCopy) (_ARRAY_T * a, SHint newsize)
+VGErrorCode JN(_FUNC_T, ReserveAndCopy) (_ARRAY_T * a, SHint newsize)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL && newsize >= 0);
    if (newsize <= a->capacity)
-      return 1;
+      return VG_NO_ERROR;
 
    _ITEM_T *newitems = (_ITEM_T *) realloc(a->items, newsize * sizeof(_ITEM_T));
 
-   if (!newitems) {
-      a->outofmemory = 1;
-      return 0;
+   if (newitems == NULL) {
+      return VG_OUT_OF_MEMORY_ERROR;
    }
-
-   a->outofmemory = 0;
    a->items = newitems;
    a->capacity = newsize;
-   return 1;
+   return VG_NO_ERROR;
 }
 #else
 ;
 #endif
 
 
-int JN(_FUNC_T, PushBack) (_ARRAY_T * a, _ITEM_T item)
+VGErrorCode JN(_FUNC_T, PushBack) (_ARRAY_T * a, _ITEM_T item)
 #ifdef _ARRAY_DEFINE
 {
    if (a->capacity == 0) {
-      JN(_FUNC_T, Realloc) (a, 1);
-      if (a->outofmemory)
-         return 0;
+      if (JN(_FUNC_T, Realloc) (a, 1) == VG_OUT_OF_MEMORY_ERROR) {
+         return VG_OUT_OF_MEMORY_ERROR;
+      }
    }
 
-   if (a->size + 1 > a->capacity)
-      JN(_FUNC_T, ReserveAndCopy) (a, a->capacity * 2);
-
-   if (a->outofmemory)
-      return 0;
+   if (a->size + 1 > a->capacity) {
+      if (JN(_FUNC_T, ReserveAndCopy) (a, a->capacity * 2) == VG_OUT_OF_MEMORY_ERROR) {
+         return VG_OUT_OF_MEMORY_ERROR;
+      };
+   }
 
    a->items[a->size++] = item;
-   return 1;
+   return VG_NO_ERROR;
 }
 #else
 ;
 #endif
 
 
-int JN(_FUNC_T, PushBackP) (_ARRAY_T * a, _ITEM_T * item)
+VGErrorCode JN(_FUNC_T, PushBackP) (_ARRAY_T * a, _ITEM_T * item)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL);
    if (a->capacity == 0) {
-      JN(_FUNC_T, Realloc) (a, 1);
-      if (a->outofmemory)
-         return 0;
+      if (JN(_FUNC_T, Realloc) (a, 1) == VG_OUT_OF_MEMORY_ERROR) {
+         return VG_OUT_OF_MEMORY_ERROR;
+      };
    }
 
-   if (a->size + 1 > a->capacity)
-      JN(_FUNC_T, ReserveAndCopy) (a, a->capacity * 2);
-
-   if (a->outofmemory)
-      return 0;
-
+   if (a->size + 1 > a->capacity) {
+      if (JN(_FUNC_T, ReserveAndCopy) (a, a->capacity * 2) == VG_OUT_OF_MEMORY_ERROR) {
+           return VG_OUT_OF_MEMORY_ERROR;
+      }
+   }
    a->items[a->size++] = *item;
-   return 1;
+   return VG_NO_ERROR;
 }
 #else
 ;

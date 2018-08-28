@@ -20,7 +20,7 @@
 
 #define VG_API_EXPORT
 #include <stdio.h>
-#include "openvg.h"
+#include <VG/openvg.h>
 #include "shContext.h"
 
 /*----------------------------------------------------
@@ -143,7 +143,7 @@ shIsEnumValid(SHint type, VGint val)
  * input and correct it to acceptable ranges.
  *---------------------------------------------------*/
 
-SHfloat
+inline SHfloat
 getMaxFloat()
 {
    SHfloatint fi;
@@ -161,7 +161,7 @@ shValidInputFloat(VGfloat f)
    return (SHfloat) f;
 }
 
-static SHint
+static inline SHint
 shValidInputFloat2Int(VGfloat f)
 {
    double v = (double) SH_FLOOR(shValidInputFloat(f));
@@ -174,7 +174,7 @@ shValidInputFloat2Int(VGfloat f)
  * integers and returns the value at given index
  *---------------------------------------------------*/
 
-static SHint
+static inline SHint
 shParamToInt(const void *values, SHint floats, SHint index)
 {
    SH_ASSERT(values != NULL);
@@ -190,7 +190,7 @@ shParamToInt(const void *values, SHint floats, SHint index)
  * floats and returns the value at given index
  *---------------------------------------------------*/
 
-static VGfloat
+static inline VGfloat
 shParamToFloat(const void *values, SHint floats, SHint index)
 {
    SH_ASSERT(values != NULL);
@@ -206,7 +206,7 @@ shParamToFloat(const void *values, SHint floats, SHint index)
  * integers and sets the value at given index
  *---------------------------------------------------*/
 
-static void
+static inline void
 shIntToParam(SHint i, SHint count, void *output, SHint floats, SHint index)
 {
    SH_ASSERT(output != NULL);
@@ -224,7 +224,7 @@ shIntToParam(SHint i, SHint count, void *output, SHint floats, SHint index)
  * floats and sets the value at given index
  *----------------------------------------------------*/
 
-static void
+static inline void
 shFloatToParam(SHfloat f, SHint count, void *output, SHint floats,
                SHint index)
 {
@@ -486,7 +486,8 @@ vgSetfv(VGParamType type, VGint count, const VGfloat * values)
 {
    VG_GETCONTEXT(VG_NO_RETVAL);
 
-   /* TODO: check input array alignment */
+   /* check input array alignment */
+   SH_RETURN_ERR_IF(SH_IS_NOT_ALIGNED(values), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
    /* Error code will be set by shSet */
    shSet(context, type, count, values, 1);
@@ -502,7 +503,8 @@ vgSetiv(VGParamType type, VGint count, const VGint * values)
 {
    VG_GETCONTEXT(VG_NO_RETVAL);
 
-   /* TODO: check input array alignment */
+   /* check input array alignment */
+   SH_RETURN_ERR_IF(SH_IS_NOT_ALIGNED(values), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
    /* Error code wil be set by shSet */
    shSet(context, type, count, values, 0);
@@ -873,7 +875,6 @@ shSetParameter(VGContext * context, VGHandle object,
                SHint count, const void *values, SHint floats)
 {
    SHint ivalue = 0;
-   int i;
 
    /* Check for negative count */
    SH_RETURN_ERR_IF(count < 0, VG_ILLEGAL_ARGUMENT_ERROR, SH_NO_RETVAL);
@@ -952,7 +953,7 @@ shSetParameter(VGContext * context, VGHandle object,
             paint = (SHPaint *) object;
             shStopArrayClear(&paint->instops);
 
-            for (i = 0; i < max; i += 5) {
+            for (int i = 0; i < max; i += 5) {
                stop.offset = shParamToFloat(values, floats, i + 0);
                CSET(stop.color,
                     shParamToFloat(values, floats, i + 1),
@@ -969,7 +970,7 @@ shSetParameter(VGContext * context, VGHandle object,
       case VG_PAINT_LINEAR_GRADIENT:
          SH_RETURN_ERR_IF(count != 4, VG_ILLEGAL_ARGUMENT_ERROR,
                           SH_NO_RETVAL);
-         for (i = 0; i < 4; ++i)
+         for (int i = 0; i < 4; ++i)
             ((SHPaint *) object)->linearGradient[i] =
                shParamToFloat(values, floats, i);
          break;
@@ -977,7 +978,7 @@ shSetParameter(VGContext * context, VGHandle object,
       case VG_PAINT_RADIAL_GRADIENT:
          SH_RETURN_ERR_IF(count != 5, VG_ILLEGAL_ARGUMENT_ERROR,
                           SH_NO_RETVAL);
-         for (i = 0; i < 5; ++i)
+         for (int i = 0; i < 5; ++i)
             ((SHPaint *) object)->radialGradient[i] =
                shParamToFloat(values, floats, i);
          break;

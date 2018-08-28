@@ -19,8 +19,8 @@
  */
 
 #define VG_API_EXPORT
-#include "openvg.h"
-#include "vgu.h"
+#include <VG/openvg.h>
+#include <VG/vgu.h>
 #include "shDefs.h"
 #include "shContext.h"
 #include <stdio.h>

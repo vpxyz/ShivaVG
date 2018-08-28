@@ -19,7 +19,7 @@
  */
 
 #define VG_API_EXPORT
-#include "openvg.h"
+#include <VG/openvg.h>
 #include "shContext.h"
 #include "shGeometry.h"
 
@@ -160,8 +160,7 @@ shSubrecurseCubic(SHPath * p, SHCubic * cubic, SHint * contourStart)
             return;
          --cindex;
 
-      }
-      else {
+      } else {
 
          /* Left recursion goes on top of stack! */
          cright = c;
@@ -814,8 +813,7 @@ shStrokePath(VGContext * c, SHPath * p)
 
             break;
          }
-      }
-      else if (!start && !loop && dashOn) {
+      } else if (!start && !loop && dashOn) {
 
          /* Fill gap with previous (= bevel join) */
          if (cross > 0.0f)
@@ -898,8 +896,7 @@ shStrokePath(VGContext * c, SHPath * p)
             /* Consume dash segments until subdiv end met */
          } while (nextDashLength < strokeLength + norm);
 
-      }
-      else {
+      } else {
 
          /* Add quad for this line segment */
          shPushStrokeQuad(p, &l2, &l1, &r1, &r2);
@@ -1196,9 +1193,11 @@ vgPathTransformedBounds(VGPath path,
                     width == NULL || height == NULL,
                     VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
-   /* TODO: check output pointer alignment */
 
    p = (SHPath *) path;
+   /* check output pointer alignment */
+   SH_RETURN_ERR_IF(SH_IS_NOT_ALIGNED(p), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
+
    VG_RETURN_ERR_IF(!(p->caps & VG_PATH_CAPABILITY_PATH_BOUNDS),
                     VG_PATH_CAPABILITY_ERROR, VG_NO_RETVAL);
 
