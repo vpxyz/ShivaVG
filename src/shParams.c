@@ -39,7 +39,10 @@ shIsParamVector(SHint type)
        type == VG_CLEAR_COLOR ||
        type == VG_PAINT_COLOR ||
        type == VG_PAINT_COLOR_RAMP_STOPS ||
-       type == VG_PAINT_LINEAR_GRADIENT || type == VG_PAINT_RADIAL_GRADIENT);
+       type == VG_PAINT_LINEAR_GRADIENT ||
+       type == VG_PAINT_RADIAL_GRADIENT ||
+       type == VG_IMAGE_QUALITY ||
+       type == VG_RENDERING_QUALITY );
 }
 
 /*----------------------------------------------------

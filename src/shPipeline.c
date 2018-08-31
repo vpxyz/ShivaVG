@@ -41,7 +41,40 @@ shUnpremultiplyFramebuffer()
    /* TODO: hmmmm..... any idea? */
 }
 
-void
+
+/*-----------------------------------------------------------
+ * Set the render quality.
+ *-----------------------------------------------------------*/
+static void
+setRenderQualityGL(VGRenderingQuality quality)
+{
+   switch (quality) {
+   case VG_RENDERING_QUALITY_NONANTIALIASED:
+      glDisable(GL_LINE_SMOOTH);
+      glDisable(GL_POLYGON_SMOOTH);
+      glDisable(GL_MULTISAMPLE);
+      break;
+   case VG_RENDERING_QUALITY_FASTER:
+      glEnable(GL_LINE_SMOOTH);
+      glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
+      glEnable(GL_POLYGON_SMOOTH);
+      glDisable(GL_MULTISAMPLE);
+      break;
+   case VG_RENDERING_QUALITY_BETTER:
+      glEnable(GL_LINE_SMOOTH);
+      glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+      glEnable(GL_POLYGON_SMOOTH);
+      glEnable(GL_MULTISAMPLE);
+      break;
+   default:
+      glDisable(GL_LINE_SMOOTH);
+      glDisable(GL_POLYGON_SMOOTH);
+      glEnable(GL_MULTISAMPLE);
+      break;
+   }
+}
+
+static void
 updateBlendingStateGL(VGContext * c, int alphaIsOne)
 {
    /* Most common drawing mode (SRC_OVER with alpha=1)
@@ -344,10 +377,9 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
       shFindBoundbox(p);
    }
 
+   /* Change render quality according to the context */
    /* TODO: Turn antialiasing on/off */
-   glDisable(GL_LINE_SMOOTH);
-   glDisable(GL_POLYGON_SMOOTH);
-   glEnable(GL_MULTISAMPLE);
+   setRenderQualityGL(context->renderingQuality);
 
    /* Pick paint if available or default */
    fill = (context->fillPaint ? context->fillPaint : &context->defaultPaint);
@@ -395,9 +427,7 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
    }
 
    /* TODO: Turn antialiasing on/off */
-   glDisable(GL_LINE_SMOOTH);
-   glDisable(GL_POLYGON_SMOOTH);
-   glEnable(GL_MULTISAMPLE);
+   setRenderQualityGL(context->renderingQuality);
 
    if ((paintModes & VG_STROKE_PATH) && context->strokeLineWidth > 0.0f) {
 
