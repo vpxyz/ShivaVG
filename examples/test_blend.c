@@ -1,5 +1,7 @@
 #include "test.h"
-/*#include "picu.h"*/
+/*
+ * #include "picu.h"
+ */
 
 VGPath src;
 VGPath dst;
@@ -23,10 +25,12 @@ VGBlendMode blends[5] = {
    VG_BLEND_DST_IN
 };
 
-/*
+
 void createOperands()
 {
-  PICUImage srcImage, dstImage;
+  /*
+   * PICUImage srcImage, dstImage;
+   */
   VGfloat clear[] = {1,0,0,0};
 
   src = testCreatePath();
@@ -40,20 +44,23 @@ void createOperands()
 
   dstFill = vgCreatePaint();
   vgSetParameterfv(dstFill, VG_PAINT_COLOR, 4, dstColor);
-  
-  picuReadFile(&srcImage, IMAGE_DIR"test_blend_src.png", "PNG");
-  picuReadFile(&dstImage, IMAGE_DIR"test_blend_dst.png", "PNG");
 
-  isrc = vgCreateImage(VG_sRGBA_8888, srcImage.width,
-                       srcImage.height, VG_IMAGE_QUALITY_BETTER);
-  vgImageSubData(isrc, srcImage.data, srcImage.stride, VG_sRGBA_8888,
-                  0,0, srcImage.width, srcImage.height);
-
-  idst = vgCreateImage(VG_sRGBA_8888, dstImage.width,
-                       dstImage.height, VG_IMAGE_QUALITY_BETTER);
-  vgImageSubData(idst, dstImage.data, dstImage.stride, VG_sRGBA_8888,
-                  0,0, dstImage.width, dstImage.height);
-}*/
+  // TODO: replace picu with libpng. What tipe of data format require vgImageSubData?
+  /*
+   * picuReadFile(&srcImage, IMAGE_DIR"test_blend_src.png", "PNG");
+   * picuReadFile(&dstImage, IMAGE_DIR"test_blend_dst.png", "PNG");
+   * 
+   * isrc = vgCreateImage(VG_sRGBA_8888, srcImage.width,
+   *                      srcImage.height, VG_IMAGE_QUALITY_BETTER);
+   * vgImageSubData(isrc, srcImage.data, srcImage.stride, VG_sRGBA_8888,
+   *                 0,0, srcImage.width, srcImage.height);
+   * 
+   * idst = vgCreateImage(VG_sRGBA_8888, dstImage.width,
+   *                      dstImage.height, VG_IMAGE_QUALITY_BETTER);
+   * vgImageSubData(idst, dstImage.data, dstImage.stride, VG_sRGBA_8888,
+   *                 0,0, dstImage.width, dstImage.height);
+   */
+}
 
 void
 display(float interval)
@@ -75,14 +82,16 @@ display(float interval)
 int
 main(int argc, char **argv)
 {
-   /*picuInit(); */
+   /*
+    * picuInit();
+    */
 
    testInit(argc, argv, 400, 400, "ShivaVG: Blending Test");
    testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
    testOverlayColor(1, 1, 1, 1);
    testOverlayString("Not implemented yet");
 
-   /*createOperands(); */
+   createOperands();
    testRun();
 
    return EXIT_SUCCESS;

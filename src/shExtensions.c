@@ -75,7 +75,7 @@ checkExtension(const char *extensions, const char *name)
    return 0;
 }
 
-typedef void (*PFVOID) ();
+typedef void (*PFVOID) (void);
 
 PFVOID
 shGetProcAddress(const char *name)

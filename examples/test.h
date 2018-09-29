@@ -39,7 +39,7 @@ typedef enum
 
 #define TEST_CALLBACK_COUNT 8
 
-typedef void (*CallbackFunc) ();
+typedef void (*CallbackFunc) (void);
 typedef void (*DisplayFunc) (float interval);
 typedef void (*ReshapeFunc) (int w, int h);
 typedef void (*KeyFunc) (unsigned char key, int x, int y);
@@ -47,7 +47,7 @@ typedef void (*SpecialKeyFunc) (int key, int x, int y);
 typedef void (*ButtonFunc) (int button, int state, int x, int y);
 typedef void (*MoveFunc) (int x, int y);
 typedef void (*DragFunc) (int x, int y);
-typedef void (*CleanupFunc) ();
+typedef void (*CleanupFunc) (void);
 
 struct Image
 {
@@ -59,7 +59,7 @@ struct Image
 
 struct Image testCreateImageFromJpeg(const char *filename);
 
-VGPath testCreatePath();
+VGPath testCreatePath(void);
 void testMoveTo(VGPath p, float x, float y, VGPathAbsRel absrel);
 void testLineTo(VGPath p, float x, float y, VGPathAbsRel absrel);
 void testHlineTo(VGPath p, float x, VGPathAbsRel absrel);
@@ -89,7 +89,7 @@ void testCallback(TestCallbackType type, CallbackFunc func);
 
 void testInit(int argc, char **argv, int w, int h, const char *title);
 
-void testRun();
+void testRun(void);
 
-VGint testWidth();
-VGint testHeight();
+VGint testWidth(void);
+VGint testHeight(void);

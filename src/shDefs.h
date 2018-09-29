@@ -100,7 +100,6 @@ typedef union
    unsigned int i;
 } SHfloatint;
 
-SHfloat getMaxFloat();
 
 /* Portable function definitions */
 

@@ -146,8 +146,8 @@ shIsEnumValid(SHint type, VGint val)
  * input and correct it to acceptable ranges.
  *---------------------------------------------------*/
 
-inline SHfloat
-getMaxFloat()
+static inline SHfloat
+getMaxFloat(void)
 {
    SHfloatint fi;
    fi.i = SH_MAX_FLOAT_BITS;

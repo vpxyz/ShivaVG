@@ -20,7 +20,7 @@ VGPath bevel_h;
 VGPaint bevel_l_p;
 VGPath bevel_l;
 
-void createTextures();
+void createTextures(void);
 
 void
 display(float phase)

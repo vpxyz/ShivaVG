@@ -86,7 +86,7 @@ vgResizeSurfaceSH(VGint width, VGint height)
 }
 
 VG_API_CALL void
-vgDestroyContextSH()
+vgDestroyContextSH(void)
 {
    /* return if already released */
    if (!g_context)
@@ -98,7 +98,7 @@ vgDestroyContextSH()
 }
 
 VGContext *
-shGetContext()
+shGetContext(void)
 {
    return g_context;
 }

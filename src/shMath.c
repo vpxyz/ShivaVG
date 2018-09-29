@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007 Ivan Leben
+ * Copyright (c) 2018 Vincenzo Pupillo
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,19 +18,10 @@
  *
  */
 
-#ifndef __SH_GEOMETRY_H
-#define __SH_GEOMETRY_H
+#include "shMath.h"
 
-#include "shDefs.h"
-#include "shContext.h"
-#include "shVectors.h"
-#include "shPath.h"
-
-#define SH_PATH_ESTIMATE_QUALITY 1.0f
-
-void shFlattenPath(SHPath * p, SHint surfaceSpace);
-void shStrokePath(VGContext * c, SHPath * p);
-void shTransformVertices(SHMatrix3x3 * m, SHPath * p);
-void shFindBoundbox(SHPath * p);
-
-#endif /* __SH_GEOMETRY_H */
+inline VGint shAddSaturate(VGint a, VGint b)
+{
+   SH_ASSERT(b >= 0);
+   return (a + b >= a) ? a + b : SH_MAX_INT;
+}

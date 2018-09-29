@@ -8,7 +8,7 @@ include(CheckIncludeFiles)
 include(CheckLibraryExists)
 include(CheckTypeSize)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
-set(CMAKE_C_FLAGS "-std=c99")
+set(CMAKE_C_FLAGS "-std=gnu99 -Werror=incompatible-pointer-types -Werror=strict-prototypes -fno-strict-aliasing -Wall")
 
 # Processing the generator options
 # TODO: can we have a master option that will turn others in UI?

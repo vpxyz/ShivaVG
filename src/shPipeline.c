@@ -332,7 +332,8 @@ shIsStrokeCacheValid(VGContext * c, SHPath * p)
  * Tessellates / strokes the path and draws it according to
  * VGContext state.
  *-----------------------------------------------------------*/
-
+// TODO: leggi https://stackoverflow.com/questions/31336454/draw-quadratic-curve-on-gpu
+// http://www.glprogramming.com/red/chapter12.html
 VG_API_CALL void
 vgDrawPath(VGPath path, VGbitfield paintModes)
 {

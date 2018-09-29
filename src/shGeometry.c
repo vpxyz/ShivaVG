@@ -22,7 +22,7 @@
 #include <VG/openvg.h>
 #include "shContext.h"
 #include "shGeometry.h"
-
+#include "shMath.h"
 
 static int
 shAddVertex(SHPath * p, SHVertex * v, SHint * contourStart)
@@ -427,7 +427,6 @@ void
 shFlattenPath(SHPath * p, SHint surfaceSpace)
 {
    SHint contourStart = -1;
-   SHint surfSpace = surfaceSpace;
    SHint *userData[2];
    SHint processFlags =
       SH_PROCESS_SIMPLIFY_LINES |
@@ -1263,4 +1262,90 @@ vgPointAlongPath(VGPath path,
                  VGfloat * x, VGfloat * y,
                  VGfloat * tangentX, VGfloat * tangentY)
 {
+   VG_GETCONTEXT(VG_NO_RETVAL);
+
+   VG_RETURN_ERR_IF(!shIsValidPath(context, path),
+                    VG_BAD_HANDLE_ERROR, VG_NO_RETVAL);
+
+   SHPath *p = (SHPath *) path;
+   VG_RETURN_ERR_IF(
+      (x && y && !(p->caps & VG_PATH_CAPABILITY_POINT_ALONG_PATH)) || (tangentX && tangentY && !(p->caps & VG_PATH_CAPABILITY_TANGENT_ALONG_PATH)),
+      VG_PATH_CAPABILITY_ERROR, VG_NO_RETVAL);
+
+   VG_RETURN_ERR_IF((startSegment < 0 || numSegments <= 0 || shAddSaturate(startSegment, numSegments) > p->segCount), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
+   VG_RETURN_ERR_IF(SH_IS_NOT_ALIGNED(x) || SH_IS_NOT_ALIGNED(y) || SH_IS_NOT_ALIGNED(tangentX) || SH_IS_NOT_ALIGNED(tangentY), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
+
+   // skip the move segment at the start of the path
+   while (numSegments && (p->segs[startSegment] & ~VG_RELATIVE) == VG_MOVE_TO) {
+      startSegment++;
+      numSegments--;
+   }
+
+    // skip move segments at the end of the path
+   while (numSegments && (p->segs[startSegment + numSegments - 1] & ~VG_RELATIVE) == VG_MOVE_TO) {
+        numSegments--;
+   }
+
+   // if the path is empty return a predefined (in the OpenVG specification) value
+   if (numSegments == 0 || p->vertices.size == 0 ) {
+      *x=0.0f;
+      *y=0.0f;
+      *tangentX = 1.0f;
+      *tangentY = 0.0f;
+      return ;
+   }
+
+   // consider the distance from starting segment point
+   // remember: one segment have two vertex
+   VGint startVertex = startSegment * 2;
+   VGfloat length = p->vertices.items[startVertex].length;
+   distance += length;
+   if (distance <= length) {
+      // return the info about first point of the path
+      *x = p->vertices.items[startVertex].point.x;
+      *y = p->vertices.items[startVertex].point.y;
+      *tangentX = p->vertices.items[startVertex].tangent.x;
+      *tangentY = p->vertices.items[startVertex].tangent.y;
+      return;
+   }
+
+   // now consider the distance from ending segment point
+   VGint endVertex = startSegment * 2 + numSegments * 2 - 1;
+   length = p->vertices.items[endVertex].length;
+   if (distance >= length) {
+      // return the info about the last point of the path
+      *x = p->vertices.items[endVertex].point.x;
+      *y = p->vertices.items[endVertex].point.y;
+      *tangentX = p->vertices.items[endVertex].tangent.x;
+      *tangentY = p->vertices.items[endVertex].tangent.y;
+      return;
+   }
+
+   //search for the segment containing the distance
+   VGint start = startVertex;
+   VGint end = startVertex + 1;
+   SH_ASSERT(start >= 0 && start < p->vertices.size);
+   SH_ASSERT(end >= 0 && end < p->vertices.size);
+
+   SHfloat32 startLength, endLength;
+   while (end <= endVertex ) {
+      startLength = p->vertices.items[start].length;
+      endLength = p->vertices.items[end].length;
+
+      if (distance >= startLength && distance < endLength) {
+         //segment found, now interpolate linearly between its end points.
+         SHfloat32 edgeLength = p->vertices.items[start].length - p->vertices.items[start].length;
+         SH_ASSERT(edgeLength > 0.0f);
+         SHfloat32 r = (distance - p->vertices.items[start].length) / edgeLength;
+
+         *x = (1.0f - r) * p->vertices.items[start].point.x + r * p->vertices.items[end].point.x;
+         *y = (1.0f - r) * p->vertices.items[start].point.y + r * p->vertices.items[end].point.y;
+         *tangentX = (1.0f - r) * p->vertices.items[start].tangent.x + r * p->vertices.items[end].tangent.x;
+         *tangentY = (1.0f - r) * p->vertices.items[start].tangent.y + r * p->vertices.items[end].tangent.y;
+         return ;
+      }
+      ++start; ++end;
+   }
+   // Not found! Impossible condition!
+   SH_ASSERT(0);
 }

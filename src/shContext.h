@@ -124,7 +124,7 @@ SHint shIsValidPath(VGContext * c, VGHandle h);
 SHint shIsValidPaint(VGContext * c, VGHandle h);
 SHint shIsValidImage(VGContext * c, VGHandle h);
 SHResourceType shGetResourceType(VGContext * c, VGHandle h);
-VGContext *shGetContext();
+VGContext *shGetContext(void);
 
 /*----------------------------------------------------
  * TODO: Add mutex locking/unlocking to these macros
