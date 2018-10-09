@@ -210,7 +210,7 @@ VGContext_dtor(VGContext * c)
  * Tries to find resources in this context
  *--------------------------------------------------*/
 
-SHint
+inline SHint
 shIsValidPath(VGContext * c, VGHandle h)
 {
    SH_ASSERT(c != NULL && h != NULL);
@@ -218,7 +218,7 @@ shIsValidPath(VGContext * c, VGHandle h)
    return (index == -1) ? 0 : 1;
 }
 
-SHint
+inline SHint
 shIsValidPaint(VGContext * c, VGHandle h)
 {
    SH_ASSERT(c != NULL);
@@ -226,7 +226,7 @@ shIsValidPaint(VGContext * c, VGHandle h)
    return (index == -1) ? 0 : 1;
 }
 
-SHint
+inline SHint
 shIsValidImage(VGContext * c, VGHandle h)
 {
    SH_ASSERT(c != NULL);
@@ -239,7 +239,7 @@ shIsValidImage(VGContext * c, VGHandle h)
  * return its type or invalid flag.
  *--------------------------------------------------*/
 
-SHResourceType
+inline SHResourceType
 shGetResourceType(VGContext * c, VGHandle h)
 {
    if (shIsValidPath(c, h))
@@ -257,7 +257,7 @@ shGetResourceType(VGContext * c, VGHandle h)
  * there is no pending error yet
  *-----------------------------------------------------*/
 
-void
+inline void
 shSetError(VGContext * c, VGErrorCode e)
 {
    SH_ASSERT(c != NULL);

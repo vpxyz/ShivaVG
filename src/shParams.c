@@ -29,7 +29,7 @@
  * otherwise.
  *----------------------------------------------------*/
 
-int
+static inline int
 shIsParamVector(SHint type)
 {
    return

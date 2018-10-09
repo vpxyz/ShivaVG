@@ -110,7 +110,7 @@ SHPath_dtor(SHPath * p)
  * Returns true (1) if given path data type is valid
  *-----------------------------------------------------*/
 
-static SHint
+static inline SHint
 shIsValidDatatype(VGPathDatatype t)
 {
    return (t == VG_PATH_DATATYPE_S_8 ||
@@ -118,13 +118,13 @@ shIsValidDatatype(VGPathDatatype t)
            t == VG_PATH_DATATYPE_S_32 || t == VG_PATH_DATATYPE_F);
 }
 
-static SHint
+static inline SHint
 shIsValidCommand(SHint c)
 {
    return (c >= (VG_CLOSE_PATH >> 1) && c <= (VG_LCWARC_TO >> 1));
 }
 
-static SHint
+static inline SHint
 shIsArcSegment(SHint s)
 {
    return (s == VG_SCWARC_TO || s == VG_SCCWARC_TO ||
@@ -294,7 +294,7 @@ shCoordCountForData(VGint segcount, const SHuint8 * segs)
  * in final interpretation (including scale and bias)
  *-------------------------------------------------------*/
 
-static SHfloat
+static inline SHfloat
 shRealCoordFromData(VGPathDatatype type, SHfloat scale, SHfloat bias,
                     void *data, SHint index)
 {
@@ -316,7 +316,7 @@ shRealCoordFromData(VGPathDatatype type, SHfloat scale, SHfloat bias,
  * from final interpretation (including scale and bias)
  *-------------------------------------------------------*/
 
-static void
+static inline void
 shRealCoordToData(VGPathDatatype type, SHfloat scale, SHfloat bias,
                   void *data, SHint index, SHfloat c)
 {

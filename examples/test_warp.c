@@ -12,15 +12,22 @@
 struct Image cover;
 VGfloat *warpMatrix;
 
+enum direction {
+   GROW,
+   DECREASE,
+   ENLARGE,
+   RESTRICT
+};
+
 void
 display(float interval)
 {
    // simple animation params
-   static float offset = 0.0f;
-   static bool gd = true; // change animation direction
+   static float grow_descr = 0.0f;
+   static float enlarge_restrict = 0.0f;
+   static enum direction dir = GROW;
 
    VGfloat white[] = { 0, 0, 0, 1 };
-   VGint c;
 
    vgSetfv(VG_CLEAR_COLOR, 4, white);
    vgClear(0, 0, testWidth(), testHeight());
@@ -28,38 +35,57 @@ display(float interval)
 
 // calculate warp matrix
    vguComputeWarpQuadToQuad(  // destination quadrilateral
-                              0.0f, 0.0f,
-                              cover.width + 10.0f + offset, 115.0f,
-                              cover.width + 20.0f, cover.height + 25.0f + offset,
-                              25.0f, cover.height + 40.0f,
-                              // source image bounds
-                              0.0f, 0.0f,
-                              cover.width, 0.0f,
-                              cover.width, cover.height, 0.0f, cover.height,
-                              // the output matrix
-                              warpMatrix);
+      0.0f , 0.0f,
+      cover.width + 10.0f + grow_descr, 115.0f,
+      cover.width + 20.0f ,cover.height + 25.0f + grow_descr,
+      25.0f + enlarge_restrict, cover.height + 40.0f + enlarge_restrict,
+      // source image bounds
+      0.0f, 0.0f,
+      cover.width, 0.0f,
+      cover.width, cover.height, 0.0f, cover.height,
+      // the output matrix
+      warpMatrix);
 
-// upload the warp matrix to the OpenVG backend
+   // upload the warp matrix to the OpenVG backend
    vgSeti(VG_MATRIX_MODE, VG_MATRIX_IMAGE_USER_TO_SURFACE);
    vgLoadIdentity();
    vgLoadMatrix(warpMatrix);
    vgTranslate(50, 150);
-// draw image
+   // draw image
    vgDrawImage(cover.img);
 
-   // update animation
-   if (offset >= MAXOFFSET) {
-      gd = false;
-   } else if (offset <= MINOFFSET) {
-      gd = true;
+   // simple animation
+   switch (dir) {
+   case GROW:
+      if (grow_descr >= MAXOFFSET) {
+         dir = DECREASE;
+         grow_descr -= OFFSET;
+      }
+      grow_descr += OFFSET;
+      break;
+      
+   case DECREASE:
+      if (grow_descr <= MINOFFSET) {
+         dir = ENLARGE;
+      }
+      grow_descr -= OFFSET;
+      break;
+      
+   case ENLARGE:
+      if (enlarge_restrict >= MAXOFFSET) {
+         dir = RESTRICT;
+         enlarge_restrict -= OFFSET;
+      }
+      enlarge_restrict += OFFSET;
+      break;
+      
+   case RESTRICT:
+      if (enlarge_restrict <= MINOFFSET) {
+         dir = GROW;
+      }
+      enlarge_restrict -= OFFSET;
+      break;
    }
-
-   if (gd == true) {
-      offset += OFFSET;
-   } else {
-      offset -= OFFSET;
-   }
-
 }
 
 int

@@ -44,7 +44,7 @@
  * OpenVG image format.
  *-----------------------------------------------------------*/
 
-void
+static void
 shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
 {
    SHuint8 abits = 0;
@@ -345,7 +345,7 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
  * the OpenVG specification, else 0.
  *-----------------------------------------------------*/
 
-int
+static int
 shIsValidImageFormat(VGImageFormat format)
 {
    SHint aOrderBit = (1 << 6);
@@ -370,7 +370,7 @@ shIsValidImageFormat(VGImageFormat format)
  * implementation
  *-----------------------------------------------------*/
 
-int
+static inline int
 shIsSupportedImageFormat(VGImageFormat format)
 {
    SHuint32 baseFormat = (format & 0x1F);

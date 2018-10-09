@@ -1125,6 +1125,9 @@ shPathLength(SHPath * p, VGPathSegment segment,
       break;
    case VG_MOVE_TO:            /* no drawn path, not counted in length */
       break;
+   default:
+      
+      break;
    }
 
    (*curSegment)++;
@@ -1346,6 +1349,6 @@ vgPointAlongPath(VGPath path,
       }
       ++start; ++end;
    }
-   // Not found! Impossible condition!
+   // Not found? If we are here, there is a bug.
    SH_ASSERT(0);
 }
