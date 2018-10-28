@@ -271,15 +271,14 @@ vgGetPathCapabilities(VGPath path)
  * number of coordinates.
  *-----------------------------------------------------*/
 
-static SHint
+SHint
 shCoordCountForData(VGint segcount, const SHuint8 * segs)
 {
-   int s;
    int command;
    int count = 0;
 
-   for (s = 0; s < segcount; ++s) {
-      command = ((segs[s] & 0x1E) >> 1);
+   for (VGint i = 0; i < segcount; ++i) {
+      command = ((segs[i] & 0x1E) >> 1);
       if (!shIsValidCommand(command))
          return -1;
       count += shCoordsPerCommand[command];
@@ -287,6 +286,7 @@ shCoordCountForData(VGint segcount, const SHuint8 * segs)
 
    return count;
 }
+
 
 /*-------------------------------------------------------
  * Interpretes the path data array according to the
@@ -337,6 +337,42 @@ shRealCoordToData(VGPathDatatype type, SHfloat scale, SHfloat bias,
       ((SHfloat32 *) data)[index] = (SHfloat32) c;
       break;
    }
+}
+
+/* -------------------------------------------------------
+ * Return the number of vertex of a command
+ *--------------------------------------------------------*/
+SHint
+shVertexPerCommand(SHPath *p, VGint seg)
+{
+   SH_ASSERT(p != NULL);
+
+   SHuint  command = (p->segs[seg]);
+   SHuint  segment = (command & 0x1E);
+   SHint   segindex = (segment >> 1);
+   return shCoordsPerCommand[segindex];
+}
+
+/* -------------------------------------------------------
+ * Extract from path the real coordinates of a given segment
+ * (starting from a specific data position) and returns an
+ * array with the coords
+ *-------------------------------------------------------*/
+SHfloat *
+shRealCoordFromSegment(SHPath *p, VGint seg, VGint dataindex)
+{
+   SH_ASSERT(p != NULL);
+
+   /* Extract command */
+   SHuint  command = (p->segs[seg]);
+   SHuint  segment = (command & 0x1E);
+   SHint   segindex = (segment >> 1);
+   SHint   numcoords = shCoordsPerCommand[segindex];
+   SHfloat *coords = (SHfloat *) malloc(numcoords * sizeof(SHfloat));
+   for (SHint i = 0; i < numcoords; ++i) {
+      coords[i] = shRealCoordFromData(p->datatype, p->scale, p->bias, p->data, dataindex + i);
+   }
+   return coords;
 }
 
 /*-------------------------------------------------
@@ -791,10 +827,9 @@ shProcessPathData(SHPath * p, int flags, SegmentFunc callback, void *userData)
       data[1] = pen.y;
 
       /* Unpack coordinates from path data */
-      for (i = 0; i < numcoords; ++i)
-         data[i + 2] =
-            shRealCoordFromData(p->datatype, p->scale, p->bias, p->data,
-                                d + i);
+      for (i = 0; i < numcoords; ++i) {
+         data[i + 2] = shRealCoordFromData(p->datatype, p->scale, p->bias, p->data, d + i);
+      }
 
       /* Simplify complex segments */
       switch (segment) {
@@ -991,8 +1026,8 @@ shProcessPathData(SHPath * p, int flags, SegmentFunc callback, void *userData)
          break;
 
       }                         /* switch (command) */
-   }                            /* for each segment */
-}
+      }                            /* for each segment */
+   }
 
 /*-------------------------------------------------------
  * Walks raw path data and counts the resulting number
@@ -1317,8 +1352,7 @@ vgInterpolatePath(VGPath dstPath, VGPath startPath,
    void *userData[4];
    SHint segment1, segment2;
    SHint segindex, s, d, i;
-   SHint processFlags =
-      SH_PROCESS_SIMPLIFY_LINES | SH_PROCESS_SIMPLIFY_CURVES;
+   SHint processFlags = SH_PROCESS_SIMPLIFY_LINES | SH_PROCESS_SIMPLIFY_CURVES;
 
    VG_GETCONTEXT(VG_FALSE);
 

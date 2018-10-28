@@ -133,6 +133,20 @@ typedef void (*SegmentFunc) (SHPath * p, VGPathSegment segment,
 void shProcessPathData(SHPath * p, int flags,
                        SegmentFunc callback, void *userData);
 
+// TODO: se questa non serve in altri posti forse è meglio metterla direttamente dentro shGeometry
+/* Return the real coordinates of a given segment starting from a dataindex position */
+SHfloat *
+shRealCoordFromSegment(SHPath *p, VGint seg, VGint dataindex);
+
+
+/* Return the number of vertex of a command */
+SHint
+shVertexPerCommand(SHPath *p, VGint seg);
+
+
+SHint
+shCoordCountForData(VGint segcount, const SHuint8 * segs);
+
 /* Pointer-to-path array */
 #define _ITEM_T SHPath*
 #define _ARRAY_T SHPathArray

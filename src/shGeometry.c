@@ -1276,18 +1276,24 @@ vgPointAlongPath(VGPath path,
       VG_PATH_CAPABILITY_ERROR, VG_NO_RETVAL);
 
    VG_RETURN_ERR_IF((startSegment < 0 || numSegments <= 0 || shAddSaturate(startSegment, numSegments) > p->segCount), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
-   VG_RETURN_ERR_IF(SH_IS_NOT_ALIGNED(x) || SH_IS_NOT_ALIGNED(y) || SH_IS_NOT_ALIGNED(tangentX) || SH_IS_NOT_ALIGNED(tangentY), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
+   VGint startVertex = 0;
    // skip the move segment at the start of the path
    while (numSegments && (p->segs[startSegment] & ~VG_RELATIVE) == VG_MOVE_TO) {
+      startVertex += shVertexPerCommand(p, startSegment);
       startSegment++;
       numSegments--;
    }
 
-    // skip move segments at the end of the path
+   // skip move segments at the end of the path
+   VGint endVertex = p->vertices.size; 
    while (numSegments && (p->segs[startSegment + numSegments - 1] & ~VG_RELATIVE) == VG_MOVE_TO) {
-        numSegments--;
+      endVertex -= shVertexPerCommand(p, numSegments);
+      numSegments--;
    }
+   /* poor man debug
+    * printf("startVertex = %d, endVertex = %d, numSegments = %d \n", startVertex, endVertex, numSegments);
+    */
 
    // if the path is empty return a predefined (in the OpenVG specification) value
    if (numSegments == 0 || p->vertices.size == 0 ) {
@@ -1298,11 +1304,9 @@ vgPointAlongPath(VGPath path,
       return ;
    }
 
-   // consider the distance from starting segment point
-   // remember: one segment have two vertex
-   VGint startVertex = startSegment * 2;
    VGfloat length = p->vertices.items[startVertex].length;
    distance += length;
+
    if (distance <= length) {
       // return the info about first point of the path
       *x = p->vertices.items[startVertex].point.x;
@@ -1313,7 +1317,6 @@ vgPointAlongPath(VGPath path,
    }
 
    // now consider the distance from ending segment point
-   VGint endVertex = startSegment * 2 + numSegments * 2 - 1;
    length = p->vertices.items[endVertex].length;
    if (distance >= length) {
       // return the info about the last point of the path
@@ -1324,7 +1327,7 @@ vgPointAlongPath(VGPath path,
       return;
    }
 
-   //search for the segment containing the distance
+   // search for the segment at given distance, then interpolate
    VGint start = startVertex;
    VGint end = startVertex + 1;
    SH_ASSERT(start >= 0 && start < p->vertices.size);
@@ -1337,9 +1340,10 @@ vgPointAlongPath(VGPath path,
 
       if (distance >= startLength && distance < endLength) {
          //segment found, now interpolate linearly between its end points.
-         SHfloat32 edgeLength = p->vertices.items[start].length - p->vertices.items[start].length;
+         SHfloat32 edgeLength = endLength - startLength;
          SH_ASSERT(edgeLength > 0.0f);
-         SHfloat32 r = (distance - p->vertices.items[start].length) / edgeLength;
+
+         SHfloat32 r = (distance - startLength) / edgeLength;
 
          *x = (1.0f - r) * p->vertices.items[start].point.x + r * p->vertices.items[end].point.x;
          *y = (1.0f - r) * p->vertices.items[start].point.y + r * p->vertices.items[end].point.y;

@@ -28,14 +28,14 @@
 #include "shGeometry.h"
 #include "shPaint.h"
 
-void
+static void
 shPremultiplyFramebuffer()
 {
    /* Multiply target color with its own alpha */
    glBlendFunc(GL_ZERO, GL_DST_ALPHA);
 }
 
-void
+static void
 shUnpremultiplyFramebuffer()
 {
    /* TODO: hmmmm..... any idea? */
@@ -206,18 +206,20 @@ static void
 shDrawPaintMesh(VGContext * c, SHVector2 * min, SHVector2 * max,
                 VGPaintMode mode, GLenum texUnit)
 {
-   SHPaint *p;
+   SHPaint *p = NULL;
    SHVector2 pmin, pmax;
    SHfloat K = 1.0f;
 
    SH_ASSERT(c != NULL && min != NULL && max != NULL);
    /* Pick the right paint */
-   if (mode == VG_FILL_PATH) {
+   switch (mode) {
+   case VG_FILL_PATH:
       p = (c->fillPaint ? c->fillPaint : &c->defaultPaint);
-   }
-   else if (mode == VG_STROKE_PATH) {
+      break;
+   case VG_STROKE_PATH:
       p = (c->strokePaint ? c->strokePaint : &c->defaultPaint);
       K = SH_CEIL(c->strokeMiterLimit * c->strokeLineWidth) + 1.0f;
+      break;
    }
 
    /* We want to be sure to cover every pixel of this path so better

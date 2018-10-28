@@ -8,7 +8,7 @@ include(CheckIncludeFiles)
 include(CheckLibraryExists)
 include(CheckTypeSize)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
-set(CMAKE_C_FLAGS "-std=gnu99 -Werror=incompatible-pointer-types -Werror=strict-prototypes -fno-strict-aliasing -Wall")
+set(CMAKE_C_FLAGS "-std=gnu99 -Werror=incompatible-pointer-types -Werror=strict-prototypes -fno-strict-aliasing -Wall -Wvla")
 
 # Processing the generator options
 # TODO: can we have a master option that will turn others in UI?
@@ -25,6 +25,7 @@ option(BUILD_PATTERN        "Build Pattern Paint example (default=yes)]"        
 option(BUILD_BLEND          "Build Blending example (default=yes)]"                     OFF)
 option(BUILD_EB             "Build Electro Body example (default=yes)]"                 OFF)
 option(BUILD_WARP           "Build Warp image example (default=yes)]"                   OFF)
+option(BUILD_PATH           "Build Path image example (default=yes)]"                   OFF)
 # Setting the master option sets the rest
 if(BUILD_ALL_EXAMPLES)
     set(BUILD_VGU ON)
@@ -38,9 +39,10 @@ if(BUILD_ALL_EXAMPLES)
     set(BUILD_BLEND ON)
     set(BUILD_EB ON)
     set(BUILD_WARP ON)
+    set(BUILD_PATH ON)
 endif()
-set(BUILD_EXAMPLES BUILD_VGU OR BUILD_DASH OR BUILD_LINEAR OR BUILD_RADIAL OR BUILD_INTERPOLATE OR BUILD_TIGER OR 
-    BUILD_IMAGE OR BUILD_PATTERN OR BUILD_BLEND OR BUILD_EB OR BUILD_WARP)
+set(BUILD_EXAMPLES BUILD_VGU OR BUILD_DASH OR BUILD_LINEAR OR BUILD_RADIAL OR BUILD_INTERPOLATE OR BUILD_TIGER OR
+    BUILD_IMAGE OR BUILD_PATTERN OR BUILD_BLEND OR BUILD_EB OR BUILD_WARP OR BUILD_PATH)
 
 # Finding packages
 # TODO: EGL/OpenGLES and friends?

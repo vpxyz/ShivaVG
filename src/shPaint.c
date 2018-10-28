@@ -5,12 +5,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library in the file COPYING;
  * if not, write to the Free Software Foundation, Inc.,
@@ -52,12 +52,12 @@ SHPaint_ctor(SHPaint * p)
    p->premultiplied = VG_FALSE;
    p->spreadMode = VG_COLOR_RAMP_SPREAD_PAD;
    p->tilingMode = VG_TILE_FILL;
-   
+
    for (int i = 0; i < 4; ++i)
       p->linearGradient[i] = 0.0f;
    for (int i = 0; i < 5; ++i)
       p->radialGradient[i] = 0.0f;
-   
+
    p->pattern = VG_INVALID_HANDLE;
 
    glGenTextures(1, &p->texture);
@@ -70,7 +70,7 @@ void
 SHPaint_dtor(SHPaint * p)
 {
    SH_ASSERT(p != NULL);
-   
+
    SH_DEINITOBJ(SHStopArray, p->instops);
    SH_DEINITOBJ(SHStopArray, p->stops);
 
@@ -171,6 +171,46 @@ vgPaintPattern(VGPaint paint, VGImage pattern)
    VG_RETURN(VG_NO_RETVAL);
 }
 
+VG_API_CALL void
+vgSetColor(VGPaint paint, VGuint rgba)
+{
+   VG_GETCONTEXT(VG_NO_RETVAL);
+   VG_RETURN_ERR_IF(!shIsValidPaint(context, paint), VG_BAD_HANDLE_ERROR, VG_NO_RETVAL);
+
+   // unpack rgba
+   VGfloat color[4] = {
+      ((rgba >> 24) & 0xff) / 255.0f,
+      ((rgba >> 16) & 0xff) / 255.0f,
+      ((rgba >> 8) & 0xff) / 255.0f,
+      (rgba & 0xff) / 255.0f
+   };
+
+   vgSetParameterfv(paint, VG_PAINT_COLOR, 4, color);
+
+   VG_RETURN(VG_NO_RETVAL);
+}
+
+VG_API_CALL VGuint
+vgGetColor(VGPaint paint)
+{
+   VG_GETCONTEXT(0);
+   VG_RETURN_ERR_IF(!shIsValidPaint(context, paint), VG_BAD_HANDLE_ERROR, 0);
+
+   VGfloat color[4];
+
+   vgGetParameterfv(paint, VG_PAINT_COLOR, 4, color);
+
+   VGint red, green, blue, alpha;
+   #define CLAMP(x) ((x) < 0.0f ? 0.0f : ((x) > 1.0f ? 1.0f : (x)))
+   red = (VGint)(CLAMP(color[0]) * 255.0f + 0.5f);
+   green = (VGint)(CLAMP(color[1]) * 255.0f + 0.5f);
+   blue = (VGint)(CLAMP(color[2]) * 255.0f + 0.5f);
+   alpha = (VGint)(CLAMP(color[3]) * 255.0f + 0.5f);
+
+   // return packed rgba
+   return (red << 24) | (green << 16) | (blue << 8) | alpha;
+}
+
 void
 shUpdateColorRampTexture(SHPaint * p)
 {
@@ -182,7 +222,7 @@ shUpdateColorRampTexture(SHPaint * p)
    SHfloat k;
 
    SH_ASSERT(p != NULL);
-   
+
    /* Write first pixel color */
    stop1 = &p->stops.items[0];
    CSTORE_RGBA1D_F(stop1->color, rgba, x1);
@@ -292,7 +332,7 @@ shGenerateStops(SHPaint * p, SHfloat minOffset, SHfloat maxOffset,
    SHint istart = 0;
 
    SH_ASSERT(p != NULL);
-   
+
    SHint iend = p->stops.size - 1;
    SHint minDone = 0;
    SHint maxDone = 0;
@@ -392,7 +432,7 @@ void
 shSetGradientTexGLState(SHPaint * p)
 {
    SH_ASSERT(p != NULL);
-   
+
    glBindTexture(GL_TEXTURE_1D, p->texture);
    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -417,7 +457,7 @@ void
 shSetPatternTexGLState(SHPaint * p, VGContext * c)
 {
    SH_ASSERT(p != NULL && c != NULL);
-   
+
    glBindTexture(GL_TEXTURE_2D, ((SHImage *) p->pattern)->texture);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -455,7 +495,7 @@ shDrawLinearGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    SHfloat n;
 
    SH_ASSERT(p != NULL && min != NULL && max != NULL);
-   
+
    SHfloat x1 = p->linearGradient[0];
    SHfloat y1 = p->linearGradient[1];
    SHfloat x2 = p->linearGradient[2];
@@ -519,7 +559,7 @@ shDrawLinearGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       return 1;
    }
 
-  /*--------------------------------------------------------*/
+   /*--------------------------------------------------------*/
 
    for (i = 0; i < 4; ++i) {
 
@@ -539,7 +579,7 @@ shDrawLinearGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
          right = s;
    }
 
-  /*---------------------------------------------------------*/
+   /*---------------------------------------------------------*/
 
    /* Corners of boundbox in gradient system */
    SET2V(l1, cc);
@@ -584,7 +624,7 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    float a, n;
 
    SH_ASSERT(p != NULL && min != NULL && max != NULL);
-   
+
    SHfloat cx = p->radialGradient[0];
    SHfloat cy = p->radialGradient[1];
    SHfloat fx = p->radialGradient[2];
@@ -672,7 +712,7 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       return 1;
    }
 
-  /*--------------------------------------------------------*/
+   /*--------------------------------------------------------*/
 
    /* Find min/max offset */
    for (i = 0; i < 4; ++i) {
@@ -745,7 +785,7 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
          startA = shVectorOrientation(&fcorners[maxJ]);
    }
 
-  /*---------------------------------------------------------*/
+   /*---------------------------------------------------------*/
 
    /* TODO: for minOffset we'd actually need to find minimum
       of the gradient function when X and Y are substitued
