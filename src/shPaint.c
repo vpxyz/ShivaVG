@@ -175,6 +175,8 @@ VG_API_CALL void
 vgSetColor(VGPaint paint, VGuint rgba)
 {
    VG_GETCONTEXT(VG_NO_RETVAL);
+
+   /* Check if handle valid */
    VG_RETURN_ERR_IF(!shIsValidPaint(context, paint), VG_BAD_HANDLE_ERROR, VG_NO_RETVAL);
 
    // unpack rgba
@@ -194,18 +196,19 @@ VG_API_CALL VGuint
 vgGetColor(VGPaint paint)
 {
    VG_GETCONTEXT(0);
+
+   /* Check if handle valid */
    VG_RETURN_ERR_IF(!shIsValidPaint(context, paint), VG_BAD_HANDLE_ERROR, 0);
 
    VGfloat color[4];
 
    vgGetParameterfv(paint, VG_PAINT_COLOR, 4, color);
 
-   VGint red, green, blue, alpha;
    #define CLAMP(x) ((x) < 0.0f ? 0.0f : ((x) > 1.0f ? 1.0f : (x)))
-   red = (VGint)(CLAMP(color[0]) * 255.0f + 0.5f);
-   green = (VGint)(CLAMP(color[1]) * 255.0f + 0.5f);
-   blue = (VGint)(CLAMP(color[2]) * 255.0f + 0.5f);
-   alpha = (VGint)(CLAMP(color[3]) * 255.0f + 0.5f);
+   VGint red = (VGint)(CLAMP(color[0]) * 255.0f + 0.5f);
+   VGint green = (VGint)(CLAMP(color[1]) * 255.0f + 0.5f);
+   VGint blue = (VGint)(CLAMP(color[2]) * 255.0f + 0.5f);
+   VGint alpha = (VGint)(CLAMP(color[3]) * 255.0f + 0.5f);
 
    // return packed rgba
    return (red << 24) | (green << 16) | (blue << 8) | alpha;

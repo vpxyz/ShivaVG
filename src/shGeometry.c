@@ -1286,7 +1286,7 @@ vgPointAlongPath(VGPath path,
    }
 
    // skip move segments at the end of the path
-   VGint endVertex = p->vertices.size; 
+   VGint endVertex = p->vertices.size;
    while (numSegments && (p->segs[startSegment + numSegments - 1] & ~VG_RELATIVE) == VG_MOVE_TO) {
       endVertex -= shVertexPerCommand(p, numSegments);
       numSegments--;
