@@ -37,7 +37,7 @@ display(float interval)
 }
 
 void
-createPrimitives()
+createPrimitives(void)
 {
    VGfloat points[] = { -30, -30, 30, -30, 0, 30 };
 

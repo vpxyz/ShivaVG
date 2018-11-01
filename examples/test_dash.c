@@ -63,7 +63,7 @@ display(float interval)
 }
 
 void
-createStar()
+createStar(void)
 {
    VGubyte segs[] = {
       VG_MOVE_TO, VG_LINE_TO_REL, VG_LINE_TO_REL, VG_LINE_TO_REL,
@@ -93,7 +93,7 @@ createStar()
 }
 
 void
-updateOverlayString()
+updateOverlayString(void)
 {
    switch (mode) {
    case 'd':

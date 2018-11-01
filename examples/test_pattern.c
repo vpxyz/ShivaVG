@@ -90,7 +90,7 @@ display(float interval)
 }
 
 void
-createPattern()
+createPattern(void)
 {
    VGfloat tileFill[] = { 0, 0, 1, 1 };
    vgSetParameteri(patternFill, VG_PAINT_TYPE, VG_PAINT_TYPE_PATTERN);
@@ -100,7 +100,7 @@ createPattern()
 }
 
 void
-updateOverlayString()
+updateOverlayString(void)
 {
    switch (mode) {
    case 't':

@@ -101,7 +101,7 @@ createArrow(VGPath p, VGfloat cx, VGfloat cy, VGfloat dx, VGfloat dy)
 }
 
 void
-createLinear()
+createLinear(void)
 {
    VGfloat dx = gx2 - gx1;
    VGfloat dy = gy2 - gy1;
@@ -151,7 +151,7 @@ createLinear()
 }
 
 void
-updateOverlayString()
+updateOverlayString(void)
 {
    switch (mode) {
    case 's':

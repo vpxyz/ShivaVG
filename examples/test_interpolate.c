@@ -11,7 +11,7 @@ VGPaint fill;
 VGfloat white[] = { 1, 1, 1, 1 };
 
 void
-createMorph()
+createMorph(void)
 {
    vgClearPath(iMorph, VG_PATH_CAPABILITY_ALL);
    vgInterpolatePath(iMorph, iApple, iPear, amount);

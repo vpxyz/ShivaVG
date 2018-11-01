@@ -29,14 +29,14 @@
 #include "shPaint.h"
 
 static void
-shPremultiplyFramebuffer()
+shPremultiplyFramebuffer(void)
 {
    /* Multiply target color with its own alpha */
    glBlendFunc(GL_ZERO, GL_DST_ALPHA);
 }
 
 static void
-shUnpremultiplyFramebuffer()
+shUnpremultiplyFramebuffer(void)
 {
    /* TODO: hmmmm..... any idea? */
 }

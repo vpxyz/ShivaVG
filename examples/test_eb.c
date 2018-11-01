@@ -57,7 +57,7 @@ display(float phase)
 }
 
 void
-createPaths()
+createPaths(void)
 {
    /* Very silly, I know */
    VGubyte segsbk[] = {
@@ -194,7 +194,7 @@ VG_CLOSE_PATH };
 }
 
 void
-drawKirpicz()
+drawKirpicz(void)
 {
    VGfloat dark[] = { 0.1411765, 0.2666667, 0.3294118, 1.0 };
    VGfloat border[] = { 0.1686275, 0.5019608, 0.5647059, 0.4745098 };
@@ -243,7 +243,7 @@ drawKirpicz()
 }
 
 void
-drawWall()
+drawWall(void)
 {
    VGfloat darkblue[] =
       { 0, (VGfloat) 0x54 / 0xff, (VGfloat) 0x54 / 0xff, 1.0 };

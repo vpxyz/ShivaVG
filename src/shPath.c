@@ -274,9 +274,10 @@ vgGetPathCapabilities(VGPath path)
 SHint
 shCoordCountForData(VGint segcount, const SHuint8 * segs)
 {
-   int command;
-   int count = 0;
+   SH_ASSERT(segs != NULL);
 
+   int command = 0;
+   int count = 0;
    for (VGint i = 0; i < segcount; ++i) {
       command = ((segs[i] & 0x1E) >> 1);
       if (!shIsValidCommand(command))
@@ -298,6 +299,8 @@ static inline SHfloat
 shRealCoordFromData(VGPathDatatype type, SHfloat scale, SHfloat bias,
                     void *data, SHint index)
 {
+   SH_ASSERT(data != NULL);
+
    switch (type) {
    case VG_PATH_DATATYPE_S_8:
       return ((SHfloat) ((SHint8 *) data)[index]) * scale + bias;
@@ -320,6 +323,8 @@ static inline void
 shRealCoordToData(VGPathDatatype type, SHfloat scale, SHfloat bias,
                   void *data, SHint index, SHfloat c)
 {
+   SH_ASSERT(data != NULL);
+
    c -= bias;
    c /= scale;
 
@@ -384,6 +389,8 @@ static int
 shResizePathData(SHPath * p, SHint newSegCount, SHint newDataCount,
                  SHuint8 ** newSegs, SHuint8 ** newData)
 {
+   SH_ASSERT(p != NULL);
+
    SHint oldDataSize = 0;
    SHint newDataSize = 0;
 
@@ -545,7 +552,6 @@ VG_API_CALL void
 vgModifyPathCoords(VGPath dstPath, VGint startIndex,
                    VGint numSegments, const void *data)
 {
-   int i;
    SHPath *p;
    SHint newDataCount;
    SHint newDataSize;
@@ -576,11 +582,10 @@ vgModifyPathCoords(VGPath dstPath, VGint startIndex,
 
    /* Copy new coordinates */
    if (p->datatype == VG_PATH_DATATYPE_F) {
-      for (i = 0; i < newDataCount; ++i)
+      for (int i = 0; i < newDataCount; ++i)
          ((SHfloat32 *) p->data)[dataStartCount + i] =
             shValidInputFloat(((VGfloat *) data)[i]);
-   }
-   else {
+   } else {
       memcpy(((SHuint8 *) p->data) + dataStartSize, data, newDataSize);
    }
 
@@ -764,7 +769,6 @@ shCentralizeArc(SHuint command, SHfloat * data)
 void
 shProcessPathData(SHPath * p, int flags, SegmentFunc callback, void *userData)
 {
-   SHint i = 0, s = 0, d = 0;
    SHuint command;
    SHuint segment;
    SHint segindex;
@@ -781,7 +785,8 @@ shProcessPathData(SHPath * p, int flags, SegmentFunc callback, void *userData)
    SET2(pen, 0, 0);
    SET2(tan, 0, 0);
 
-   for (s = 0; s < p->segCount; ++s, d += numcoords) {
+   SHint d = 0;
+   for (SHint s = 0; s < p->segCount; ++s, d += numcoords) {
 
       /* Extract command */
       command = (p->segs[s]);
@@ -827,7 +832,7 @@ shProcessPathData(SHPath * p, int flags, SegmentFunc callback, void *userData)
       data[1] = pen.y;
 
       /* Unpack coordinates from path data */
-      for (i = 0; i < numcoords; ++i) {
+      for (SHint i = 0; i < numcoords; ++i) {
          data[i + 2] = shRealCoordFromData(p->datatype, p->scale, p->bias, p->data, d + i);
       }
 
@@ -1351,7 +1356,7 @@ vgInterpolatePath(VGPath dstPath, VGPath startPath,
    SHuint8 *newSegs, *newData;
    void *userData[4];
    SHint segment1, segment2;
-   SHint segindex, s, d, i;
+   SHint segindex;
    SHint processFlags = SH_PROCESS_SIMPLIFY_LINES | SH_PROCESS_SIMPLIFY_CURVES;
 
    VG_GETCONTEXT(VG_FALSE);
@@ -1430,7 +1435,7 @@ vgInterpolatePath(VGPath dstPath, VGPath startPath,
    }
 
    /* Interpolate data between paths */
-   for (s = 0, d = 0; s < procSegCount1; ++s) {
+   for (SHint s = 0, d = 0; s < procSegCount1; ++s) {
 
       segment1 = (procSegs1[s] & 0x1E);
       segment2 = (procSegs2[s] & 0x1E);
@@ -1458,7 +1463,7 @@ vgInterpolatePath(VGPath dstPath, VGPath startPath,
       /* Interpolate values */
       segindex = (segment1 >> 1);
       newSegs[s] = segment1 | VG_ABSOLUTE;
-      for (i = 0; i < shCoordsPerCommand[segindex]; ++i, ++d) {
+      for (SHint i = 0; i < shCoordsPerCommand[segindex]; ++i, ++d) {
          SHfloat diff = procData2[d] - procData1[d];
          SHfloat value = procData1[d] + amount * diff;
          shRealCoordToData(dst->datatype, dst->scale, dst->bias,

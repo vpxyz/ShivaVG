@@ -28,7 +28,7 @@ set(libOpenVG_HEADERS
     shContext.h
     shMath.h
 )
-add_definitions(-std=c99 -Wall -pedantic -DHAVE_CONFIG_H)
+add_definitions(-DHAVE_CONFIG_H)
 include_directories(${OPENGL_INCLUDE_DIR})
 # TODO what if OpenGL library has nonstandard location?
 add_library(OpenVG SHARED ${libOpenVG_SOURCES})

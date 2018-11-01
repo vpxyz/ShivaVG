@@ -61,7 +61,7 @@ display(float interval)
 }
 
 void
-updateOverlayString()
+updateOverlayString(void)
 {
    switch (mode) {
    case 'z':
@@ -142,7 +142,7 @@ key(unsigned char code, int x, int y)
 }
 
 void
-loadTiger()
+loadTiger(void)
 {
    int i;
    VGPath temp;
@@ -172,7 +172,7 @@ loadTiger()
 }
 
 void
-cleanup()
+cleanup(void)
 {
    free(tigerPaths);
 }

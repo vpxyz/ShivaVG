@@ -104,7 +104,7 @@ createArrow(VGPath p, VGfloat cx, VGfloat cy, VGfloat dx, VGfloat dy)
 }
 
 void
-createRadial()
+createRadial(void)
 {
    VGfloat stops[] = {
       0.0, 1.0, 0.0, 0.0, 1,
@@ -149,7 +149,7 @@ createSquare(VGPath p)
 }
 
 void
-updateOverlayString()
+updateOverlayString(void)
 {
    switch (mode) {
    case 'c':

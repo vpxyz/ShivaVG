@@ -355,7 +355,7 @@ createArrow(VGPath a)
 }
 
 void
-createButtons()
+createButtons(void)
 {
    btnPrev = testCreatePath();
    createButton(btnPrev);

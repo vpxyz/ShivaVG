@@ -26,7 +26,7 @@ VGBlendMode blends[5] = {
 };
 
 
-void createOperands()
+void createOperands(void)
 {
   /*
    * PICUImage srcImage, dstImage;
