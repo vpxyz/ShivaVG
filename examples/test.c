@@ -15,7 +15,6 @@ static float overcolor[4] = { 0, 0, 0, 1 };
 
 static CallbackFunc callbacks[TEST_CALLBACK_COUNT];
 
-
 VGPath
 testCreatePath()
 {
@@ -457,10 +456,13 @@ testCreateImageFromJpeg(const char *filename)
    struct Image image;
 
    /* Check for endianness */
-   if (((unsigned char *) &lilEndianTest)[0] == 1)
+   if (((unsigned char *) &lilEndianTest)[0] == 1) {
       rgbaFormat = VG_lABGR_8888;
-   else
+      SH_DEBUG("testCreateImageFromJpeg: rgbaFormat VG_lABGR_8888\n");
+   } else {
       rgbaFormat = VG_lRGBA_8888;
+      SH_DEBUG("testCreateImageFromJpeg: rgbaFormat VG_lRGBA_8888\n");
+   }
 
    /* Try to open image file */
    infile = fopen(filename, "rb");

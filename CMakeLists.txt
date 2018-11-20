@@ -7,12 +7,14 @@ cmake_minimum_required(VERSION 2.8)
 include(CheckIncludeFiles)
 include(CheckLibraryExists)
 include(CheckTypeSize)
+
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 set(CMAKE_C_FLAGS "-std=gnu99 -Werror=incompatible-pointer-types -Werror=strict-prototypes -fno-strict-aliasing -Wall -Wvla")
 
 # Processing the generator options
 # TODO: can we have a master option that will turn others in UI?
 # TODO: nicer display in UI? http://www.kitware.com/blog/home/post/82
+option(BUILD_DEBUG          "Build with debug (default=no)"                             OFF)
 option(BUILD_ALL_EXAMPLES   "Initialize build values for all examples (default=yes)]"   ON)
 option(BUILD_VGU            "Build VGU example (default=yes)]"                          OFF)
 option(BUILD_DASH           "Build Dashing example (default=yes)]"                      OFF)
@@ -26,6 +28,16 @@ option(BUILD_BLEND          "Build Blending example (default=yes)]"             
 option(BUILD_EB             "Build Electro Body example (default=yes)]"                 OFF)
 option(BUILD_WARP           "Build Warp image example (default=yes)]"                   OFF)
 option(BUILD_PATH           "Build Path image example (default=yes)]"                   OFF)
+option(BUILD_FLOWERS        "Build Flowers example (default=yes)]"                      OFF)
+option(BUILD_STRESS         "Build Stress test example (default=yes)]"                  OFF)
+option(BUILD_CLOCK          "Build Clock example (default=yes)]"                        OFF)
+option(BUILD_SUBWAYMAP      "Build Subwaymap example (default=yes)]"                    OFF)
+option(BUILD_COMPOSITING    "Build Compositing example (default=yes)]"                  OFF)
+
+if (BUILD_DEBUG)
+  set(DEBUG ON CACHE BOOL "Compile with debug code")
+endif()
+
 # Setting the master option sets the rest
 if(BUILD_ALL_EXAMPLES)
     set(BUILD_VGU ON)
@@ -40,9 +52,15 @@ if(BUILD_ALL_EXAMPLES)
     set(BUILD_EB ON)
     set(BUILD_WARP ON)
     set(BUILD_PATH ON)
+    set(BUILD_FLOWERS ON)
+    set(BUILD_STRESS ON)
+    set(BUILD_CLOCK ON)
+    set(BUILD_SUBWAYMAP ON)
+    set(BUILD_COMPOSITING ON)
 endif()
 set(BUILD_EXAMPLES BUILD_VGU OR BUILD_DASH OR BUILD_LINEAR OR BUILD_RADIAL OR BUILD_INTERPOLATE OR BUILD_TIGER OR
-    BUILD_IMAGE OR BUILD_PATTERN OR BUILD_BLEND OR BUILD_EB OR BUILD_WARP OR BUILD_PATH)
+  BUILD_IMAGE OR BUILD_PATTERN OR BUILD_BLEND OR BUILD_EB OR BUILD_WARP OR BUILD_PATH OR BUILD_FLOWERS
+  OR BUILD_STRESS OR BUILD_CLOCK OR BUILD_SUBWAYMAP OR BUILD_COMPOSITING)
 
 # Finding packages
 # TODO: EGL/OpenGLES and friends?
@@ -69,10 +87,12 @@ check_include_files(stdint.h HAVE_STDINT_H)
 check_include_files(stdlib.h HAVE_STDLIB_H)
 check_include_files(strings.h HAVE_STRINGS_H)
 check_include_files(string.h HAVE_STRING_H)
+check_include_files(stdio.h HAVE_STDIO_H)
 check_include_files(sys/stat.h HAVE_SYS_STAT_H)
 check_include_files(sys/types.h HAVE_SYS_TYPES_H)
 check_include_files(unistd.h HAVE_UNISTD_H)
 check_type_size("void*" SIZEOF_VOID_P)
+
 # TODO the AC_TYPE defines need porting
 find_package(ANSIC)
 
@@ -123,8 +143,13 @@ message("ShivaVG will be compiled with the following example programs\n"
         "  Pattern paint             ${BUILD_PATTERN}\n"
         "  Blending                  ${BUILD_BLEND}\n"
         "  Electro Body              ${BUILD_EB}\n"
-        "  Warp Image                ${BUILD_WARP}\n")
-      
+        "  Warp Image                ${BUILD_WARP}\n"
+        "  Flowers                   ${BUILD_FLOWERS}\n"
+        "  Stress test               ${BUILD_STRESS}\n"
+        "  Clock                     ${BUILD_CLOCK}\n"
+        "  Subway Map                ${BUILD_SUBWAYMAP}\n"
+        "  Compositing               ${BUILD_COMPOSITING}\n")
+
 # Pick up subdirectories 
 # TODO see if include_directories work like a stack and whether we can avoid duplication
 # TODO break subdir execution of somebody tries to run them directly

@@ -433,8 +433,8 @@ shFlattenPath(SHPath * p, SHint surfaceSpace)
       SH_PROCESS_SIMPLIFY_CURVES |
       SH_PROCESS_CENTRALIZE_ARCS | SH_PROCESS_REPAIR_ENDS;
 
-   SH_ASSERT( p != NULL);
-   
+   SH_ASSERT(p != NULL);
+
    userData[0] = &contourStart;
    userData[1] = &surfaceSpace;
 
@@ -515,7 +515,7 @@ shStrokeJoinRound(SHPath * p, SHVector2 * c,
    SHfloat a, ang, cosa, sina;
 
    SH_ASSERT(p != NULL && c != NULL && pstart != NULL && pend != NULL && tstart != NULL && tend != NULL);
-   
+
    /* Find angle between lines */
    ang = ANGLE2((*tstart), (*tend));
 
@@ -1291,9 +1291,10 @@ vgPointAlongPath(VGPath path,
       endVertex -= shVertexPerCommand(p, numSegments);
       numSegments--;
    }
-   /* poor man debug
-    * printf("startVertex = %d, endVertex = %d, numSegments = %d \n", startVertex, endVertex, numSegments);
+   /*
+    * poor man debug
     */
+   printf("startVertex = %d, endVertex = %d, numSegments = %d, p->vertices.size = %d\n", startVertex, endVertex, numSegments,p->vertices.size);
 
    // if the path is empty return a predefined (in the OpenVG specification) value
    if (numSegments == 0 || p->vertices.size == 0 ) {

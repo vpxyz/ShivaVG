@@ -20,10 +20,12 @@
 
 #define VG_API_EXPORT
 #include <VG/openvg.h>
-#include "shImage.h"
-#include "shContext.h"
 #include <string.h>
 #include <stdio.h>
+#include "shImage.h"
+#include "shContext.h"
+#include "shMath.h"
+#include "shDefs.h"
 
 #define _ITEM_T SHColor
 #define _ARRAY_T SHColorArray
@@ -38,6 +40,7 @@
 #define _ARRAY_DEFINE
 #include "shArrayBase.h"
 
+#define SH_BASE_IMAGE_FORMAT(format) (format & 0x1F)
 
 /*-----------------------------------------------------------
  * Prepares the proper pixel pack/unpack info for the given
@@ -63,7 +66,7 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
    bgrBit = ((vg & (1 << 7)) >> 7);
 
    /* Find component ordering and size */
-   switch (vg & 0x1F) {
+   switch (SH_BASE_IMAGE_FORMAT(vg)) {
    case VG_sRGBX_8888:
    case VG_lRGBX_8888:
       f->bytes = 4;
@@ -219,8 +222,24 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
       f->rmask = tmask;
    }
 
+   #ifdef DEBUG
+   SH_DEBUG("shSetupImageFormat bgrBit %d, amsbBit %d\n ", bgrBit, amsbBit);
+   #endif
+
+   // For some color formats we need to know the byte order of the machine
+   #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+   #define SH_IMAGE_FORMAT(img) img ## _REV
+   #define SH_IMAGE_FORMAT_REV(img) img
+   #else
+   #define SH_IMAGE_FORMAT(img) img
+   #define SH_IMAGE_FORMAT_REV(img) img ## _REV
+   #endif
+
    /* Find proper mapping to OpenGL formats */
-   switch (vg & 0x1F) {
+   // TODO: fix this! Look the original code
+   // TODO: the endianness calc are broken bgrBit and asmBit doesen't take care of endianness
+   // https://www.opengl.org/discussion_boards/showthread.php/151639-GL_UNSIGNED_INT_8_8_8_8-%21-GL_UNSIGNED_BYTE
+   switch (SH_BASE_IMAGE_FORMAT(vg)) {
    case VG_sRGBX_8888:
    case VG_lRGBX_8888:
    case VG_sRGBA_8888:
@@ -232,24 +251,20 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
 
       if (amsbBit == 0 && bgrBit == 0) {
          f->glformat = GL_RGBA;
-         f->gltype = GL_UNSIGNED_INT_8_8_8_8;
+         f->gltype = SH_IMAGE_FORMAT(GL_UNSIGNED_INT_8_8_8_8);
 
-      }
-      else if (amsbBit == 1 && bgrBit == 0) {
+      } else if (amsbBit == 1 && bgrBit == 0) {
          f->glformat = GL_BGRA;
-         f->gltype = GL_UNSIGNED_INT_8_8_8_8_REV;
+         f->gltype = SH_IMAGE_FORMAT(GL_UNSIGNED_INT_8_8_8_8); // TODO: might be REV ?
 
-      }
-      else if (amsbBit == 0 && bgrBit == 1) {
+      } else if (amsbBit == 0 && bgrBit == 1) {
          f->glformat = GL_BGRA;
-         f->gltype = GL_UNSIGNED_INT_8_8_8_8;
+         f->gltype = SH_IMAGE_FORMAT_REV(GL_UNSIGNED_INT_8_8_8_8);
 
-      }
-      else if (amsbBit == 1 && bgrBit == 1) {
+      } else if (amsbBit == 1 && bgrBit == 1) {
          f->glformat = GL_RGBA;
-         f->gltype = GL_UNSIGNED_INT_8_8_8_8_REV;
+         f->gltype = SH_IMAGE_FORMAT(GL_UNSIGNED_INT_8_8_8_8);
       }
-
       break;
    case VG_sRGBA_5551:
 
@@ -259,18 +274,15 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
          f->glformat = GL_RGBA;
          f->gltype = GL_UNSIGNED_SHORT_5_5_5_1;
 
-      }
-      else if (amsbBit == 1 && bgrBit == 0) {
+      } else if (amsbBit == 1 && bgrBit == 0) {
          f->glformat = GL_BGRA;
          f->gltype = GL_UNSIGNED_SHORT_1_5_5_5_REV;
 
-      }
-      else if (amsbBit == 0 && bgrBit == 1) {
+      } else if (amsbBit == 0 && bgrBit == 1) {
          f->glformat = GL_BGRA;
          f->gltype = GL_UNSIGNED_SHORT_5_5_5_1;
 
-      }
-      else if (amsbBit == 1 && bgrBit == 1) {
+      } else if (amsbBit == 1 && bgrBit == 1) {
          f->glformat = GL_RGBA;
          f->gltype = GL_UNSIGNED_SHORT_1_5_5_5_REV;
       }
@@ -282,22 +294,19 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
 
       if (amsbBit == 0 && bgrBit == 0) {
          f->glformat = GL_RGBA;
-         f->gltype = GL_UNSIGNED_SHORT_4_4_4_4;
+         f->gltype = SH_IMAGE_FORMAT(GL_UNSIGNED_SHORT_4_4_4_4); // GL_UNSIGNED_SHORT_4_4_4_4;
 
-      }
-      else if (amsbBit == 1 && bgrBit == 0) {
+      } else if (amsbBit == 1 && bgrBit == 0) {
          f->glformat = GL_BGRA;
-         f->gltype = GL_UNSIGNED_SHORT_4_4_4_4_REV;
+         f->gltype = SH_IMAGE_FORMAT_REV(GL_UNSIGNED_SHORT_4_4_4_4); // GL_UNSIGNED_SHORT_4_4_4_4_REV
 
-      }
-      else if (amsbBit == 0 && bgrBit == 1) {
+      } else if (amsbBit == 0 && bgrBit == 1) {
          f->glformat = GL_BGRA;
-         f->gltype = GL_UNSIGNED_SHORT_4_4_4_4;
+         f->gltype = SH_IMAGE_FORMAT(GL_UNSIGNED_SHORT_4_4_4_4); // GL_UNSIGNED_SHORT_4_4_4_4;
 
-      }
-      else if (amsbBit == 1 && bgrBit == 1) {
+      } else if (amsbBit == 1 && bgrBit == 1) {
          f->glformat = GL_RGBA;
-         f->gltype = GL_UNSIGNED_SHORT_4_4_4_4_REV;
+         f->gltype = SH_IMAGE_FORMAT_REV(GL_UNSIGNED_SHORT_4_4_4_4); // GL_UNSIGNED_SHORT_4_4_4_4_REV
       }
 
       break;
@@ -309,8 +318,7 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
          f->glformat = GL_RGB;
          f->gltype = GL_UNSIGNED_SHORT_5_6_5;
 
-      }
-      else if (bgrBit == 1) {
+      } else if (bgrBit == 1) {
          f->glformat = GL_RGB;
          f->gltype = GL_UNSIGNED_SHORT_5_6_5;
       }
@@ -350,7 +358,7 @@ shIsValidImageFormat(VGImageFormat format)
 {
    SHint aOrderBit = (1 << 6);
    SHint rgbOrderBit = (1 << 7);
-   SHint baseFormat = format & 0x1F;
+   SHint baseFormat = SH_BASE_IMAGE_FORMAT(format);
    SHint unorderedRgba = format & (~(aOrderBit | rgbOrderBit));
    SHint isRgba = (baseFormat == VG_sRGBX_8888 ||
                    baseFormat == VG_sRGBA_8888 ||
@@ -373,9 +381,10 @@ shIsValidImageFormat(VGImageFormat format)
 static inline int
 shIsSupportedImageFormat(VGImageFormat format)
 {
-   SHuint32 baseFormat = (format & 0x1F);
+   SHuint32 baseFormat = SH_BASE_IMAGE_FORMAT(format);
    if (baseFormat == VG_sRGBA_8888_PRE ||
-       baseFormat == VG_lRGBA_8888_PRE || baseFormat == VG_BW_1)
+       baseFormat == VG_lRGBA_8888_PRE ||
+       baseFormat == VG_BW_1)
       return 0;
 
    return 1;
@@ -538,7 +547,7 @@ void
 shUpdateImageTextureSize(SHImage * i)
 {
    SH_ASSERT(i != NULL);
-   
+
    i->texwidth = i->width;
    i->texheight = i->height;
    i->texwidthK = 1.0f;
@@ -546,17 +555,14 @@ shUpdateImageTextureSize(SHImage * i)
 
    /* Round size to nearest power of 2 */
    /* TODO: might be dropped out if it works without  */
-
-   /*i->texwidth = 1;
-     while (i->texwidth < i->width)
-     i->texwidth *= 2;
-
-     i->texheight = 1;
-     while (i->texheight < i->height)
-     i->texheight *= 2;
-
-     i->texwidthK  = (SHfloat)i->width  / i->texwidth;
-     i->texheightK = (SHfloat)i->height / i->texheight; */
+/*
+   i->texwidth = shClp2(i->width);
+   
+   i->texheight = shClp2(i->height);
+   
+   i->texwidthK  = (SHfloat)i->width  / i->texwidth;
+   i->texheightK = (SHfloat)i->height / i->texheight;
+*/
 }
 
 /*--------------------------------------------------
@@ -565,39 +571,31 @@ shUpdateImageTextureSize(SHImage * i)
  *--------------------------------------------------*/
 
 void
-shUpdateImageTexture(SHImage * i, VGContext * c)
+shUpdateImageTexture(SHImage *i, VGContext *context)
 {
    SHint potwidth;
    SHint potheight;
    SHint8 *potdata;
 
-   SH_ASSERT(i != NULL && c != NULL);
+   SH_ASSERT(i != NULL && context != NULL);
 
    /* Find nearest power of two size */
-
-   potwidth = 1;
-   while (potwidth < i->width)
-      potwidth *= 2;
-
-   potheight = 1;
-   while (potheight < i->height)
-      potheight *= 2;
-
+   potwidth = shClp2(i->width);
+   potheight = shClp2(i->height);
 
    /* Scale into a temp buffer if image not a power-of-two size (pot)
       and non-power-of-two textures are not supported by OpenGL */
 
    if ((i->width < potwidth || i->height < potheight) &&
-       !c->isGLAvailable_TextureNonPowerOfTwo) {
+       !context->isGLAvailable_TextureNonPowerOfTwo) {
 
       potdata = (SHint8 *) malloc(potwidth * potheight * i->fd.bytes);
-      if (!potdata)
-         return;
+      SH_RETURN_ERR_IF(!potdata, VG_OUT_OF_MEMORY_ERROR, SH_NO_RETVAL);
 
+      SH_DEBUG("shUpdateImageTexture: scale texture as power-of-two for OpenGL");
       glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-      glPixelStorei(GL_PACK_ALIGNMENT, 1);
+      glPixelStorei(GL_PACK_ALIGNMENT, 1); // <--- TODO: why this?
       glBindTexture(GL_TEXTURE_2D, i->texture);
-
 
       gluScaleImage(i->fd.glformat, i->width, i->height, i->fd.gltype,
                     i->data, potwidth, potheight, i->fd.gltype, potdata);
@@ -612,10 +610,14 @@ shUpdateImageTexture(SHImage * i, VGContext * c)
    /* Store pixels to texture */
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
    glBindTexture(GL_TEXTURE_2D, i->texture);
-   glTexImage2D(GL_TEXTURE_2D, 0, i->fd.glintformat, i->texwidth, i->texheight, 0, i->fd.glformat, 0x8367 /*i->fd.gltype */ , i->data); /* FIXME determine why the format is so silly */
-/*   short center=(i->texwidth*i->texheight)*2+2*i->texwidth;
-//   printf("shUpdateImageTexture: 0x%x 0x%x 0x%x\n",i->fd.glintformat,i->fd.glformat, i->fd.gltype);
-//   printf("shUpdateImageTexture: %d %d %d %d\n",i->data[center],i->data[center+1],i->data[center+2],i->data[center+3]); */
+
+   // TODO: fix this! Look the original code
+   glTexImage2D(GL_TEXTURE_2D, 0, i->fd.glintformat, i->texwidth, i->texheight, 0, i->fd.glformat, i->fd.gltype , i->data);
+   #ifdef DEBUG
+   short center = (i->texwidth*i->texheight)*2+2*i->texwidth;
+   SH_DEBUG("shUpdateImageTexture: 0x%x 0x%x 0x%x\n",i->fd.glintformat,i->fd.glformat, i->fd.gltype);
+   SH_DEBUG("shUpdateImageTexture: %d %d %d %d\n",i->data[center],i->data[center+1],i->data[center+2],i->data[center+3]);
+   #endif
 }
 
 /*----------------------------------------------------------
@@ -626,8 +628,6 @@ VG_API_CALL VGImage
 vgCreateImage(VGImageFormat format,
               VGint width, VGint height, VGbitfield allowedQuality)
 {
-   SHImage *i = NULL;
-   SHImageFormatDesc fd;
    VG_GETCONTEXT(VG_INVALID_HANDLE);
 
    /* Reject invalid formats */
@@ -645,6 +645,7 @@ vgCreateImage(VGImageFormat format,
                     VG_ILLEGAL_ARGUMENT_ERROR, VG_INVALID_HANDLE);
 
    /* Check if byte size exceeds SH_MAX_IMAGE_BYTES */
+   SHImageFormatDesc fd;
    shSetupImageFormat(format, &fd);
    VG_RETURN_ERR_IF(width * height * fd.bytes > SH_MAX_IMAGE_BYTES,
                     VG_ILLEGAL_ARGUMENT_ERROR, VG_INVALID_HANDLE);
@@ -655,7 +656,12 @@ vgCreateImage(VGImageFormat format,
                       VG_IMAGE_QUALITY_FASTER | VG_IMAGE_QUALITY_BETTER),
                     VG_ILLEGAL_ARGUMENT_ERROR, VG_INVALID_HANDLE);
 
+   #ifdef DEBUG
+   SH_DEBUG("VGImageformat 0x%x, in decimale %d\n ", format, format);
+   #endif
+
    /* Create new image object */
+   SHImage *i = NULL;
    SH_NEWOBJ(SHImage, i);
    VG_RETURN_ERR_IF(!i, VG_OUT_OF_MEMORY_ERROR, VG_INVALID_HANDLE);
    i->width = width;

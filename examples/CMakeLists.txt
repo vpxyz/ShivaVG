@@ -9,7 +9,7 @@ set(EXAMPLE_LIBS ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES})
 set(EXAMPLE_INCLUDE ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 set(EXAMPLE_tiger_SRC test_tiger_paths.c)
 
-foreach (example vgu dash linear radial interpolate tiger image pattern blend eb warp path)
+foreach (example vgu dash linear radial interpolate tiger image pattern blend eb warp path flowers stress clock subwaymap compositing)
     string(TOUPPER ${example} EXAMPLE)
     if(BUILD_${EXAMPLE})
         include_directories(${EXAMPLE_${example}_INCLUDES})

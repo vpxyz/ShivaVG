@@ -1,2 +1,7 @@
 build
 *~
+*TAGS
+cscope.*
+GPATH
+*.log
+

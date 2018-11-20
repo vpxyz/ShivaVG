@@ -331,7 +331,7 @@ _INLINE SHint JN(_FUNC_T, Find) (_ARRAY_T * a, _ITEM_T item)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL);
-   for (int i = 0; i < a->size; ++i) {
+   for (SHint32 i = 0; i < a->size; ++i) {
 #ifdef _COMPARE_T
       if (_COMPARE_T(a->items[i], item))
          return i;
@@ -351,7 +351,7 @@ void JN(_FUNC_T, RemoveAt) (_ARRAY_T * a, SHint index)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL && index >= 0 && index < a->size);
-   for (int i = index; i < a->size - 1; ++i)
+   for (SHint32 i = index; i < a->size - 1; ++i)
       a->items[i] = a->items[i + 1];
    a->size--;
 }

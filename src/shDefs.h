@@ -81,7 +81,7 @@ typedef float SHfloat32;
 /* Maximum / minimum values */
 
 #define SH_MAX_INT  (0x7fffffff)
-#define SH_MIN_INT (-0x7fffffff-1)
+#define SH_MIN_INT (-0x7fffffff - 1)
 
 #define SH_MANTISSA_BITS   23
 #define SH_EXPONENT_BITS   8
@@ -122,24 +122,23 @@ typedef union
 #define SH_ISNAN isnan
 #endif
 
-
 /* Helper macros */
 
 #define PI 3.141592f
 #define SH_DEG2RAD(a) (a * PI / 180.0f)
 #define SH_RAD2DEG(a) (a * 180.0f / PI)
 #define SH_ABS(a) fabsf(a)
-#define SH_MAX(a,b) fmaxf(a,b)
-#define SH_MIN(a,b) fminf(a,b)
+#define SH_MAX(a,b) fmaxf(a, b)
+#define SH_MIN(a,b) fminf(a, b)
 #define SH_NEARZERO(a) (a >= -0.0001 && a < 0.0001)
-#define SH_SWAP(a,b) {SHfloat t=a; a=b; b=t;}
-#define SH_CLAMP(a,min,max) {if (a<min) a=min; if (a>max) a=max; }
-#define SH_DIST(a,b,x,y) SH_SQRT( ((x-a)*(x-a)) + ((y-b)*(y-b))  )
+#define SH_SWAP(a,b) { SHfloat t = a; a = b; b = t; }
+#define SH_CLAMP(a,min,max) { if (a < min) a = min; if (a > max) a = max; }
+#define SH_DIST(a,b,x,y) SH_SQRT(((x - a) * (x - a)) + ((y - b) * (y - b)))
 
-#define SH_NEWOBJ(type,obj) { obj = (type*)malloc(sizeof(type)); if(obj) type ## _ctor(obj); }
+#define SH_NEWOBJ(type,obj) { obj = (type *) malloc(sizeof(type)); if (obj != NULL) type ## _ctor(obj); }
 #define SH_INITOBJ(type,obj){ type ## _ctor(&obj); }
 #define SH_DEINITOBJ(type,obj) { type ## _dtor(&obj); }
-#define SH_DELETEOBJ(type,obj) { if(obj) type ## _dtor(obj); free(obj); }
+#define SH_DELETEOBJ(type,obj) { if (obj) type ## _dtor(obj); free(obj); }
 #define SH_IS_NOT_ALIGNED(p) (((uintptr_t) p) & (sizeof(uintptr_t)-1))
 
 /* Implementation limits */
@@ -174,6 +173,37 @@ typedef union
 #endif
 
 #include "shExtensions.h"
+
+
+/* Debugging helpers
+  Based on Zed. A. Shaw macros (see http://c.learncodethehardway.org/), with few modification.
+  Copyright (C) 2010 Zed. A. Shaw
+*/
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+
+#ifdef DEBUG
+#define SH_DEBUG(M, ...) fprintf(stderr, "DEBUG %s:%d: " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#else
+#define SH_DEBUG(M, ...)
+#endif
+
+#define SH_CLEAN_ERRNO() (errno == 0 ? "None" : strerror(errno))
+
+#define SH_LOG_ERR(M, ...) fprintf(stderr, "[ERROR] (%s:%d: errno: %s) " M "\n", __FILE__, __LINE__, SH_CLEAN_ERRNO(), ##__VA_ARGS__)
+
+#define SH_LOG_WARN(M, ...) fprintf(stderr, "[WARN] (%s:%d: errno: %s) " M "\n", __FILE__, __LINE__, SH_CLEAN_ERRNO(), ##__VA_ARGS__)
+
+#define SH_LOG_INFO(M, ...) fprintf(stderr, "[INFO] (%s:%d) " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+
+#define SH_CHECK(A, M, ...) if (!(A)) { SH_LOG_ERR(M, ##__VA_ARGS__); errno = 0; goto error; }
+
+#define SH_SENTINEL(M, ...)  { SH_LOG_ERR(M, ##__VA_ARGS__); errno = 0; goto error; }
+
+#define SH_CHECK_MEM(A) SH_CHECK((A), "Out of memory.")
+
+#define SH_CHECK_DEBUG(A, M, ...) if (!(A)) { SH_DEBUG(M, ##__VA_ARGS__); errno = 0; goto error; }
 
 
 #endif /* __SHDEFS_H */

@@ -25,6 +25,16 @@
 #include <VG/vgu.h>
 
 
+/*
+ * #ifdef DEBUG
+ * #define SH_DEBUG(M, ...) fprintf(stderr, "DEBUG %s:%d: " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+ * #else
+ * #define SH_DEBUG(M, ...)
+ * #endif
+ */
+
+#define SH_DEBUG(M, ...) fprintf(stderr, "DEBUG %s:%d: " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+
 typedef enum
 {
    TEST_CALLBACK_DISPLAY = 0,
@@ -93,3 +103,4 @@ void testRun(void);
 
 VGint testWidth(void);
 VGint testHeight(void);
+

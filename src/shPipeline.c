@@ -81,6 +81,7 @@ updateBlendingStateGL(VGContext * c, int alphaIsOne)
       as well as SRC is optimized by turning OpenGL
       blending off. In other cases its turned on. */
 
+   SH_DEBUG("updateBlendingStateGL(): alphaIsOne = %d\n", alphaIsOne);
    SH_ASSERT(c != NULL);
    switch (c->blendMode) {
    case VG_BLEND_SRC:
@@ -120,6 +121,33 @@ updateBlendingStateGL(VGContext * c, int alphaIsOne)
 
    case VG_BLEND_DST_OVER:
       glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
+      glEnable(GL_BLEND);
+      break;
+
+   case VG_BLEND_ADDITIVE:
+      glBlendFunc(GL_ONE, GL_ONE);
+      glEnable(GL_BLEND);
+      break;
+
+   case VG_BLEND_MULTIPLY:
+      glBlendFunc(GL_DST_COLOR, GL_ZERO);
+      glEnable(GL_BLEND);
+      break;
+
+   case VG_BLEND_SCREEN:
+      glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE);
+      glEnable(GL_BLEND);
+      break;
+
+   case VG_BLEND_DARKEN:
+      glBlendEquation(GL_MIN);
+      glBlendFunc(GL_ONE, GL_ONE);
+      glEnable(GL_BLEND);
+      break;
+
+   case VG_BLEND_LIGHTEN:
+      glBlendEquation(GL_MAX);
+      glBlendFunc(GL_ONE, GL_ONE);
       glEnable(GL_BLEND);
       break;
 
@@ -339,7 +367,6 @@ shIsStrokeCacheValid(VGContext * c, SHPath * p)
 VG_API_CALL void
 vgDrawPath(VGPath path, VGbitfield paintModes)
 {
-   SHPath *p;
    SHMatrix3x3 mi;
    SHfloat mgl[16];
    SHPaint *fill, *stroke;
@@ -366,7 +393,7 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
       glEnable(GL_SCISSOR_TEST);
    }
 
-   p = (SHPath *) path;
+   SHPath *p = (SHPath *) path;
 
    /* If user-to-surface matrix invertible tessellate in
       surface space for better path resolution */
@@ -396,7 +423,7 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
    glMultMatrixf(mgl);
 
    if (paintModes & VG_FILL_PATH) {
-
+      SH_DEBUG("vgDrawPath(): paintModes & VG_FILL_PATH == true");
       /* Tesselate into stencil */
       glEnable(GL_STENCIL_TEST);
       glStencilFunc(GL_ALWAYS, 0, 0);
@@ -492,7 +519,6 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
          glDisable(GL_LINE_SMOOTH);
       }
    }
-
 
    glPopMatrix();
 
@@ -626,12 +652,10 @@ vgDrawImage(VGImage image)
       glDisable(GL_TEXTURE_2D);
       glDisable(GL_STENCIL_TEST);
 
-   }
-   else if (context->imageMode == VG_DRAW_IMAGE_STENCIL) {
-
-
-   }
-   else {                       /* Either normal mode or multiplying with a color-paint */
+   } else if (context->imageMode == VG_DRAW_IMAGE_STENCIL) {
+      SH_LOG_INFO("vgDrawImage(): VG_DRAW_IMAGE_STENCIL not implemented yet\n");
+   } else {
+      /* Either normal mode or multiplying with a color-paint */
 
       /* Setup blending */
       updateBlendingStateGL(context, 0);
