@@ -230,7 +230,7 @@ const char commands[] =
    "Click & drag mouse to change\n"
    "value for current mode\n\n"
    "H - this help\n"
-   "Q - change display rendere quality\n";
+   "Q - change display render quality\n";
 
 
 void key(unsigned char code, int x, int y)
@@ -243,9 +243,12 @@ void key(unsigned char code, int x, int y)
       else
          quality = VG_RENDERING_QUALITY_FASTER;
       break;
+   case 'h':
+   case 'H':
+      /* Show help */
+      testOverlayString(commands);
    }
    glutPostRedisplay();
-  
 }
 
 int main(int argc, char *argv[])

@@ -182,10 +182,10 @@ shParamToInt(const void *values, SHint floats, SHint index)
 {
    SH_ASSERT(values != NULL);
    
-   if (floats)
+   if (floats) {
       return shValidInputFloat2Int(((const VGfloat *) values)[index]);
-   else
-      return (SHint) ((const VGint *) values)[index];
+   }
+   return (SHint) ((const VGint *) values)[index];
 }
 
 /*---------------------------------------------------
@@ -198,10 +198,10 @@ shParamToFloat(const void *values, SHint floats, SHint index)
 {
    SH_ASSERT(values != NULL);
    
-   if (floats)
+   if (floats) {
       return shValidInputFloat(((const VGfloat *) values)[index]);
-   else
-      return (SHfloat) ((const VGint *) values)[index];
+   }
+   return (SHfloat) ((const VGint *) values)[index];
 }
 
 /*---------------------------------------------------
@@ -946,17 +946,15 @@ shSetParameter(VGContext * context, VGHandle object,
          break;
 
       case VG_PAINT_COLOR_RAMP_STOPS:{
-
-            int max;
             SHPaint *paint;
             SHStop stop;
             SH_RETURN_ERR_IF(count % 5, VG_ILLEGAL_ARGUMENT_ERROR,
                              SH_NO_RETVAL);
-            max = SH_MIN(count, SH_MAX_COLOR_RAMP_STOPS * 5);
+            SHint max = SH_MIN(count, SH_MAX_COLOR_RAMP_STOPS * 5);
             paint = (SHPaint *) object;
             shStopArrayClear(&paint->instops);
 
-            for (int i = 0; i < max; i += 5) {
+            for (SHint i = 0; i < max; i += 5) {
                stop.offset = shParamToFloat(values, floats, i + 0);
                CSET(stop.color,
                     shParamToFloat(values, floats, i + 1),
@@ -973,9 +971,9 @@ shSetParameter(VGContext * context, VGHandle object,
       case VG_PAINT_LINEAR_GRADIENT:
          SH_RETURN_ERR_IF(count != 4, VG_ILLEGAL_ARGUMENT_ERROR,
                           SH_NO_RETVAL);
-         for (int i = 0; i < 4; ++i)
-            ((SHPaint *) object)->linearGradient[i] =
-               shParamToFloat(values, floats, i);
+         for (int i = 0; i < 4; ++i) {
+            ((SHPaint *) object)->linearGradient[i] = shParamToFloat(values, floats, i);
+         }
          break;
 
       case VG_PAINT_RADIAL_GRADIENT:

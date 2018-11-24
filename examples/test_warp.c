@@ -100,6 +100,8 @@ main(int argc, char **argv)
    warpMatrix = (VGfloat *) malloc(9 * sizeof(VGfloat));
 
    testRun();
+   
+   free(warpMatrix);
 
    return EXIT_SUCCESS;
 }

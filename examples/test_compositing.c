@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 bool openVGInitialized = false;
 bool imageGrabbed = false;
@@ -188,10 +189,17 @@ void display(void)
    }
 }
 
+
+const char commands[] =
+   "Click & drag mouse to change\n"
+   "value for current mode\n\n"
+   "H - this help\n"
+   "A - change blend mode\n"
+   "Q - change display render quality\n";
+
 void key(unsigned char code, int x, int y)
 {
-   switch(code) {
-   case 'Q':
+   switch (tolower(code)) {
    case 'q':
       if (quality == VG_RENDERING_QUALITY_FASTER)
          quality = VG_RENDERING_QUALITY_BETTER;
@@ -199,7 +207,6 @@ void key(unsigned char code, int x, int y)
          quality = VG_RENDERING_QUALITY_FASTER;
       break;
 
-   case 'A':
    case 'a':
    {
       VGuint i = (VGuint) blendMode;
@@ -209,8 +216,13 @@ void key(unsigned char code, int x, int y)
          blendMode = VG_BLEND_SRC;
    }
    break;
+
+   case 'h':
+      /* Show help */
+      testOverlayString(commands);
+      return;
    }
-   glutPostRedisplay();
+
 }
 
 
@@ -225,10 +237,9 @@ void move(int button, int state, int x, int y)
             dstCenter[1] = y;
       }
    }
-   glutPostRedisplay();
 }
 
-void click(int button, int state, int x, int y) 
+void click(int button, int state, int x, int y)
 {
    if (state != GLUT_DOWN) {
       pickedPoint = 0;
@@ -256,7 +267,6 @@ void click(int button, int state, int x, int y)
       pickedPoint = 0;
       lastPickedPoint = 0;
    }
-   glutPostRedisplay();
 }
 
 void initApp(void)
@@ -281,7 +291,10 @@ void initApp(void)
 
 int main(int argc, char *argv[])
 {
+
    testInit(argc, argv, windowWidth, windowHeight , "ShivaVG: compositing example");
+   initApp();
+
    testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
    testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
    testCallback(TEST_CALLBACK_BUTTON, (CallbackFunc) click);
@@ -289,8 +302,7 @@ int main(int argc, char *argv[])
    testOverlayString("Press H for a list of commands");
    testOverlayColor(1, 1, 1, 1);
 
-   initApp();
    testRun();
-   
+
    return EXIT_SUCCESS;
 }

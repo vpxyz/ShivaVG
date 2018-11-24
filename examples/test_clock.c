@@ -471,8 +471,7 @@ const char commands[] =
 
 void key(unsigned char code, int x, int y)
 {
-   switch(code)
-   {
+   switch (code) {
    case 'Q':
    case 'q':
       if (quality == VG_RENDERING_QUALITY_FASTER)
@@ -481,6 +480,7 @@ void key(unsigned char code, int x, int y)
          quality = VG_RENDERING_QUALITY_FASTER;
       break;
    }
+   glutPostRedisplay();
 }
 
 

@@ -7,6 +7,7 @@
 #include <time.h>
 #include <math.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #define OVG_RGB(r,g,b) ((b << 8) | (g << 16) | (r << 24))
 #define NUM_PATHS (sizeof(objl_paths) / sizeof(PathData))
@@ -17,7 +18,7 @@ typedef struct {
    VGint nCommands;
    VGint nFloats;
    VGuint color;
-   VGfloat	transform[9];
+   VGfloat transform[9];
 } PathData;
 
 #include "./milano5_data.c"
@@ -69,8 +70,7 @@ void display(void)
    vgScale((VGfloat)windowWidth / (x1 - x0), -(VGfloat)windowHeight / (y1 - y0));
    vgTranslate(-x0, -y0);
 
-   for (VGint i = 0; i < NUM_PATHS; ++i)
-   {
+   for (VGint i = 0; i < NUM_PATHS; ++i) {
       vgSetColor(solidCol, objl_paths[i].color | 255);
       vgDrawPath(paths[i], VG_FILL_PATH);
    }
@@ -93,8 +93,7 @@ void initApp(void)
 
 void key(unsigned char code, int x, int y)
 {
-   switch(code) {
-   case 'A':
+   switch (tolower(code)) {
    case 'a':
       logicHalfWidth /= 1.04f;
       if (logicHalfWidth < 25.0f) {
@@ -103,7 +102,6 @@ void key(unsigned char code, int x, int y)
       logicHalfHeight = logicHalfWidth * MAP_HEIGHT / MAP_WIDTH;
       break;
 
-   case 'Z':
    case 'z':
       logicHalfWidth *= 1.04f;
       if (logicHalfWidth > MAP_WIDTH * 0.5f) {
@@ -148,38 +146,37 @@ void specialKey(int key, int x, int y )
 void
 drag(int x, int y)
 {
-   SH_DEBUG("drag(): x = %d, y = %d\n", x, y);
+   SH_DEBUG("drag(): x = %d, y = %d, logicCenterX = %f, logicCenterY = %f\n", x , y, logicCenterX, logicCenterY);
    // detect drag direction
    if (logicCenterX - x < 0) {
       // move to right
-      logicCenterX += logicHalfWidth * 0.005f;
+      logicCenterX += logicHalfWidth * 0.05f;
       if (logicCenterX + logicHalfWidth > MAP_WIDTH)
          logicCenterX = MAP_WIDTH - logicHalfWidth;
    } else if (logicCenterX - x > 0) {
       // move to left
-      logicCenterX -= logicHalfWidth * 0.005f;
+      logicCenterX -= logicHalfWidth * 0.05f;
       if (logicCenterX - logicHalfWidth < 0.0f)
          logicCenterX = logicHalfWidth;
    }
 
    if (logicCenterY - y > 0) {
       // move to up
-      logicCenterY -= logicHalfHeight * 0.005f;
+      logicCenterY -= logicHalfHeight * 0.05f;
       if (logicCenterY - logicHalfHeight < 0.0f)
          logicCenterY = logicHalfHeight;
    } else if (logicCenterY - y < 0) {
       // move to down
-      logicCenterY += logicHalfHeight * 0.005f;
+      logicCenterY += logicHalfHeight * 0.05f;
       if (logicCenterY + logicHalfHeight > MAP_HEIGHT)
          logicCenterY = MAP_HEIGHT - logicHalfHeight;
    }
-   glutPostRedisplay();
 }
 
 
 int main(int argc, char *argv[])
 {
-   testInit(argc, argv, windowWidth, windowHeight , "ShivaVG: clock example");
+   testInit(argc, argv, windowWidth, windowHeight , "ShivaVG: subwaymap example");
    initApp();
    testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
    testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
@@ -189,5 +186,5 @@ int main(int argc, char *argv[])
    testOverlayColor(0.0, 0.0, 0.0, 1.0);
    testRun();
 
-   return 0;
+   return EXIT_SUCCESS;
 }

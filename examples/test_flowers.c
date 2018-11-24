@@ -7,6 +7,8 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <ctype.h>
+
 typedef struct _particle {
    VGfloat x, y;
    VGfloat dx, dy;
@@ -22,7 +24,7 @@ typedef struct _particle {
 
 bool openVGInitialized = false;
 VGint windowWidth = 832;
-VGint windowHeight = 512;
+VGint windowHeight = 832;
 VGfloat zoomFactor;
 VGint oldMouseX, oldMouseY;
 VGRenderingQuality quality = VG_RENDERING_QUALITY_BETTER;
@@ -32,7 +34,6 @@ VGint flowerIndex = 0;
 VGPath path0;
 VGPaint flower_paints[MAX_PAINTS];
 particle flowers[MAX_FLOWERS];
-
 
 
 void genPaints(void)
@@ -71,10 +72,7 @@ void genPaths(void)
 
 void initFlowers(void)
 {
-   VGint i;
-
-   for (i = 0; i < MAX_FLOWERS; ++i)
-   {
+   for (VGint i = 0; i < MAX_FLOWERS; ++i) {
       flowers[i].dx = 0.0f;
       flowers[i].dy = 0.0f;
       flowers[i].scl = 0.0f;
@@ -93,8 +91,7 @@ void display(void)
    vgSeti(VG_BLEND_MODE, VG_BLEND_ADDITIVE);
 
    vgSeti(VG_MATRIX_MODE, VG_MATRIX_PATH_USER_TO_SURFACE);
-   for (VGint i = 0; i < MAX_FLOWERS; ++i)
-   {
+   for (VGint i = 0; i < MAX_FLOWERS; ++i) {
       flowers[i].rot += flowers[i].rotf;
       flowers[i].scl += flowers[i].sclf;
       flowers[i].x += flowers[i].dx;
@@ -122,25 +119,29 @@ const char commands[] =
 
 void key(unsigned char code, int x, int y)
 {
-   switch(code) {
-   case 'Q':
+   switch(tolower(code)) {
    case 'q':
       if (quality == VG_RENDERING_QUALITY_FASTER)
          quality = VG_RENDERING_QUALITY_BETTER;
       else
          quality = VG_RENDERING_QUALITY_FASTER;
       break;
+   case 'h':
+      testOverlayString(commands);
+      break;
    }
+
 }
 
 void move(int button, int state, int x, int y)
 {
-   if( button == GLUT_LEFT_BUTTON ) {
+   SH_DEBUG("position x=%d, y=%d\n", x, y);
+   if (button == GLUT_LEFT_BUTTON) {
       flowerIndex = (flowerIndex % MAX_FLOWERS);
       flowers[flowerIndex].dx = (VGfloat)(0.5f*(rand()%255)/255.0f) -0.5f;
       flowers[flowerIndex].dy = (VGfloat)(0.5f*(rand()%255)/255.0f) -0.5f;
-      flowers[flowerIndex].x = ((VGfloat)x);
-      flowers[flowerIndex].y = ((VGfloat)y);
+      flowers[flowerIndex].x = ((VGfloat) x);
+      flowers[flowerIndex].y = ((VGfloat) windowHeight - y);
       flowers[flowerIndex].x = (((flowers[flowerIndex].x - (VGfloat)windowWidth * 0.5f)) / zoomFactor) + ((VGfloat)windowWidth * 0.5f);
       flowers[flowerIndex].y = (((flowers[flowerIndex].y - (VGfloat)windowHeight * 0.5f)) / zoomFactor) + ((VGfloat)windowHeight * 0.5f);
       flowers[flowerIndex].scl = (VGfloat)0.05f*((rand()%255)/255.0f);
@@ -175,8 +176,8 @@ void click(int button, int state, int x, int y)
    flowerIndex = (flowerIndex % MAX_FLOWERS);
    flowers[flowerIndex].dx = (VGfloat)(0.5f*(rand()%255)/255.0f) - 0.5f;
    flowers[flowerIndex].dy = (VGfloat)(0.5f*(rand()%255)/255.0f) - 0.5f;
-   flowers[flowerIndex].x = ((VGfloat)x);
-   flowers[flowerIndex].y = ((VGfloat)y);
+   flowers[flowerIndex].x = ((VGfloat) x);
+   flowers[flowerIndex].y = ((VGfloat) windowHeight - y);
    flowers[flowerIndex].x = (((flowers[flowerIndex].x - (VGfloat)windowWidth * 0.5f)) / zoomFactor) + ((VGfloat)windowWidth * 0.5f);
    flowers[flowerIndex].y = (((flowers[flowerIndex].y - (VGfloat)windowHeight * 0.5f)) / zoomFactor) + ((VGfloat)windowHeight * 0.5f);
    flowers[flowerIndex].scl = (VGfloat)0.05f*((rand()%255)/255.0f);
