@@ -11,6 +11,9 @@ include(CheckTypeSize)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 set(CMAKE_C_FLAGS "-std=gnu99 -Werror=incompatible-pointer-types -Werror=strict-prototypes -fno-strict-aliasing -Wall -Wvla")
 
+# Export json compilation database command, usefull for clang-check 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Processing the generator options
 # TODO: can we have a master option that will turn others in UI?
 # TODO: nicer display in UI? http://www.kitware.com/blog/home/post/82
@@ -118,7 +121,6 @@ endif()
 
 # Names, strings etc
 set(PACKAGE ${CMAKE_PROJECT_NAME})
-set(PACKAGE_BUGREPORT "elfy.ua@gmail.com") # TODO replace this after Quturnix gets an official bug reporting email
 set(PACKAGE_NAME ${PACKAGE})
 set(PACKAGE_STRING "${PACKAGE}-${PACKAGE_VERSION}")
 set(PACKAGE_TARNAME "shivavg") # TODO I don't really think we -need- that
