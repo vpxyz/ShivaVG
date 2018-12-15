@@ -45,3 +45,4 @@ inline VGint shClp2(VGint v)
    return ++v;
 
 }
+

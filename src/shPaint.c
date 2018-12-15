@@ -494,9 +494,6 @@ int
 shDrawLinearGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
                          VGPaintMode mode, GLenum texUnit)
 {
-   SHint i;
-   SHfloat n;
-
    SH_ASSERT(p != NULL && min != NULL && max != NULL);
 
    SHfloat x1 = p->linearGradient[0];
@@ -527,7 +524,8 @@ shDrawLinearGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    SET2(c, x1, y1);
    SET2(ux, x2 - x1, y2 - y1);
    SET2(uy, -ux.y, ux.x);
-   n = NORM2(ux);
+
+   SHfloat n = NORM2(ux);
    DIV2(ux, n);
    NORMALIZE2(uy);
 
@@ -556,7 +554,7 @@ shDrawLinearGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       SHColor *c = &p->stops.items[p->stops.size - 1].color;
       glColor4fv((GLfloat *) c);
       glBegin(GL_QUADS);
-      for (i = 0; i < 4; ++i)
+      for (SHint i = 0; i < 4; ++i)
          glVertex2fv((GLfloat *) & corners[i]);
       glEnd();
       return 1;
@@ -564,7 +562,7 @@ shDrawLinearGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
 
    /*--------------------------------------------------------*/
 
-   for (i = 0; i < 4; ++i) {
+   for (SHint i = 0; i < 4; ++i) {
 
       /* Find min/max offset and perpendicular span */
       SHfloat o, s;
@@ -572,14 +570,17 @@ shDrawLinearGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       SUB2V(corners[i], c);
       o = DOT2(corners[i], ux) / n;
       s = DOT2(corners[i], uy);
-      if (o < minOffset || i == 0)
+      if (i != 0) {
+         minOffset = (o < minOffset ? o : minOffset);
+         maxOffset = (o > maxOffset ? o : maxOffset);
+         left = (s < left ? s : left);
+         right = (s > right ? s : right);
+      } else {
          minOffset = o;
-      if (o > maxOffset || i == 0)
          maxOffset = o;
-      if (s < left || i == 0)
          left = s;
-      if (s > right || i == 0)
          right = s;
+      }
    }
 
    /*---------------------------------------------------------*/
@@ -709,8 +710,10 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       SHColor *c = &p->stops.items[p->stops.size - 1].color;
       glColor4fv((GLfloat *) c);
       glBegin(GL_QUADS);
-      for (i = 0; i < 4; ++i)
-         glVertex2fv((GLfloat *) & corners[i]);
+        glVertex2fv((GLfloat *) & corners[0]);
+        glVertex2fv((GLfloat *) & corners[1]);
+        glVertex2fv((GLfloat *) & corners[2]);
+        glVertex2fv((GLfloat *) & corners[3]);
       glEnd();
       return 1;
    }
@@ -887,8 +890,10 @@ shDrawPatternMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       SHColor *c = &context->tileFillColor;
       glColor4fv((GLfloat *) c);
       glBegin(GL_QUADS);
-      for (int i = 0; i < 4; ++i)
-         glVertex2fv((GLfloat *) & corners[i]);
+         glVertex2fv((GLfloat *) & corners[0]);
+         glVertex2fv((GLfloat *) & corners[1]);
+         glVertex2fv((GLfloat *) & corners[2]);
+         glVertex2fv((GLfloat *) & corners[3]);
       glEnd();
       return 1;
    }
@@ -906,18 +911,19 @@ shDrawPatternMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    glScalef(sx, sy, 1.0f);
    glMultMatrixf(migl);
 
-
    /* Draw boundbox with same texture coordinates
       that will get transformed back to paint space */
    shSetPatternTexGLState(p, context);
    glEnable(GL_TEXTURE_2D);
    glBegin(GL_QUADS);
-
-   for (int i = 0; i < 4; ++i) {
-      glMultiTexCoord2f(texUnit, corners[i].x, corners[i].y);
-      glVertex2fv((GLfloat *) & corners[i]);
-   }
-
+      glMultiTexCoord2f(texUnit, corners[0].x, corners[0].y);
+      glVertex2fv((GLfloat *) & corners[0]);
+      glMultiTexCoord2f(texUnit, corners[1].x, corners[1].y);
+      glVertex2fv((GLfloat *) & corners[1]);
+      glMultiTexCoord2f(texUnit, corners[2].x, corners[2].y);
+      glVertex2fv((GLfloat *) & corners[2]);
+      glMultiTexCoord2f(texUnit, corners[3].x, corners[3].y);
+      glVertex2fv((GLfloat *) & corners[3]);
    glEnd();
    glDisable(GL_TEXTURE_2D);
    glPopMatrix();

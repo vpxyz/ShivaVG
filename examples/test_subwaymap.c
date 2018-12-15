@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-#define OVG_RGB(r,g,b) ((b << 8) | (g << 16) | (r << 24))
+
 #define NUM_PATHS (sizeof(objl_paths) / sizeof(PathData))
 
 typedef struct {
@@ -101,7 +101,6 @@ void key(unsigned char code, int x, int y)
       }
       logicHalfHeight = logicHalfWidth * MAP_HEIGHT / MAP_WIDTH;
       break;
-
    case 'z':
       logicHalfWidth *= 1.04f;
       if (logicHalfWidth > MAP_WIDTH * 0.5f) {

@@ -300,6 +300,26 @@ VG_API_CALL void
 vgMask(VGImage mask, VGMaskOperation operation,
        VGint x, VGint y, VGint width, VGint height)
 {
+   SH_ASSERT(width > 0 && height > 0);
+   VG_GETCONTEXT(VG_NO_RETVAL);
+
+   switch (operation) {
+   case VG_CLEAR_MASK:
+      break;
+   case VG_FILL_MASK:
+      break;
+   case VG_SET_MASK:
+      break;      
+   case VG_UNION_MASK:
+      break;
+   case VG_INTERSECT_MASK:
+      break;
+   case VG_SUBTRACT_MASK:
+      break;      
+   default:
+      break;
+      
+   }
 }
 
 VG_API_CALL void

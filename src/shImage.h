@@ -22,6 +22,7 @@
 #define __SHIMAGE_H
 
 #include "shDefs.h"
+#include <VG/openvg.h>
 
 /*-----------------------------------------------------------
  * ColorFormat holds the data necessary to pack/unpack color
@@ -147,8 +148,10 @@ void SHImage_dtor(SHImage * i);
 #define INT2COLCOORD(i, max) ( (SHfloat)i / (SHfloat)max  )
 #define COL2INTCOORD(c, max) ( (SHuint)SH_FLOOR(c * (SHfloat)max + 0.5f) )
 
-void shStoreColor(SHColor * c, void *data, SHImageFormatDesc * f);
-void shLoadColor(SHColor * c, const void *data, SHImageFormatDesc * f);
+SHuint32 shPackColor(SHColor *c, SHImageFormatDesc *f);
+void shStorePackedColor(void *data, SHuint8 colorFormatSize, SHuint32 packedColor);
+void shStoreColor(SHColor *c, void *data, SHImageFormatDesc *f);
+void shLoadColor(SHColor *c, const void *data, SHImageFormatDesc *f);
 
 
 #endif /* __SHIMAGE_H */

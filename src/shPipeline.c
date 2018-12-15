@@ -462,6 +462,9 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
    if ((paintModes & VG_STROKE_PATH) && context->strokeLineWidth > 0.0f) {
 
       if (1) {                  /*context->strokeLineWidth > 1.0f) { */
+      /*
+       * if (context->strokeLineWidth > 1.0f) {
+       */
 
          if (shIsStrokeCacheValid(context, p) == VG_FALSE) {
             /* Generate stroke triangles in user space */

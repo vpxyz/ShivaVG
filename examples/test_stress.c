@@ -4,10 +4,10 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-#include <time.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 typedef struct _ControlPoint {
    VGfloat x, y;
@@ -21,7 +21,9 @@ VGint windowHeight = 512;
 VGfloat windowScaleX, windowScaleY;
 VGRenderingQuality quality = VG_RENDERING_QUALITY_BETTER;
 VGint drawnFrames, totalFrames;
-unsigned timeRand;
+
+
+time_t previous_time;
 
 VGPath path;
 VGPaint paint;
@@ -48,7 +50,6 @@ void genPaints(void)
 
 void genPaths(void)
 {
-   VGint i, j;
 
    path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 0, 0, VG_PATH_CAPABILITY_ALL);
 
@@ -60,8 +61,7 @@ void genPaths(void)
    controlPoints[5].x = 0.0f; controlPoints[5].y = 200.0f;
    controlPoints[6].x = 200.0f; controlPoints[6].y = 200.0f;
    controlPoints[7].x = 200.0f; controlPoints[7].y = 0.0f;
-   for (i = 0; i < 8; ++i)
-   {
+   for (VGint i = 0; i < 8; ++i) {
       controlPoints[i].dx = (VGfloat)(2.0f * (rand() % 256) / 256.0f) - 1.0f;
       controlPoints[i].dy = (VGfloat)(2.0f * (rand() % 256) / 256.0f) - 1.0f;
    }
@@ -69,28 +69,18 @@ void genPaths(void)
    // this frame rise a bug
    totalFrames = 8999;
    //totalFrames = 0;
-   for (j = 0; j < totalFrames; ++j)
-   {
-      for (i = 0; i < 8; ++i)
-      {
-         if (controlPoints[i].x < -BOUNCE_DIMENSION)
-         {
+   for (VGint j = 0; j < totalFrames; ++j) {
+      for (VGint i = 0; i < 8; ++i) {
+         if (controlPoints[i].x < -BOUNCE_DIMENSION) {
             controlPoints[i].dx = -controlPoints[i].dx;
-         }
-         else
-            if (controlPoints[i].x > BOUNCE_DIMENSION)
-            {
+         } else if (controlPoints[i].x > BOUNCE_DIMENSION) {
                controlPoints[i].dx = -controlPoints[i].dx;
-            }
-         if (controlPoints[i].y < -BOUNCE_DIMENSION)
-         {
-            controlPoints[i].dy = -controlPoints[i].dy;
          }
-         else
-            if (controlPoints[i].y > BOUNCE_DIMENSION)
-            {
+         if (controlPoints[i].y < -BOUNCE_DIMENSION) {
+            controlPoints[i].dy = -controlPoints[i].dy;
+         } else if (controlPoints[i].y > BOUNCE_DIMENSION) {
                controlPoints[i].dy = -controlPoints[i].dy;
-            }
+         }
          controlPoints[i].x += controlPoints[i].dx;
          controlPoints[i].y += controlPoints[i].dy;
       }
@@ -227,16 +217,16 @@ void display(void)
 }
 
 const char commands[] =
-   "Click & drag mouse to change\n"
-   "value for current mode\n\n"
+   "Commands\n"
    "H - this help\n"
    "Q - change display render quality\n";
 
+const char help[] = "Press H for a list of commands";
 
 void key(unsigned char code, int x, int y)
 {
-   switch(code) {
-   case 'Q':
+   static int open = 0;
+   switch(tolower(code)) {
    case 'q':
       if (quality == VG_RENDERING_QUALITY_FASTER)
          quality = VG_RENDERING_QUALITY_BETTER;
@@ -244,9 +234,14 @@ void key(unsigned char code, int x, int y)
          quality = VG_RENDERING_QUALITY_FASTER;
       break;
    case 'h':
-   case 'H':
       /* Show help */
-      testOverlayString(commands);
+      if (!open) {
+         open = 1;
+         testOverlayString(commands);
+      } else {
+         testOverlayString(help);
+         open = 0;
+      }
    }
    glutPostRedisplay();
 }
@@ -259,8 +254,9 @@ int main(int argc, char *argv[])
 
    testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
    testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
-   testOverlayString("Press H for a list of commands");
+   testOverlayString(help);
    testOverlayColor(0.0, 0.0, 0.0, 1.0);
+
    testRun();
 
    return EXIT_SUCCESS;

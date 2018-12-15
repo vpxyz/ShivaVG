@@ -133,7 +133,7 @@ void key(unsigned char code, int x, int y)
 
 }
 
-void move(int button, int state, int x, int y)
+void click(int button, int state, int x, int y)
 {
    SH_DEBUG("position x=%d, y=%d\n", x, y);
    if (button == GLUT_LEFT_BUTTON) {
@@ -171,7 +171,7 @@ void move(int button, int state, int x, int y)
    glutPostRedisplay();
 }
 
-void click(int button, int state, int x, int y)
+void drag(int x, int y)
 {
    flowerIndex = (flowerIndex % MAX_FLOWERS);
    flowers[flowerIndex].dx = (VGfloat)(0.5f*(rand()%255)/255.0f) - 0.5f;
@@ -205,8 +205,8 @@ int main(int argc, char *argv[])
 
    testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
    testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
+   testCallback(TEST_CALLBACK_DRAG, (CallbackFunc) drag);
    testCallback(TEST_CALLBACK_BUTTON, (CallbackFunc) click);
-   testCallback(TEST_CALLBACK_BUTTON, (CallbackFunc) move);
    testOverlayString("Press H for a list of commands");
    testOverlayColor(1, 1, 1, 1);
 

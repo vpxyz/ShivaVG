@@ -133,6 +133,7 @@ typedef union
 #define SH_NEARZERO(a) (a >= -0.0001 && a < 0.0001)
 #define SH_SWAP(a,b) { SHfloat t = a; a = b; b = t; }
 #define SH_CLAMP(a,min,max) { if (a < min) a = min; if (a > max) a = max; }
+#define SH_CLAMP_MAX(a, max) { if (a > max) a = max; }
 #define SH_DIST(a,b,x,y) SH_SQRT(((x - a) * (x - a)) + ((y - b) * (y - b)))
 
 #define SH_NEWOBJ(type,obj) { obj = (type *) malloc(sizeof(type)); if (obj != NULL) type ## _ctor(obj); }
@@ -170,6 +171,7 @@ typedef union
 #include <GL/glu.h>
 #define GL_GLEXT_LEGACY         /* don't include glext.h */
 #include <GL/glx.h>
+#include <GL/glext.h>
 #endif
 
 #include "shExtensions.h"

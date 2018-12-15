@@ -213,7 +213,7 @@ vgCopyPixels .......................... FULLY implemented
 * Image Filters:
 
 ```
-vgColorMatrix ......................... NOT implemented
+vgColorMatrix ......................... PARTIALLY implemented
 vgConvolve ............................ NOT implemented
 vgSeparableConvolve ................... NOT implemented
 vgGaussianBlur ........................ NOT implemented

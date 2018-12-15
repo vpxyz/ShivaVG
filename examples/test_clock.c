@@ -5,7 +5,9 @@
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
+#include <sys/time.h>
 #include <time.h>
+#include <ctype.h>
 
 bool openVGInitialized = false;
 VGint windowWidth = 384;
@@ -438,9 +440,11 @@ void display(void)
    }
 
    // draw cursors
-   const time_t t = time(NULL);
-   struct tm *st = localtime(&t);
-   drawCursors(st->tm_hour, st->tm_min, st->tm_sec, 0);
+   struct timeval tv;
+   gettimeofday(&tv, NULL);
+   struct tm *ptm = localtime(&tv.tv_sec);
+
+   drawCursors(ptm->tm_hour, ptm->tm_min, ptm->tm_sec, tv.tv_usec / 1000);
 
    // draw glass
    vgSeti(VG_BLEND_MODE, VG_BLEND_ADDITIVE);
@@ -463,22 +467,30 @@ void initApp(void)
 }
 
 const char commands[] =
-   "Click & drag mouse to change\n"
-   "value for current mode\n\n"
+   "Commands\n"
    "H - this help\n"
-   "Q - change display rendere quality\n";
+   "Q - change display render quality\n";
 
+const char help[] = "Press H for a list of commands";
 
 void key(unsigned char code, int x, int y)
 {
-   switch (code) {
-   case 'Q':
+   static int open = 0;
+   switch (tolower(code)) {
    case 'q':
       if (quality == VG_RENDERING_QUALITY_FASTER)
          quality = VG_RENDERING_QUALITY_BETTER;
       else
          quality = VG_RENDERING_QUALITY_FASTER;
       break;
+   case 'h':
+      if (!open) {
+         testOverlayString(commands);
+         open = 1;
+      } else {
+         testOverlayString(help);
+         open = 0;
+      }
    }
    glutPostRedisplay();
 }
@@ -492,7 +504,7 @@ int main(int argc, char *argv[])
 
    testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
    testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
-   testOverlayString("Press H for a list of commands");
+   testOverlayString(help);
    testOverlayColor(0.0, 0.0, 0.0, 1.0);
    testRun();
 

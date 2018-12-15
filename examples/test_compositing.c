@@ -197,8 +197,11 @@ const char commands[] =
    "A - change blend mode\n"
    "Q - change display render quality\n";
 
+const char help[] = "Press H for a list of commands";
+
 void key(unsigned char code, int x, int y)
 {
+   static int open = 0;
    switch (tolower(code)) {
    case 'q':
       if (quality == VG_RENDERING_QUALITY_FASTER)
@@ -211,15 +214,21 @@ void key(unsigned char code, int x, int y)
    {
       VGuint i = (VGuint) blendMode;
       i++;
-      blendMode = (VGBlendMode)i;
+      blendMode = (VGBlendMode) i;
       if (blendMode > VG_BLEND_ADDITIVE)
          blendMode = VG_BLEND_SRC;
    }
    break;
 
    case 'h':
-      /* Show help */
-      testOverlayString(commands);
+      if (!open) {
+         /* Show help */
+         testOverlayString(commands);
+         open = 1;
+      } else {
+         testOverlayString(help);
+         open = 0;
+      }
       return;
    }
 
@@ -228,15 +237,17 @@ void key(unsigned char code, int x, int y)
 
 void move(int button, int state, int x, int y)
 {
-   if (button == GLUT_LEFT_BUTTON) {
-      if (pickedPoint == 1) {
-         srcCenter[0] = x;
-         srcCenter[1] = y;
-      } else if (pickedPoint == 2) {
-            dstCenter[0] = x;
-            dstCenter[1] = y;
-      }
+   if (button != GLUT_LEFT_BUTTON)
+      return;
+
+   if (pickedPoint == 1) {
+      srcCenter[0] = x;
+      srcCenter[1] = y;
+   } else if (pickedPoint == 2) {
+      dstCenter[0] = x;
+      dstCenter[1] = y;
    }
+
 }
 
 void click(int button, int state, int x, int y)
@@ -246,12 +257,11 @@ void click(int button, int state, int x, int y)
       return;
    }
 
-   VGfloat dist0, dist1;
-
-   dist0 = ((x - srcCenter[0]) * (x - srcCenter[0])) +
+   VGfloat dist0 = ((x - srcCenter[0]) * (x - srcCenter[0])) +
       ((y - srcCenter[1]) * (y - srcCenter[1]));
-   dist1 = ((x - dstCenter[0]) * (x - dstCenter[0])) +
+   VGfloat dist1 = ((x - dstCenter[0]) * (x - dstCenter[0])) +
       ((y - dstCenter[1]) * (y - dstCenter[1]));
+
    if (dist0 < dist1) {
       if (dist0 < 36.0f) {
          pickedPoint = 1;
@@ -275,7 +285,10 @@ void initApp(void)
    srcCenter[1] = 200.0f;
    dstCenter[0] = 312.0f;
    dstCenter[1] = 292.0f;
-   blendMode = VG_BLEND_SRC_OVER;
+   /*
+    * blendMode = VG_BLEND_SRC_OVER;
+    */
+   blendMode = VG_BLEND_SRC;
    pickedPoint = 0;
    lastPickedPoint = 0;
 
@@ -299,7 +312,7 @@ int main(int argc, char *argv[])
    testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
    testCallback(TEST_CALLBACK_BUTTON, (CallbackFunc) click);
    testCallback(TEST_CALLBACK_BUTTON, (CallbackFunc) move);
-   testOverlayString("Press H for a list of commands");
+   testOverlayString(help);
    testOverlayColor(1, 1, 1, 1);
 
    testRun();

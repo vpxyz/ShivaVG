@@ -19,6 +19,7 @@
  */
 
 #include "shVectors.h"
+#include <stdbool.h>
 
 #define _ITEM_T SHVector2
 #define _ARRAY_T SHVector2Array
@@ -113,20 +114,20 @@ shMatrixToGL(SHMatrix3x3 * m, SHfloat mgl[16])
    /* When 2D vectors are specified OpenGL defaults Z to 0.0f so we
       have to shift the third column of our 3x3 matrix to right */
    mgl[0] = m->m[0][0];
-   mgl[4] = m->m[0][1];
-   mgl[8] = 0.0f;
-   mgl[12] = m->m[0][2];
    mgl[1] = m->m[1][0];
-   mgl[5] = m->m[1][1];
-   mgl[9] = 0.0f;
-   mgl[13] = m->m[1][2];
    mgl[2] = m->m[2][0];
-   mgl[6] = m->m[2][1];
-   mgl[10] = 1.0f;
-   mgl[14] = m->m[2][1];
    mgl[3] = 0.0f;
+   mgl[4] = m->m[0][1];
+   mgl[5] = m->m[1][1];
+   mgl[6] = m->m[2][1];
    mgl[7] = 0.0f;
+   mgl[8] = 0.0f;
+   mgl[9] = 0.0f;
+   mgl[10] = 1.0f;
    mgl[11] = 0.0f;
+   mgl[12] = m->m[0][2];
+   mgl[13] = m->m[1][2];
+   mgl[14] = m->m[2][1];
    mgl[15] = 1.0f;
 }
 

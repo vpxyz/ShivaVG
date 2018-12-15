@@ -9,7 +9,7 @@ include(CheckLibraryExists)
 include(CheckTypeSize)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
-set(CMAKE_C_FLAGS "-std=gnu99 -Werror=incompatible-pointer-types -Werror=strict-prototypes -fno-strict-aliasing -Wall -Wvla")
+set(CMAKE_C_FLAGS "-std=gnu99 -pedantic -Werror=incompatible-pointer-types -Werror=strict-prototypes -fno-strict-aliasing -Wall -Wvla")
 
 # Export json compilation database command, usefull for clang-check 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -36,6 +36,7 @@ option(BUILD_STRESS         "Build Stress test example (default=yes)]"          
 option(BUILD_CLOCK          "Build Clock example (default=yes)]"                        OFF)
 option(BUILD_SUBWAYMAP      "Build Subwaymap example (default=yes)]"                    OFF)
 option(BUILD_COMPOSITING    "Build Compositing example (default=yes)]"                  OFF)
+option(BUILD_COLORMATRIX    "Build Color matrix example (default=yes)]"                 OFF)
 
 if (BUILD_DEBUG)
   set(DEBUG ON CACHE BOOL "Compile with debug code")
@@ -60,10 +61,11 @@ if(BUILD_ALL_EXAMPLES)
     set(BUILD_CLOCK ON)
     set(BUILD_SUBWAYMAP ON)
     set(BUILD_COMPOSITING ON)
+    set(BUILD_COLORMATRIX ON)
 endif()
 set(BUILD_EXAMPLES BUILD_VGU OR BUILD_DASH OR BUILD_LINEAR OR BUILD_RADIAL OR BUILD_INTERPOLATE OR BUILD_TIGER OR
   BUILD_IMAGE OR BUILD_PATTERN OR BUILD_BLEND OR BUILD_EB OR BUILD_WARP OR BUILD_PATH OR BUILD_FLOWERS
-  OR BUILD_STRESS OR BUILD_CLOCK OR BUILD_SUBWAYMAP OR BUILD_COMPOSITING)
+  OR BUILD_STRESS OR BUILD_CLOCK OR BUILD_SUBWAYMAP OR BUILD_COMPOSITING OR BUILD_COLORMATRIX)
 
 # Finding packages
 # TODO: EGL/OpenGLES and friends?
@@ -150,7 +152,8 @@ message("ShivaVG will be compiled with the following example programs\n"
         "  Stress test               ${BUILD_STRESS}\n"
         "  Clock                     ${BUILD_CLOCK}\n"
         "  Subway Map                ${BUILD_SUBWAYMAP}\n"
-        "  Compositing               ${BUILD_COMPOSITING}\n")
+        "  Compositing               ${BUILD_COMPOSITING}\n"
+        "  Color matrix              ${BUILD_COLORMATRIX}\n")
 
 # Pick up subdirectories 
 # TODO see if include_directories work like a stack and whether we can avoid duplication

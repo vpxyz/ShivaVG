@@ -22,6 +22,7 @@
 #include <VG/openvg.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include "shImage.h"
 #include "shContext.h"
 #include "shMath.h"
@@ -42,6 +43,31 @@
 
 #define SH_BASE_IMAGE_FORMAT(format) (format & 0x1F)
 
+
+static inline bool
+shOverlaps(SHImage *src, SHImage *dst, SHint sx, SHint sy, SHint dx, SHint dy, SHint width, SHint height)
+{
+   SH_ASSERT(src != NULL && dst != NULL);
+   if (src->data != dst->data)
+      return false; // images don't share data
+
+   SHint ws = (src->width < width ? src->width : width);
+   SHint wd = (dst->width < width ? dst->width : width);
+   SHint hs = (src->height < height ? src->height : height);
+   SHint hd = (dst->height < height ? dst->height : height);
+
+   SHint left = (sx > dx ? sx: dx); // max(sx,dx)
+   SHint right = (sx + ws < dx + wd ? sx + ws: dx + wd); // min(sx + ws, dx + wd)
+   SHint bottom = (sy > dy ? sy: dy); // max(sy,dy)
+   SHint top = (sy + hs < dy + hd ? sy + hs: dy + hd); // min(sy + hs, dy + hd)
+
+   if (top - bottom < 0 && right - left < 0)
+      return false; // no overlaps
+
+   return true;
+
+}
+
 /*-----------------------------------------------------------
  * Prepares the proper pixel pack/unpack info for the given
  * OpenVG image format.
@@ -57,7 +83,7 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
    SHuint32 bgrBit = 0;
 
    SH_ASSERT(f != NULL);
-   
+
    /* Store VG format name */
    f->vgformat = vg;
 
@@ -222,18 +248,16 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
       f->rmask = tmask;
    }
 
-   #ifdef DEBUG
    SH_DEBUG("shSetupImageFormat bgrBit %d, amsbBit %d\n ", bgrBit, amsbBit);
-   #endif
 
-   // For some color formats we need to know the byte order of the machine
-   #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-   #define SH_IMAGE_FORMAT(img) img ## _REV
-   #define SH_IMAGE_FORMAT_REV(img) img
-   #else
-   #define SH_IMAGE_FORMAT(img) img
-   #define SH_IMAGE_FORMAT_REV(img) img ## _REV
-   #endif
+// For some color formats we need to know the byte order of the machine
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#define SH_IMAGE_FORMAT(img) img ## _REV
+#define SH_IMAGE_FORMAT_REV(img) img
+#else
+#define SH_IMAGE_FORMAT(img) img
+#define SH_IMAGE_FORMAT_REV(img) img ## _REV
+#endif
 
    /* Find proper mapping to OpenGL formats */
    // TODO: fix this! Look the original code
@@ -390,31 +414,28 @@ shIsSupportedImageFormat(VGImageFormat format)
    return 1;
 }
 
+
 /*--------------------------------------------------------
- * Packs the pixel color components into memory at given
- * address according to given format
+ * Packed color according to given color format
  *--------------------------------------------------------*/
 
-void
-shStoreColor(SHColor * c, void *data, SHImageFormatDesc * f)
+inline SHuint32
+shPackColor(SHColor * restrict c, SHImageFormatDesc * restrict f)
 {
    /*
      TODO: unsupported formats:
      - s and l both behave linearly
      - 1-bit black & white (BW_1)
    */
+   SH_ASSERT(c != NULL && f != NULL);
 
    SHfloat l = 0.0f;
    SHuint32 out = 0x0;
-
-   SH_ASSERT(c != NULL && data != NULL && f != NULL);
-   
    if (f->vgformat == VG_lL_8 || f->vgformat == VG_sL_8) {
 
       /* Grayscale (luminosity) conversion as defined by the spec */
       l = 0.2126f * c->r + 0.7152f * c->g + 0.0722f * c->r;
       out = (SHuint32) (l * (SHfloat) f->rmax + 0.5f);
-
    } else {
 
       /* Pack color components */
@@ -431,19 +452,44 @@ shStoreColor(SHColor * c, void *data, SHImageFormatDesc * f)
          (((SHuint32) (c->a * (SHfloat) f->amax + 0.5f)) << f->ashift) & f->
          amask;
    }
+   return out;
+}
+
+
+/*--------------------------------------------------------
+ * Store packed color into memory at given
+ * address according to given color format size
+ *--------------------------------------------------------*/
+
+inline void
+shStorePackedColor(void * restrict data, SHuint8 colorFormatSize, SHuint32 packedColor)
+{
+   SH_ASSERT(data != NULL);
 
    /* Store to buffer */
-   switch (f->bytes) {
+   switch (colorFormatSize) {
    case 4:
-      *((SHuint32 *) data) = (SHuint32) (out & 0xFFFFFFFF);
+      *((SHuint32 *) data) = (SHuint32) (packedColor & 0xFFFFFFFF);
       break;
    case 2:
-      *((SHuint16 *) data) = (SHuint16) (out & 0x0000FFFF);
+      *((SHuint16 *) data) = (SHuint16) (packedColor & 0x0000FFFF);
       break;
    case 1:
-      *((SHuint8 *) data) = (SHuint8) (out & 0x000000FF);
+      *((SHuint8 *) data) = (SHuint8) (packedColor & 0x000000FF);
       break;
    }
+}
+
+/*--------------------------------------------------------
+ * Packs the pixel color components into memory at given
+ * address according to given format
+ *--------------------------------------------------------*/
+
+inline void
+shStoreColor(SHColor * restrict c, void * restrict data, SHImageFormatDesc * restrict f)
+{
+   SHuint32 packedColor = shPackColor(c, f);
+   shStorePackedColor(data, f->bytes, packedColor);
 }
 
 /*---------------------------------------------------------
@@ -451,8 +497,8 @@ shStoreColor(SHColor * c, void *data, SHImageFormatDesc * f)
  * address according to the given format
  *---------------------------------------------------------*/
 
-void
-shLoadColor(SHColor * c, const void *data, SHImageFormatDesc * f)
+inline void
+shLoadColor(SHColor * restrict c, const void * restrict data, SHImageFormatDesc * restrict f)
 {
    /*
      TODO: unsupported formats:
@@ -463,7 +509,7 @@ shLoadColor(SHColor * c, const void *data, SHImageFormatDesc * f)
    SHuint32 in = 0x0;
 
    SH_ASSERT(c != NULL && data != NULL);
-   
+
    /* Load from buffer */
    switch (f->bytes) {
    case 4:
@@ -503,7 +549,7 @@ void
 SHColor_ctor(SHColor * c)
 {
    SH_ASSERT(c != NULL);
-   
+
    c->r = 0.0f;
    c->g = 0.0f;
    c->b = 0.0f;
@@ -519,7 +565,7 @@ void
 SHImage_ctor(SHImage * i)
 {
    SH_ASSERT(i != NULL);
-   
+
    i->data = NULL;
    i->width = 0;
    i->height = 0;
@@ -530,7 +576,7 @@ void
 SHImage_dtor(SHImage * i)
 {
    SH_ASSERT(i != NULL);
-   
+
    if (i->data != NULL)
       free(i->data);
 
@@ -556,12 +602,12 @@ shUpdateImageTextureSize(SHImage * i)
    /* Round size to nearest power of 2 */
    /* TODO: might be dropped out if it works without  */
 /*
-   i->texwidth = shClp2(i->width);
-   
-   i->texheight = shClp2(i->height);
-   
-   i->texwidthK  = (SHfloat)i->width  / i->texwidth;
-   i->texheightK = (SHfloat)i->height / i->texheight;
+  i->texwidth = shClp2(i->width);
+
+  i->texheight = shClp2(i->height);
+
+  i->texwidthK  = (SHfloat)i->width  / i->texwidth;
+  i->texheightK = (SHfloat)i->height / i->texheight;
 */
 }
 
@@ -592,7 +638,7 @@ shUpdateImageTexture(SHImage *i, VGContext *context)
       potdata = (SHint8 *) malloc(potwidth * potheight * i->fd.bytes);
       SH_RETURN_ERR_IF(!potdata, VG_OUT_OF_MEMORY_ERROR, SH_NO_RETVAL);
 
-      SH_DEBUG("shUpdateImageTexture: scale texture as power-of-two for OpenGL");
+      SH_DEBUG("shUpdateImageTexture: scale texture as power-of-two for OpenGL\n");
       glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
       glPixelStorei(GL_PACK_ALIGNMENT, 1); // <--- TODO: why this?
       glBindTexture(GL_TEXTURE_2D, i->texture);
@@ -613,11 +659,12 @@ shUpdateImageTexture(SHImage *i, VGContext *context)
 
    // TODO: fix this! Look the original code
    glTexImage2D(GL_TEXTURE_2D, 0, i->fd.glintformat, i->texwidth, i->texheight, 0, i->fd.glformat, i->fd.gltype , i->data);
-   #ifdef DEBUG
+
+#ifdef DEBUG
    short center = (i->texwidth*i->texheight)*2+2*i->texwidth;
    SH_DEBUG("shUpdateImageTexture: 0x%x 0x%x 0x%x\n",i->fd.glintformat,i->fd.glformat, i->fd.gltype);
    SH_DEBUG("shUpdateImageTexture: %d %d %d %d\n",i->data[center],i->data[center+1],i->data[center+2],i->data[center+3]);
-   #endif
+#endif
 }
 
 /*----------------------------------------------------------
@@ -656,9 +703,9 @@ vgCreateImage(VGImageFormat format,
                       VG_IMAGE_QUALITY_FASTER | VG_IMAGE_QUALITY_BETTER),
                     VG_ILLEGAL_ARGUMENT_ERROR, VG_INVALID_HANDLE);
 
-   #ifdef DEBUG
+#ifdef DEBUG
    SH_DEBUG("VGImageformat 0x%x, in decimale %d\n ", format, format);
-   #endif
+#endif
 
    /* Create new image object */
    SHImage *i = NULL;
@@ -712,8 +759,7 @@ vgDestroyImage(VGImage image)
 VG_API_CALL void
 vgClearImage(VGImage image, VGint x, VGint y, VGint width, VGint height)
 {
-   SHImage *i;
-   SHColor clear;
+
    SHuint8 *data;
    SHint X, Y, ix, iy, dx, dy, stride;
 
@@ -724,7 +770,7 @@ vgClearImage(VGImage image, VGint x, VGint y, VGint width, VGint height)
 
    /* TODO: check if image current render target */
 
-   i = (SHImage *) image;
+   SHImage *i = (SHImage *) image;
    VG_RETURN_ERR_IF(width <= 0 || height <= 0,
                     VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
@@ -744,13 +790,12 @@ vgClearImage(VGImage image, VGint x, VGint y, VGint width, VGint height)
    stride = i->texwidth * i->fd.bytes;
 
    /* Walk pixels and clear */
-   clear = context->clearColor;
-
+   SHuint32 packedColor = shPackColor(&context->clearColor, &i->fd);
    for (Y = iy; Y < iy + height; ++Y) {
       data = i->data + (Y * stride + ix * i->fd.bytes);
 
       for (X = ix; X < ix + width; ++X) {
-         shStoreColor(&clear, data, &i->fd);
+         shStorePackedColor(data, i->fd.bytes, packedColor);
          data += i->fd.bytes;
       }
    }
@@ -813,9 +858,9 @@ shCopyPixels(SHuint8 * dst, VGImageFormat dstFormat, SHint dstStride,
      | *-----------*        |           |
      |   |   (width,height) |           |
      *----------------------*           |
-     |           (swidth,sheight)   |
-     *------------------------------*
-     (dwidth,dheight)
+     |   |           (swidth,sheight)   |
+     *----------------------------------*
+                                  (dwidth,dheight)
    */
 
    /* Cancel if copy rect out of src bounds */
@@ -898,15 +943,13 @@ vgImageSubData(VGImage image,
                VGImageFormat dataFormat,
                VGint x, VGint y, VGint width, VGint height)
 {
-   SHImage *i;
-
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    VG_RETURN_ERR_IF(!shIsValidImage(context, image),
                     VG_BAD_HANDLE_ERROR, VG_NO_RETVAL);
 
    /* TODO: check if image current render target */
-   i = (SHImage *) image;
+   SHImage *i = (SHImage *) image;
 
    /* Reject invalid formats */
    VG_RETURN_ERR_IF(!shIsValidImageFormat(dataFormat),
@@ -1007,21 +1050,31 @@ vgCopyImage(VGImage dst, VGint dx, VGint dy,
    /* TODO: rather check first if the image is really
       the same and whether the regions overlap. if not
       we can copy directly */
+   if (!shOverlaps(s, d, sx, sy, dx, dy, width, height)) {
+   /*
+    * if (!shOverlaps(s, d)) {
+    */
+      // TODO: CHECK this!!!!
+      shCopyPixels(d->data, d->fd.vgformat, d->texwidth * d->fd.bytes,
+                   s->data, s->fd.vgformat, s->texwidth * s->fd.bytes,
+                   d->width, d->height, width, height,
+                   dx, dy, 0, 0, width, height);
+   } else {
+      pixels = (SHuint8 *) malloc(width * height * s->fd.bytes);
+      SH_RETURN_ERR_IF(!pixels, VG_OUT_OF_MEMORY_ERROR, SH_NO_RETVAL);
 
-   pixels = (SHuint8 *) malloc(width * height * s->fd.bytes);
-   SH_RETURN_ERR_IF(!pixels, VG_OUT_OF_MEMORY_ERROR, SH_NO_RETVAL);
+      shCopyPixels(pixels, s->fd.vgformat, s->texwidth * s->fd.bytes,
+                   s->data, s->fd.vgformat, s->texwidth * s->fd.bytes,
+                   width, height, s->width, s->height,
+                   0, 0, sx, sy, width, height);
 
-   shCopyPixels(pixels, s->fd.vgformat, s->texwidth * s->fd.bytes,
-                s->data, s->fd.vgformat, s->texwidth * s->fd.bytes,
-                width, height, s->width, s->height,
-                0, 0, sx, sy, width, height);
+      shCopyPixels(d->data, d->fd.vgformat, d->texwidth * d->fd.bytes,
+                   pixels, s->fd.vgformat, s->texwidth * s->fd.bytes,
+                   d->width, d->height, width, height,
+                   dx, dy, 0, 0, width, height);
 
-   shCopyPixels(d->data, d->fd.vgformat, d->texwidth * d->fd.bytes,
-                pixels, s->fd.vgformat, s->texwidth * s->fd.bytes,
-                d->width, d->height, width, height,
-                dx, dy, 0, 0, width, height);
-
-   free(pixels);
+      free(pixels);
+   }
 
    shUpdateImageTexture(d, context);
    VG_RETURN(VG_NO_RETVAL);
@@ -1280,6 +1333,78 @@ vgGetParent(VGImage image)
 VG_API_CALL void
 vgColorMatrix(VGImage dst, VGImage src, const VGfloat * matrix)
 {
+   VG_GETCONTEXT(VG_NO_RETVAL);
+   VG_RETURN_ERR_IF(!shIsValidImage(context, src) || !shIsValidImage(context, dst), VG_BAD_HANDLE_ERROR, VG_NO_RETVAL);
+
+   SHImage* d = (SHImage*) dst;
+   SHImage* s = (SHImage*) src;
+
+   VG_RETURN_ERR_IF(shOverlaps(s, d, 0, 0, 0, 0, s->width, s->height ), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
+   VG_RETURN_ERR_IF(!matrix || SH_IS_NOT_ALIGNED(matrix), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
+
+   SHColor sc;
+   SHColor dc;
+   SHColor tmpcolor;
+   SHImageFormatDesc sfd = s->fd;
+   SHImageFormatDesc dfd = d->fd;
+
+   const SHuint8 *SD;
+   SHuint8 *DD;
+
+   SHint stride = s->texwidth * sfd.bytes;
+
+
+   VGbitfield channelMask = context->filterChannelMask;
+
+   if (sfd.glformat == GL_LUMINANCE) {
+      for (SHint SY = 0, DY = 0; SY < s->height; ++SY, ++DY) {
+         SD = s->data + SY * stride + sfd.bytes;
+         DD = d->data + DY * stride + dfd.bytes;
+
+         for (SHint SX = 0, DX = 0; SX < s->width; ++SX, ++DX) {
+            shLoadColor(&sc, SD, &sfd);
+            dc.r = matrix[0] * sc.r + matrix[1] * sc.g + matrix[2] * sc.b + matrix[3] * sc.a + matrix[4];
+            dc.g = matrix[5] * sc.r + matrix[6] * sc.g + matrix[7] * sc.b + matrix[8] * sc.a + matrix[9];
+            dc.b = matrix[10] * sc.r + matrix[11] * sc.g + matrix[12] * sc.b + matrix[13] * sc.a + matrix[14];
+            dc.a = matrix[15] * sc.r + matrix[16] * sc.g + matrix[17] * sc.b + matrix[18] * sc.a + matrix[19];
+
+            shStoreColor(&dc, DD, &dfd);
+
+            SD += sfd.bytes;
+            DD += dfd.bytes;
+         }
+      }
+   } else {
+      for (SHint SY = 0, DY = 0; SY < s->height; ++SY, ++DY) {
+         SD = s->data + SY * stride + sfd.bytes;
+         DD = d->data + DY * stride + dfd.bytes;
+
+         for (SHint SX = 0, DX = 0; SX < s->width; ++SX, ++DX) {
+            shLoadColor(&sc, SD, &sfd);
+            tmpcolor.r = matrix[0] * sc.r + matrix[1] * sc.g + matrix[2] * sc.b + matrix[3] * sc.a + matrix[4];
+            tmpcolor.g = matrix[5] * sc.r + matrix[6] * sc.g + matrix[7] * sc.b + matrix[8] * sc.a + matrix[9];
+            tmpcolor.b = matrix[10] * sc.r + matrix[11] * sc.g + matrix[12] * sc.b + matrix[13] * sc.a + matrix[14];
+            tmpcolor.a = matrix[15] * sc.r + matrix[16] * sc.g + matrix[17] * sc.b + matrix[18] * sc.a + matrix[19];
+
+            if (channelMask & VG_RED)
+               dc.r = tmpcolor.r;
+            if (channelMask & VG_GREEN)
+               dc.g = tmpcolor.g;
+            if (channelMask & VG_BLUE)
+               dc.b = tmpcolor.b;
+            if (channelMask & VG_ALPHA)
+               dc.a = tmpcolor.a;
+
+            shStoreColor(&dc, DD, &dfd);
+
+            SD += sfd.bytes;
+            DD += dfd.bytes;
+         }
+      }
+   }
+
+   shUpdateImageTexture(d, context);
+   VG_RETURN(VG_NO_RETVAL);
 }
 
 VG_API_CALL void
