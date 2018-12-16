@@ -190,6 +190,14 @@ void drag(int x, int y)
    glutPostRedisplay();
 }
 
+void
+reshape(int x, int y)
+{
+   windowWidth = x;
+   windowHeight = y;
+   vgClear(0, 0, x, y);
+}
+
 void initApp(void)
 {
    zoomFactor = 1.0f;
@@ -207,6 +215,7 @@ int main(int argc, char *argv[])
    testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
    testCallback(TEST_CALLBACK_DRAG, (CallbackFunc) drag);
    testCallback(TEST_CALLBACK_BUTTON, (CallbackFunc) click);
+   testCallback(TEST_CALLBACK_RESHAPE, (CallbackFunc) reshape);
    testOverlayString("Press H for a list of commands");
    testOverlayColor(1, 1, 1, 1);
 

@@ -455,6 +455,19 @@ void display(void)
    vgDrawPath(glassPath, VG_FILL_PATH);
 }
 
+void
+reshape(int x, int y)
+{
+   windowWidth = x;
+   windowHeight = y;
+   windowScaleX = (VGfloat)windowWidth / 512.0f;
+   windowScaleY = (VGfloat)windowHeight / 512.0f;
+   drawnFrames = 0;
+   genClockPaths();
+   genClockPaints();
+   vgClear(0, 0, x, y);
+}
+
 
 void initApp(void)
 {
@@ -504,6 +517,7 @@ int main(int argc, char *argv[])
 
    testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
    testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
+   testCallback(TEST_CALLBACK_RESHAPE, (CallbackFunc) reshape);
    testOverlayString(help);
    testOverlayColor(0.0, 0.0, 0.0, 1.0);
    testRun();

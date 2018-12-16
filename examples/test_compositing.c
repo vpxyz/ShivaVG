@@ -189,6 +189,17 @@ void display(void)
    }
 }
 
+void
+reshape(int x, int y)
+{
+   windowWidth = x;
+   windowHeight = y;
+   srcCenter[0] = (VGfloat) x / 2.0f;
+   srcCenter[1] = (VGfloat) y / 2.0f;
+   dstCenter[0] = (VGfloat) x / 2.0f  + 100.0f;
+   dstCenter[1] = (VGfloat) y / 2.0f + 50.0f;
+   vgClear(0, 0, x, y);
+}
 
 const char commands[] =
    "Click & drag mouse to change\n"
@@ -312,6 +323,8 @@ int main(int argc, char *argv[])
    testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
    testCallback(TEST_CALLBACK_BUTTON, (CallbackFunc) click);
    testCallback(TEST_CALLBACK_BUTTON, (CallbackFunc) move);
+   testCallback(TEST_CALLBACK_RESHAPE, (CallbackFunc) reshape);
+   
    testOverlayString(help);
    testOverlayColor(1, 1, 1, 1);
 

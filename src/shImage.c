@@ -1227,7 +1227,7 @@ vgGetPixels(VGImage dst, VGint dx, VGint dy,
    glPixelStorei(GL_PACK_ALIGNMENT, 1);
    glReadPixels(sx, sy, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-   /* FIXME we shouldnt be reading alpha */
+   /* FIXME: we shouldnt be reading alpha */
    for (int k = 3; k < i->width * i->height * 4; k += 4)
       pixels[k] = 255;
 
@@ -1253,9 +1253,6 @@ vgReadPixels(void *data, VGint dataStride,
              VGImageFormat dataFormat,
              VGint sx, VGint sy, VGint width, VGint height)
 {
-   SHuint8 *pixels;
-   SHImageFormatDesc winfd;
-
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    /* Reject invalid formats */
@@ -1274,12 +1271,13 @@ vgReadPixels(void *data, VGint dataStride,
    /* Setup window image format descriptor */
    /* TODO: this actually depends on the target framebuffer type
       if we really want the copy to be optimized */
+   SHImageFormatDesc winfd;
    shSetupImageFormat(VG_sRGBA_8888, &winfd);
 
    /* OpenGL doesn't allow random data stride. We have to
       read first and then manually copy to the output buffer */
 
-   pixels = (SHuint8 *) malloc(width * height * winfd.bytes);
+   SHuint8 *pixels = (SHuint8 *) malloc(width * height * winfd.bytes);
    SH_RETURN_ERR_IF(!pixels, VG_OUT_OF_MEMORY_ERROR, SH_NO_RETVAL);
 
    glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -1385,6 +1383,8 @@ vgColorMatrix(VGImage dst, VGImage src, const VGfloat * matrix)
             tmpcolor.g = matrix[5] * sc.r + matrix[6] * sc.g + matrix[7] * sc.b + matrix[8] * sc.a + matrix[9];
             tmpcolor.b = matrix[10] * sc.r + matrix[11] * sc.g + matrix[12] * sc.b + matrix[13] * sc.a + matrix[14];
             tmpcolor.a = matrix[15] * sc.r + matrix[16] * sc.g + matrix[17] * sc.b + matrix[18] * sc.a + matrix[19];
+
+            dc = sc;
 
             if (channelMask & VG_RED)
                dc.r = tmpcolor.r;
