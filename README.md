@@ -93,6 +93,19 @@ what features it highlights:
 * *test_warp*
   An image is drawn using Warp effect.
 
+* *test_clock*
+  A simple clock example
+
+* *test_flowers*
+  Flowers fall drawn using `VG_BLEND_ADDITIVE`
+
+* *test_subwaymap*
+  A complex stroking example
+
+* *test_colormatrix*
+  A simple example of color matrix usage
+
+
 ## III. IMPLEMENTATION STATUS
 
 Khronos states in the OpenVG specification, that the contexts for all
