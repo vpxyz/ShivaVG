@@ -37,6 +37,7 @@ option(BUILD_CLOCK          "Build Clock example (default=yes)]"                
 option(BUILD_SUBWAYMAP      "Build Subwaymap example (default=yes)]"                    OFF)
 option(BUILD_COMPOSITING    "Build Compositing example (default=yes)]"                  OFF)
 option(BUILD_COLORMATRIX    "Build Color matrix example (default=yes)]"                 OFF)
+option(BUILD_GAUSSIANBLUR   "Build Color gaussian blur example (default=yes)]"          OFF)
 
 if (BUILD_DEBUG)
   set(DEBUG ON CACHE BOOL "Compile with debug code")
@@ -62,10 +63,11 @@ if(BUILD_ALL_EXAMPLES)
     set(BUILD_SUBWAYMAP ON)
     set(BUILD_COMPOSITING ON)
     set(BUILD_COLORMATRIX ON)
+    set(BUILD_GAUSSIANBLUR ON)
 endif()
 set(BUILD_EXAMPLES BUILD_VGU OR BUILD_DASH OR BUILD_LINEAR OR BUILD_RADIAL OR BUILD_INTERPOLATE OR BUILD_TIGER OR
   BUILD_IMAGE OR BUILD_PATTERN OR BUILD_BLEND OR BUILD_EB OR BUILD_WARP OR BUILD_PATH OR BUILD_FLOWERS
-  OR BUILD_STRESS OR BUILD_CLOCK OR BUILD_SUBWAYMAP OR BUILD_COMPOSITING OR BUILD_COLORMATRIX)
+  OR BUILD_STRESS OR BUILD_CLOCK OR BUILD_SUBWAYMAP OR BUILD_COMPOSITING OR BUILD_COLORMATRIX OR BUILD_GAUSSIANBLUR)
 
 # Finding packages
 # TODO: EGL/OpenGLES and friends?

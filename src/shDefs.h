@@ -127,17 +127,20 @@ typedef union
 #define PI 3.141592f
 #define SH_DEG2RAD(a) (a * PI / 180.0f)
 #define SH_RAD2DEG(a) (a * 180.0f / PI)
-#define SH_ABS(a) fabsf(a)
-#define SH_MAX(a,b) fmaxf(a, b)
-#define SH_MIN(a,b) fminf(a, b)
-#define SH_NEARZERO(a) (a >= -0.0001 && a < 0.0001)
+#define SH_ABS(a) (fabsf(a))
+#define SH_MAX(a,b) (((a) > (b)) ? (a) : (b))
+#define SH_MIN(a,b) (((a) < (b)) ? (a) : (b))
+#define SH_FLOAT_MAX(a,b) (fminf(a,b))
+#define SH_FLOAT_MIN(a,b) (fmaxf(a,b))
+#define SH_NEARZERO(a) (a >= -0.0001f && a < 0.0001f)
 #define SH_SWAP(a,b) { SHfloat t = a; a = b; b = t; }
 #define SH_CLAMP(a,min,max) { if (a < min) a = min; if (a > max) a = max; }
 #define SH_CLAMP_MAX(a, max) { if (a > max) a = max; }
+#define SH_CLAMPF(x) ((x) > 1.0f ? 1.0f : (((x) < 0.0f ? 0.0f : (x))))
 #define SH_DIST(a,b,x,y) SH_SQRT(((x - a) * (x - a)) + ((y - b) * (y - b)))
 
 #define SH_NEWOBJ(type,obj) { obj = (type *) malloc(sizeof(type)); if (obj != NULL) type ## _ctor(obj); }
-#define SH_INITOBJ(type,obj){ type ## _ctor(&obj); }
+#define SH_INITOBJ(type,obj) { type ## _ctor(&obj); }
 #define SH_DEINITOBJ(type,obj) { type ## _dtor(&obj); }
 #define SH_DELETEOBJ(type,obj) { if (obj) type ## _dtor(obj); free(obj); }
 #define SH_IS_NOT_ALIGNED(p) (((uintptr_t) p) & (sizeof(uintptr_t)-1))
@@ -158,6 +161,9 @@ typedef union
 #define SH_GRADIENT_TEX_SIZE       1024
 #define SH_GRADIENT_TEX_COORDSIZE   4096        /* 1024 * RGBA */
 
+#define SH_MAX_KERNEL_SIZE		256
+#define SH_MAX_SEPARABLE_KERNEL_SIZE	256
+#define SH_MAX_GAUSSIAN_STD_DEVIATION	16.0f
 /* OpenGL headers */
 
 #if defined(__APPLE__)
@@ -178,7 +184,7 @@ typedef union
 
 
 /* Debugging helpers
-  Based on Zed. A. Shaw macros (see http://c.learncodethehardway.org/), with few modification.
+  Based on Zed. A. Shaw macros (see http://c.learncodethehardway.org/), with few modification (use of __func__ C99 macro).
   Copyright (C) 2010 Zed. A. Shaw
 */
 #include <stdio.h>
@@ -186,18 +192,18 @@ typedef union
 #include <string.h>
 
 #ifdef DEBUG
-#define SH_DEBUG(M, ...) fprintf(stderr, "DEBUG %s:%d: " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define SH_DEBUG(M, ...) fprintf(stderr, "DEBUG %s:%s:%d: " M "\n", __FILE__, __func__, __LINE__, ##__VA_ARGS__)
 #else
 #define SH_DEBUG(M, ...)
 #endif
 
 #define SH_CLEAN_ERRNO() (errno == 0 ? "None" : strerror(errno))
 
-#define SH_LOG_ERR(M, ...) fprintf(stderr, "[ERROR] (%s:%d: errno: %s) " M "\n", __FILE__, __LINE__, SH_CLEAN_ERRNO(), ##__VA_ARGS__)
+#define SH_LOG_ERR(M, ...) fprintf(stderr, "[ERROR] (%s:%s:%d: errno: %s) " M "\n", __FILE__, __func__, __LINE__, SH_CLEAN_ERRNO(), ##__VA_ARGS__)
 
-#define SH_LOG_WARN(M, ...) fprintf(stderr, "[WARN] (%s:%d: errno: %s) " M "\n", __FILE__, __LINE__, SH_CLEAN_ERRNO(), ##__VA_ARGS__)
+#define SH_LOG_WARN(M, ...) fprintf(stderr, "[WARN] (%s:%s:%d: errno: %s) " M "\n", __FILE__, __func__, __LINE__, SH_CLEAN_ERRNO(), ##__VA_ARGS__)
 
-#define SH_LOG_INFO(M, ...) fprintf(stderr, "[INFO] (%s:%d) " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define SH_LOG_INFO(M, ...) fprintf(stderr, "[INFO] (%s:%s:%d) " M "\n", __FILE__, __func__, __LINE__, ##__VA_ARGS__)
 
 #define SH_CHECK(A, M, ...) if (!(A)) { SH_LOG_ERR(M, ##__VA_ARGS__); errno = 0; goto error; }
 

@@ -45,7 +45,7 @@ const char commands[] =
    "value for current mode\n\n"
    "H - this help\n"
    "TAB - gradient spread mode\n"
-   "S - gradient start-point mode\n"
+   "S - grandient start-point mode\n"
    "E - gradient end-point mode\n"
    "X - scale X mode\n" "Y - scale Y mode\n" "BACKSPACE - reset value\n";
 

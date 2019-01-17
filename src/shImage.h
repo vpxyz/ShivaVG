@@ -112,11 +112,19 @@ void SHImage_dtor(SHImage * i);
 #define CADDCK(c1, c2, k) { c1.r+=k*c2.r; c1.g+=k*c2.g; c1.b+=k*c2.b; c1.a+=k*c2.a; }
 
 #define CMUL(c, s) { c.r*=s; c.g*=s; c.b*=s; c.a*=s; }
+#define CMULC(c1, c2) { c1.r *= c2.r; c1.g *= c2.g ; c1.b *= c2.b; c1.a *= c2.a; }
+#define CMULTO(c1, c2, c3) { c3.r=c1.r*c2.r; c3.g=c1.g*c2.g;  c3.b=c1.b*c2.b; c3.a=c1.a*c2.a; }
 #define CDIV(c, s) { c.r/=s; c.g/=s; c.b/=s; c.a/=s; }
 
 #define CPREMUL(c) { c.r*=c.a; c.g*=c.a; c.b*=c.a; }
 #define CUNPREMUL(c) { c.r/=c.a; c.g/=c.a; c.b/=c.a; }
 
+#define CCLAMP(c) { \
+      c.r = ((c.r) > 1.0f ? 1.0f : ((c.r < 0.0f ? 0.0f : (c.r)))); \
+      c.g = ((c.g) > 1.0f ? 1.0f : ((c.g < 0.0f ? 0.0f : (c.g)))); \
+      c.b = ((c.b) > 1.0f ? 1.0f : ((c.b < 0.0f ? 0.0f : (c.b)))); \
+      c.a = ((c.a) > 1.0f ? 1.0f : ((c.a < 0.0f ? 0.0f : (c.a)))); \
+}
 /*-------------------------------------------------------
  * Color-to-memory functions
  *-------------------------------------------------------*/
@@ -148,10 +156,10 @@ void SHImage_dtor(SHImage * i);
 #define INT2COLCOORD(i, max) ( (SHfloat)i / (SHfloat)max  )
 #define COL2INTCOORD(c, max) ( (SHuint)SH_FLOOR(c * (SHfloat)max + 0.5f) )
 
-SHuint32 shPackColor(SHColor *c, SHImageFormatDesc *f);
+SHuint32 shPackColor(SHColor *c, const SHImageFormatDesc *f);
 void shStorePackedColor(void *data, SHuint8 colorFormatSize, SHuint32 packedColor);
-void shStoreColor(SHColor *c, void *data, SHImageFormatDesc *f);
-void shLoadColor(SHColor *c, const void *data, SHImageFormatDesc *f);
-
+void shStoreColor(SHColor *c, void *data, const SHImageFormatDesc *f);
+void shLoadColor(SHColor *c, const void *data, const SHImageFormatDesc *f);
+void shLoadPixelColor(SHColor * restrict c, const void * restrict data, const SHImageFormatDesc * restrict f, SHint x, SHint y, SHint32 texwidth);
 
 #endif /* __SHIMAGE_H */

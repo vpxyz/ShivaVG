@@ -29,4 +29,6 @@ VGint shAddSaturate(VGint a, VGint b);
 
 VGint shClp2(VGint v);
 
+VGint shIntMod(VGint a, VGint b);
+
 #endif /* __SH_GEOMETRY_H */

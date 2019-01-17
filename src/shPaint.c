@@ -204,11 +204,10 @@ vgGetColor(VGPaint paint)
 
    vgGetParameterfv(paint, VG_PAINT_COLOR, 4, color);
 
-   #define CLAMP(x) ((x) < 0.0f ? 0.0f : ((x) > 1.0f ? 1.0f : (x)))
-   VGint red = (VGint)(CLAMP(color[0]) * 255.0f + 0.5f);
-   VGint green = (VGint)(CLAMP(color[1]) * 255.0f + 0.5f);
-   VGint blue = (VGint)(CLAMP(color[2]) * 255.0f + 0.5f);
-   VGint alpha = (VGint)(CLAMP(color[3]) * 255.0f + 0.5f);
+   VGint red = (VGint)(SH_CLAMPF(color[0]) * 255.0f + 0.5f);
+   VGint green = (VGint)(SH_CLAMPF(color[1]) * 255.0f + 0.5f);
+   VGint blue = (VGint)(SH_CLAMPF(color[2]) * 255.0f + 0.5f);
+   VGint alpha = (VGint)(SH_CLAMPF(color[3]) * 255.0f + 0.5f);
 
    // return packed rgba
    return (red << 24) | (green << 16) | (blue << 8) | alpha;
@@ -354,8 +353,7 @@ shGenerateStops(SHPaint * p, SHfloat minOffset, SHfloat maxOffset,
             shStopArrayPushBackP(outStops, &outStop);
             return;
          }
-      }
-      else {
+      } else {
          /* Pad starting offset to nearest factor of 2 */
          SHint ioff = (SHint) SH_FLOOR(minOffset);
          o = (SHfloat) (ioff - (ioff & 1));

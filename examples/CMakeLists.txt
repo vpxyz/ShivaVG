@@ -11,7 +11,7 @@ set(EXAMPLE_tiger_SRC test_tiger_paths.c)
 set(EXAMPLE_lodepng_SRC lodepng.c)
 set(EXAMPLE_lodepng_HDR lodepng.h)
 
-foreach (example vgu dash linear radial interpolate tiger image pattern blend eb warp path flowers stress clock subwaymap compositing colormatrix)
+foreach (example vgu dash linear radial interpolate tiger image pattern blend eb warp path flowers stress clock subwaymap compositing colormatrix gaussianblur)
     string(TOUPPER ${example} EXAMPLE)
     if(BUILD_${EXAMPLE})
         include_directories(${EXAMPLE_${example}_INCLUDES})

@@ -109,7 +109,7 @@ void display(void)
    }
 }
 
-//-----------------------------------------------------------------------------------------------------
+
 const char commands[] =
    "Click & drag mouse to change\n"
    "value for current mode\n\n"

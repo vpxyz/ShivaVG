@@ -105,6 +105,8 @@ what features it highlights:
 * *test_colormatrix*
   A simple example of color matrix usage
 
+* *test_gaussianblur*
+  A simple example of gaussian blur usage
 
 ## III. IMPLEMENTATION STATUS
 
@@ -229,7 +231,7 @@ vgCopyPixels .......................... FULLY implemented
 vgColorMatrix ......................... PARTIALLY implemented
 vgConvolve ............................ NOT implemented
 vgSeparableConvolve ................... NOT implemented
-vgGaussianBlur ........................ NOT implemented
+vgGaussianBlur ........................ PARTIALLY implemented
 vgLookup .............................. NOT implemented
 vgLookupSingle ........................ NOT implemented
 ```

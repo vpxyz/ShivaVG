@@ -2,6 +2,8 @@
 #include <ctype.h>
 #include <math.h>
 
+VGuint fillColor = 0xFF0000FF; // red
+
 // example path
 const VGubyte commands[] = {
    VG_MOVE_TO_ABS, VG_CUBIC_TO_ABS, VG_CUBIC_TO_ABS, VG_CUBIC_TO_ABS,
@@ -153,7 +155,7 @@ void loadPath(void)
     * };
     */
 
-      VGubyte pathSegments[5] = {
+   VGubyte pathSegments[5] = {
       VG_MOVE_TO,
       VG_LINE_TO,
       VG_LINE_TO,
@@ -175,8 +177,9 @@ void loadPath(void)
    paint = vgCreatePaint();
    // Plain color.
    vgSetParameteri(paint, VG_PAINT_TYPE, VG_PAINT_TYPE_COLOR);
-   // Opaque red.
-   vgSetColor(paint, 0xFF0000FF);
+
+   vgSetColor(paint, fillColor);
+
    // Filled.
    vgSetPaint(paint, VG_FILL_PATH);
 
@@ -184,7 +187,7 @@ void loadPath(void)
    path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 4, 3, VG_PATH_CAPABILITY_ALL);
    // Append the path data.
    vgAppendPathData(path, 4, pathSegments, points);
-   
+
    // Finalize the path, as no more data will be added.
    vgRemovePathCapabilities(path, VG_PATH_CAPABILITY_APPEND_TO);
 
@@ -199,20 +202,62 @@ display(float interval)
    // Now, the background is painted black.
    vgClear(0, 0, testWidth(), testHeight());
 
-
    // Scale to the dimension of the window. Triangle will be stretched when window is resized.
    vgLoadIdentity();
    vgScale((VGfloat)testWidth() , (VGfloat)testHeight());
 
-   // Draw the red triangle.
+   // Draw
+   vgSetParameteri(paint, VG_PAINT_TYPE, VG_PAINT_TYPE_COLOR);
+   vgSetColor(paint, fillColor);
+   vgSetPaint(paint, VG_FILL_PATH);
+
    vgDrawPath(path, VG_FILL_PATH);
 
+
 }
+
+const char commandsTxt[] =
+   "Commands\n"
+   "H - this help\n"
+   "r - red\n"
+   "g - green\n"
+   "b - blue \n";
+
+
+const char help[] = "Press H for a list of commands";
+void key(unsigned char code, int x, int y)
+{
+   static int open = 0;
+   switch (tolower(code)) {
+   case 'r':
+      fillColor = 0xFF0000FF; // red
+      break;
+   case 'g':
+      fillColor = 0x00FF00FF; // green
+      break;
+   case 'b':
+      fillColor = 0x0000FFFF; // blue
+      break;
+   case 'h':
+      /* Show help */
+      if (!open) {
+         testOverlayString(commandsTxt);
+         open = 1;
+      } else {
+         testOverlayString(help);
+         open = 0;
+      }
+      break;
+   }
+
+}
+
 
 int main(int argc, char *argv[])
 {
    testInit(argc, argv, 500, 500, "ShivaVG: Path Primitives Test");
    testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
+   testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
    loadPath();
    testRun();
 

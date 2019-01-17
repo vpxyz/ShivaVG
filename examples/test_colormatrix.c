@@ -25,22 +25,22 @@ struct Image cover;
 void display(void)
 {
    VGImage srcImage, dstImage;
-   VGfloat RGBSwapMatrix[] = { 0.0f, 1.0f, 0.0f, 0.0f,
-                               0.0f, 0.0f, 1.0f, 0.0f,
-                               1.0f, 0.0f, 0.0f, 0.0f,
-                               0.0f, 0.0f, 0.0f, 1.0f,
-                               0.0f, 0.0f, 0.0f, 0.0f };
 
-   VGfloat GrayScaleMatrix[] = { 0.33f, 0.33f, 0.33f, 1.0f, 0.0f,
-                                 0.33f, 0.33f, 0.33f, 1.0f, 0.0f,
-                                 0.33f, 0.33f, 0.33f, 1.0f, 0.0f,
-                                 0.33f, 0.33f, 0.33f, 1.0f, 0.0f };
+   VGfloat RGBSwapMatrix[] = { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+                               1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+                               0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+                               1.0f, 1.0f, 1.0f, 0.0f, 0.0f };
 
-   VGfloat BiasMatrix[] = { 1.0f, 0.0f, 0.0f, 0.0f,
-                            0.0f, 1.0f, 0.0f, 0.0f,
-                            0.0f, 0.0f, 1.0f, 0.0f,
-                            0.0f, 0.0f, 0.0f, 1.0f,
-                            0.5f, 0.5f, 0.5f, 0.5f };
+   VGfloat GrayScaleMatrix[] = { 0.2126f, 0.7152f, 0.0722f, 0.0f, 0.0f,
+                                 0.2126f, 0.7152f, 0.0722f, 0.0f, 0.0f,
+                                 0.2126f, 0.7152f, 0.0722f, 0.0f, 0.0f,
+                                 0.2126f, 0.7152f, 0.0722f, 0.0f, 0.0f };
+
+   VGfloat BiasMatrix[] = { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+                            1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+                            1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+                            0.3f, 0.3f, 0.3f, 1.0f, 0.0f };
+
 
    VGfloat white[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
@@ -48,7 +48,12 @@ void display(void)
    vgClear(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
    srcImage = vgCreateImage( VG_sRGBA_8888, SCREEN_WIDTH, SCREEN_HEIGHT, VG_IMAGE_QUALITY_BETTER );
+
+   #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
    vgImageSubData(srcImage, cimg, SCREEN_WIDTH * 4, VG_sABGR_8888 , 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT );
+   #else
+   vgImageSubData(srcImage, cimg, SCREEN_WIDTH * 4, VG_sRGBA_8888, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT );
+   #endif
 
    dstImage = vgCreateImage( VG_sRGBA_8888, SCREEN_WIDTH, SCREEN_HEIGHT, VG_IMAGE_QUALITY_BETTER );
 

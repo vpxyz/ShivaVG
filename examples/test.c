@@ -450,19 +450,19 @@ testCreateImageFromJpeg(const char *filename)
    VGubyte *brow;
    VGubyte *drow;
    unsigned int x;
-   unsigned int lilEndianTest = 1;
+
    VGImageFormat rgbaFormat;
 
    struct Image image;
 
    /* Check for endianness */
-   if (((unsigned char *) &lilEndianTest)[0] == 1) {
+   #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
       rgbaFormat = VG_lABGR_8888;
       SH_DEBUG("testCreateImageFromJpeg: rgbaFormat VG_lABGR_8888\n");
-   } else {
+   #else
       rgbaFormat = VG_lRGBA_8888;
       SH_DEBUG("testCreateImageFromJpeg: rgbaFormat VG_lRGBA_8888\n");
-   }
+   #endif
 
    /* Try to open image file */
    infile = fopen(filename, "rb");

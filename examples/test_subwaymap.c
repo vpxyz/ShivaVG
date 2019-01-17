@@ -153,7 +153,7 @@ void specialKey(int key, int x, int y )
 void
 drag(int x, int y)
 {
-   SH_DEBUG("drag(): x = %d, y = %d, logicCenterX = %f, logicCenterY = %f\n", x , y, logicCenterX, logicCenterY);
+   SH_DEBUG("x = %d, y = %d, logicCenterX = %f, logicCenterY = %f\n", x , y, logicCenterX, logicCenterY);
    // detect drag direction
    if (logicCenterX - x < 0) {
       // move to right

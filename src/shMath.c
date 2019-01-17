@@ -46,3 +46,19 @@ inline VGint shClp2(VGint v)
 
 }
 
+inline VGint shIntMod(VGint a, VGint b)
+{
+  SH_ASSERT(b >= 0);
+
+  if (!b) return 0;
+
+  VGint m = a % b;
+
+  if (m < 0) m += b;
+
+  SH_ASSERT(m >= 0 && m < b);
+  return m;
+
+}
+
+

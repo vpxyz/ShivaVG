@@ -186,8 +186,9 @@ getRectangle(float x, float y, float w, float h)
 {
    VGPath ret = testCreatePath();
    VGubyte segs[] =
-      { VG_MOVE_TO_ABS, VG_LINE_TO_REL, VG_LINE_TO_REL, VG_LINE_TO_REL,
-VG_CLOSE_PATH };
+      { VG_MOVE_TO_ABS, VG_LINE_TO_REL,
+        VG_LINE_TO_REL, VG_LINE_TO_REL,
+        VG_CLOSE_PATH };
    VGfloat data[] = { x, y, w, 0, 0, h, -w, 0 };
    vgAppendPathData(ret, sizeof(segs), segs, data);
    return ret;
@@ -246,7 +247,7 @@ void
 drawWall(void)
 {
    VGfloat darkblue[] =
-      { 0, (VGfloat) 0x54 / 0xff, (VGfloat) 0x54 / 0xff, 1.0 };
+   { 0.0f, (VGfloat) 0x54 / 0xff, (VGfloat) 0x54 / 0xff, 1.0f };
    VGPaint back = vgCreatePaint();
    vgSetParameterfv(back, VG_PAINT_COLOR, 4, darkblue);
    vgSetPaint(back, VG_FILL_PATH);
@@ -254,7 +255,7 @@ drawWall(void)
    vgDrawPath(path, VG_FILL_PATH);
    vgDestroyPath(path);
    VGfloat lightblue[] =
-      { 0, (VGfloat) 0x7d / 0xff, (VGfloat) 0x7d / 0xff, 1.0 };
+     { 0.0f, (VGfloat) 0x7d / 0xff, (VGfloat) 0x7d / 0xff, 1.0f };
    vgSetParameterfv(back, VG_PAINT_COLOR, 4, lightblue);
    path = testCreatePath();
    {
@@ -511,6 +512,7 @@ main(int argc, char **argv)
    testInit(argc, argv, 832, 512, "ShivaVG: Electro Body scene test");
    testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
    testCallback(TEST_CALLBACK_RESHAPE, (CallbackFunc) reshapeFunc);
+   testOverlayColor(1, 1, 1, 1);
    testRun();
    return EXIT_SUCCESS;
 }
