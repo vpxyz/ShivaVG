@@ -115,7 +115,6 @@ void key(unsigned char code, int x, int y)
 int main(int argc, char *argv[])
 {
    testInit(argc, argv, SCREEN_WIDTH, SCREEN_HEIGHT , "ShivaVG: gaussian blur example");
-   display();
    testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
    testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
    testOverlayColor(1, 1, 1, 1);
