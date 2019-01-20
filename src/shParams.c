@@ -723,6 +723,9 @@ shGet(VGContext * context, VGParamType type, SHint count, void *values,
 
    case VG_MAX_GAUSSIAN_STD_DEVIATION: /* TODO: depends on gaussian blur implementation */
       SH_RETURN_ERR_IF(count != 1, VG_ILLEGAL_ARGUMENT_ERROR, SH_NO_RETVAL);
+      /*
+       * shFloatToParam(0.0f, count, values, floats, 0);
+       */
       shFloatToParam(0.0f, count, values, floats, 0);
       break;
 

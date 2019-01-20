@@ -16,7 +16,9 @@ enum deviationType {
    NONE,
    DEFAULT,
    X,
-   Y
+   Y,
+   M,
+   S
 } deviationType;
 
 
@@ -46,6 +48,14 @@ void display(void)
       vgGaussianBlur( dstImage, srcImage, 1.0f, 10.0f, VG_TILE_PAD);
       vgDrawImage(dstImage);
       break;
+   case M:
+      vgGaussianBlur( dstImage, srcImage, 5.0f, 5.0f, VG_TILE_PAD);
+      vgDrawImage(dstImage);
+      break;
+   case S:
+      vgGaussianBlur( dstImage, srcImage, 1.0f, 1.0f, VG_TILE_PAD);
+      vgDrawImage(dstImage);
+      break;
    default:
       vgDrawImage(srcImage);
       break;
@@ -60,7 +70,9 @@ const char commands[] =
    "H - this help\n"
    "d - default (stdDevX == sdtDevY)\n"
    "x - stdDevX > stdDevY\n"
-   "y - sdtDevY > sstdDevX\n"
+   "y - sdtDevY > stdDevX\n"
+   "5 - stdDev == 5.0"
+   "1 - stdDev == 1.0"
    "n - none \n" ;
 
 const char help[] = "Press H for a list of commands";
@@ -76,6 +88,12 @@ void key(unsigned char code, int x, int y)
       break;
    case 'y':
       deviationType = Y;
+      break;
+   case '5':
+      deviationType = M;
+      break;
+   case '1':
+      deviationType = S;
       break;
    case 'n':
       deviationType = NONE;

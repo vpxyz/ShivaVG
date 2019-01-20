@@ -1456,47 +1456,6 @@ makeGaussianBlurKernel(int kernelElement, SHfloat expScale, SHfloat * restrict s
    return kernel;
 }
 
-
-static inline SHColor
-shGetImageTiledPixel(SHint x, SHint y, SHint w, SHint h, VGTilingMode tilingMode, const SHImage * restrict img , const SHColor * restrict edge)
-{
-   SHColor c;
-   if (x >= 0 && x < w && y >= 0 && y < h) {
-      shLoadPixelColor(&c, img->data, &(img->fd), x, y, img->texwidth);
-   } else {
-      switch(tilingMode) {
-      case VG_TILE_FILL:
-         c = *edge;
-         return c;
-         break;
-      case VG_TILE_PAD:
-         x = SH_MIN(SH_MAX(x, 0), w - 1);
-         y = SH_MIN(SH_MAX(y, 0), h - 1);
-         SH_ASSERT(x >= 0 && x < w && y >= 0 && y < h);
-         shLoadPixelColor(&c, img->data, &(img->fd), x, y, img->texwidth);
-         break;
-      case VG_TILE_REPEAT:
-         x = shIntMod(x, w);
-         y = shIntMod(y, h);
-         SH_ASSERT(x >= 0 && x < w && y >= 0 && y < h);
-         shLoadPixelColor(&c, img->data, &(img->fd), x, y, img->texwidth);
-         break;
-      case VG_TILE_REFLECT:
-      default:
-         x = shIntMod(x, w * 2);
-         y = shIntMod(y, h * 2);
-         if(x >= w) x = w * 2 - 1 - x;
-         if(y >= h) y = h * 2 - 1 - y;
-         SH_ASSERT(x >= 0 && x < w && y >= 0 && y < h);
-         shLoadPixelColor(&c, img->data, &(img->fd), x, y, img->texwidth);
-         break;
-      }
-   }
-
-
-   return c;
-}
-
 static inline SHColor
 shGetTiledPixel(SHint x, SHint y, SHint w, SHint h, VGTilingMode tilingMode, const SHColor * restrict data , const SHColor * restrict edge)
 {
@@ -1560,8 +1519,8 @@ vgGaussianBlur(VGImage dst, VGImage src,
    SH_ASSERT(w > 0 && h > 0);
 
    // for now we assume that both image have the same image formats
-   SHfloat expScaleX = -1.0f / (2.0f * stdDeviationX * stdDeviationX);
-   SHfloat expScaleY = -1.0f / (2.0f * stdDeviationY * stdDeviationY);
+   SHfloat expScaleX = -1.0f / (2.0f * (stdDeviationX * stdDeviationX));
+   SHfloat expScaleY = -1.0f / (2.0f * (stdDeviationY * stdDeviationY));
 
    int kernelWidth = (int)(stdDeviationX * 4.0f + 1.0f);
    int kernelHeight = (int)(stdDeviationY * 4.0f + 1.0f);
@@ -1573,18 +1532,29 @@ vgGaussianBlur(VGImage dst, VGImage src,
    kernelY = makeGaussianBlurKernel(kernelHeight, expScaleY, &scaleY, &kernelYSize);
 
    SHColor edge = context->tileFillColor;
-   // horizontal pass
    SHColor *tmpColors = (SHColor *) malloc(w * s->height * sizeof(SHColor));
    SH_ASSERT(tmpColors != NULL);
-   int x;
+
+   // copy source image region to tmp buffer
+   SHColor c;
+   for(int y = 0; y < s->height; y++) {
+      for(int x = 0; x < s->width; x++) {
+         shLoadPixelColor(&c, s->data, &(s->fd), x, y, s->texwidth);
+         tmpColors[y*s->width + x] = c;
+      }
+   }
+
    SHColor tmpc2;
+   SHfloat tmpc1;
+   // horizontal pass
+   int x;
    for (int i = 0; i < s->height; ++i) {
       for (int j = 0; j < w; ++j) {
          SHColor sum = {.r = 0, .g = 0, .b =0, .a =0};
          for (int k = 0; k < kernelXSize; ++k) {
             x = j + k - kernelWidth;
-            SHfloat tmpc1 = kernelX[k];
-            tmpc2 = shGetImageTiledPixel(x, i, s->width, s->height, tilingMode, s, &edge);
+            tmpc1 = kernelX[k];
+            tmpc2 = shGetTiledPixel(x, i, s->width, s->height, tilingMode, tmpColors, &edge);
             CMUL(tmpc2, tmpc1);
             CADDC(sum, tmpc2);
          }
@@ -1602,7 +1572,7 @@ vgGaussianBlur(VGImage dst, VGImage src,
          SHColor sum = {.r = 0, .g = 0, .b =0, .a =0};
          for (int k = 0; k < kernelYSize; ++k) {
             y = i + k - kernelHeight;
-            SHfloat tmpc1 = kernelY[k];
+            tmpc1 = kernelY[k];
             tmpc2 = shGetTiledPixel(j, y, w, s->height, tilingMode, tmpColors, &edge); // TODO: verify if this can be replaced
             CMUL(tmpc2, tmpc1);
             CADDC(sum, tmpc2);
