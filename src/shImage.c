@@ -1532,7 +1532,7 @@ vgGaussianBlur(VGImage dst, VGImage src,
    kernelY = makeGaussianBlurKernel(kernelHeight, expScaleY, &scaleY, &kernelYSize);
 
    SHColor edge = context->tileFillColor;
-   SHColor *tmpColors = (SHColor *) malloc(w * s->height * sizeof(SHColor));
+   SHColor *tmpColors = (SHColor *) malloc(w * h * sizeof(SHColor));
    SH_ASSERT(tmpColors != NULL);
 
    // copy source image region to tmp buffer
@@ -1554,7 +1554,7 @@ vgGaussianBlur(VGImage dst, VGImage src,
          for (int k = 0; k < kernelXSize; ++k) {
             x = j + k - kernelWidth;
             tmpc1 = kernelX[k];
-            tmpc2 = shGetTiledPixel(x, i, s->width, s->height, tilingMode, tmpColors, &edge);
+            tmpc2 = shGetTiledPixel(x, i, w, h, tilingMode, tmpColors, &edge);
             CMUL(tmpc2, tmpc1);
             CADDC(sum, tmpc2);
          }
@@ -1573,7 +1573,7 @@ vgGaussianBlur(VGImage dst, VGImage src,
          for (int k = 0; k < kernelYSize; ++k) {
             y = i + k - kernelHeight;
             tmpc1 = kernelY[k];
-            tmpc2 = shGetTiledPixel(j, y, w, s->height, tilingMode, tmpColors, &edge); // TODO: verify if this can be replaced
+            tmpc2 = shGetTiledPixel(j, y, w, h, tilingMode, tmpColors, &edge);
             CMUL(tmpc2, tmpc1);
             CADDC(sum, tmpc2);
          }
