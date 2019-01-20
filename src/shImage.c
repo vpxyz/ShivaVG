@@ -1537,10 +1537,10 @@ vgGaussianBlur(VGImage dst, VGImage src,
 
    // copy source image region to tmp buffer
    SHColor c;
-   for(int y = 0; y < s->height; y++) {
-      for(int x = 0; x < s->width; x++) {
+   for(int y = 0; y < h; y++) {
+      for(int x = 0; x < w; x++) {
          shLoadPixelColor(&c, s->data, &(s->fd), x, y, s->texwidth);
-         tmpColors[y*s->width + x] = c;
+         tmpColors[y*w + x] = c;
       }
    }
 
@@ -1548,7 +1548,7 @@ vgGaussianBlur(VGImage dst, VGImage src,
    SHfloat tmpc1;
    // horizontal pass
    int x;
-   for (int i = 0; i < s->height; ++i) {
+   for (int i = 0; i < h; ++i) {
       for (int j = 0; j < w; ++j) {
          SHColor sum = {.r = 0, .g = 0, .b =0, .a =0};
          for (int k = 0; k < kernelXSize; ++k) {
