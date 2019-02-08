@@ -24,7 +24,7 @@
 /* Standard headers */
 
 #if defined(WIN32)
-#include <windows.h>
+#  include <windows.h>
 #endif
 
 #include <stdlib.h>
@@ -33,37 +33,43 @@
 #include <float.h>
 
 #ifndef __APPLE__
-#include <malloc.h>
+#  include <malloc.h>
 #endif
 
 /* Disable VGHandle-pointer conversion warnings since we
    do deal with it by defining VGHandle properly */
 
 #if defined(_MSC_VER)
-#pragma warning(disable:4311)
-#pragma warning(disable:4312)
+#  pragma warning(disable:4311)
+#  pragma warning(disable:4312)
 #endif
 
+
+#if defined(_MSC_VER)
+#  if _MSC_VER < 1913 /*  Visual Studio 2017 version 15.6  */
+#    define SH_ALIGN(X) /* no alignment */
+#  else
+#    define SH_ALIGN(X) __declspec(align(X))
+#  endif
+#else
+#  define SH_ALIGN(X) __attribute((aligned(X)))
+#endif
 /* Type definitions */
 
 #if defined(HAVE_CONFIG_H)
-#include <config.h>
-#
-#if defined(HAVE_INTTYPES_H)
-#include <inttypes.h>
-#endif
-#
+#  include <config.h>
+#  if defined(HAVE_INTTYPES_H)
+#    include <inttypes.h>
+#  endif
 #else
-#
-#define int8_t    char
-#define uint8_t   unsigned char
-#define int16_t   short
-#define uint16_t  unsigned short
-#define int32_t   int
-#define uint32_t  unsigned int
-#define int64_t   long long
-#define uint64_t  unsigned long long
-#
+#  define int8_t    char
+#  define uint8_t   unsigned char
+#  define int16_t   short
+#  define uint16_t  unsigned short
+#  define int32_t   int
+#  define uint32_t  unsigned int
+#  define int64_t   long long
+#  define uint64_t  unsigned long long
 #endif
 
 typedef int8_t SHint8;
@@ -110,16 +116,17 @@ typedef union
 #define SH_ASIN   asinf
 #define SH_ATAN   atanf
 #define SH_FLOOR  floorf
+#define SH_ROUND  roundf
 #define SH_CEIL   ceilf
 #define SH_LOG    logf
 #define SH_ASSERT assert
 
 #if defined(__isnan) || (defined(__APPLE__) && (__GNUC__ == 3))
-#define SH_ISNAN __isnan
+#  define SH_ISNAN __isnan
 #elif defined(_isnan) || defined(WIN32)
-#define SH_ISNAN _isnan
+#  define SH_ISNAN _isnan
 #else
-#define SH_ISNAN isnan
+#  define SH_ISNAN isnan
 #endif
 
 /* Helper macros */
@@ -164,37 +171,39 @@ typedef union
 #define SH_MAX_KERNEL_SIZE		256
 #define SH_MAX_SEPARABLE_KERNEL_SIZE	256
 #define SH_MAX_GAUSSIAN_STD_DEVIATION	16.0f
+
 /* OpenGL headers */
 
 #if defined(__APPLE__)
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
+#  include <OpenGL/gl.h>
+#  include <OpenGL/glu.h>
 #elif defined(_WIN32)
-#include <GL/gl.h>
-#include <GL/glu.h>
+#  include <GL/gl.h>
+#  include <GL/glu.h>
 #else
-#include <GL/gl.h>
-#include <GL/glu.h>
-#define GL_GLEXT_LEGACY         /* don't include glext.h */
-#include <GL/glx.h>
-#include <GL/glext.h>
+#  include <GL/gl.h>
+#  include <GL/glu.h>
+#  define GL_GLEXT_LEGACY         /* don't include glext.h */
+#  include <GL/glx.h>
+#  include <GL/glext.h>
 #endif
 
 #include "shExtensions.h"
 
 
-/* Debugging helpers
-  Based on Zed. A. Shaw macros (see http://c.learncodethehardway.org/), with few modification (use of __func__ C99 macro).
-  Copyright (C) 2010 Zed. A. Shaw
+/*
+ * Debugging helpers
+ * Based on Zed. A. Shaw macros (see http://c.learncodethehardway.org/), with few modification (use of __func__ C99 macro).
+ * Copyright (C) 2010 Zed. A. Shaw
 */
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
 
 #ifdef DEBUG
-#define SH_DEBUG(M, ...) fprintf(stderr, "DEBUG %s:%s:%d: " M "\n", __FILE__, __func__, __LINE__, ##__VA_ARGS__)
+#  define SH_DEBUG(M, ...) fprintf(stderr, "DEBUG %s:%s:%d: " M "\n", __FILE__, __func__, __LINE__, ##__VA_ARGS__)
 #else
-#define SH_DEBUG(M, ...)
+#  define SH_DEBUG(M, ...)
 #endif
 
 #define SH_CLEAN_ERRNO() (errno == 0 ? "None" : strerror(errno))
@@ -212,6 +221,19 @@ typedef union
 #define SH_CHECK_MEM(A) SH_CHECK((A), "Out of memory.")
 
 #define SH_CHECK_DEBUG(A, M, ...) if (!(A)) { SH_DEBUG(M, ##__VA_ARGS__); errno = 0; goto error; }
+
+
+/*
+ * Timing helper
+*/
+#ifndef SH_TIMING
+#  include <time.h>
+#  define SH_TIMING(v, C, M, ...)                                       \
+   clock_t (v) = clock();                                               \
+   C ;                                                                  \
+   fprintf(stderr, "[TIMING] (%s:%s:%d) " M ": %ld milliseconds\n", __FILE__, __func__, __LINE__, ##__VA_ARGS__, (clock() - (v))/ (CLOCKS_PER_SEC / 1000)); \
+
+#endif
 
 
 #endif /* __SHDEFS_H */

@@ -351,8 +351,9 @@ void JN(_FUNC_T, RemoveAt) (_ARRAY_T * a, SHint index)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL && index >= 0 && index < a->size);
-   for (SHint32 i = index; i < a->size - 1; ++i)
+   for (SHint32 i = index; i < a->size - 1; ++i) {
       a->items[i] = a->items[i + 1];
+   }
    a->size--;
 }
 #else

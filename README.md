@@ -108,6 +108,15 @@ what features it highlights:
 * *test_gaussianblur*
   A simple example of gaussian blur usage
 
+* *test_gaussianblur2*
+  Another example of gaussian blur usage
+
+* *test_lookup*
+  A simple example of vgLookup usage
+
+* *test_lookup_single*
+  A simple example of vgLookupSingle usage
+
 ## III. IMPLEMENTATION STATUS
 
 Khronos states in the OpenVG specification, that the contexts for all
@@ -232,8 +241,8 @@ vgColorMatrix ......................... PARTIALLY implemented
 vgConvolve ............................ NOT implemented
 vgSeparableConvolve ................... NOT implemented
 vgGaussianBlur ........................ PARTIALLY implemented
-vgLookup .............................. NOT implemented
-vgLookupSingle ........................ NOT implemented
+vgLookup .............................. PARTIALLY implemented
+vgLookupSingle ........................ PARTIALLY implemented
 ```
 
 * Hardware Queries:

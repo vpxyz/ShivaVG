@@ -43,7 +43,6 @@
 
 #define SH_BASE_IMAGE_FORMAT(format) (format & 0x1F)
 
-
 static inline bool
 shOverlaps(SHImage *src, SHImage *dst, SHint sx, SHint sy, SHint dx, SHint dy, SHint width, SHint height)
 {
@@ -260,8 +259,7 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
 #endif
 
    /* Find proper mapping to OpenGL formats */
-   // TODO: fix this! Look the original code
-   // TODO: the endianness calc are broken bgrBit and asmBit doesen't take care of endianness
+   // TODO: fix this! The endianness calc seems not correct.
    // https://www.opengl.org/discussion_boards/showthread.php/151639-GL_UNSIGNED_INT_8_8_8_8-%21-GL_UNSIGNED_BYTE
    switch (SH_BASE_IMAGE_FORMAT(vg)) {
    case VG_sRGBX_8888:
@@ -537,16 +535,14 @@ shLoadColor(SHColor * restrict c, const void * restrict data, const SHImageForma
 inline void shLoadPixelColor(SHColor * restrict c, const void * restrict data, const SHImageFormatDesc * restrict f, SHint x, SHint y, SHint32 texwidth)
 {
    SHint stride = texwidth * f->bytes;
-   SHuint8 *px;
-   px = (SHuint8 *) data + y * stride + f->bytes + x * f->bytes;
+   SHuint8 *px = (SHuint8 *) data + y * stride + x * f->bytes;
    shLoadColor(c,  px, f);
 }
 
 inline void shStorePixelColor(SHColor * restrict c, const void * restrict data, const SHImageFormatDesc * restrict f, SHint x, SHint y, SHint32 texwidth)
 {
    SHint stride = texwidth * f->bytes;
-   SHuint8 *px;
-   px = (SHuint8 *) data + y * stride + f->bytes + x * f->bytes;
+   SHuint8 *px = (SHuint8 *) data + y * stride + x * f->bytes;
    shStoreColor(c,  px, f);
 }
 
@@ -666,7 +662,7 @@ shUpdateImageTexture(SHImage *i, VGContext *context)
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
    glBindTexture(GL_TEXTURE_2D, i->texture);
 
-   // TODO: fix this! Look the original code
+   // TODO: check this!
    glTexImage2D(GL_TEXTURE_2D, 0, i->fd.glintformat, i->texwidth, i->texheight, 0, i->fd.glformat, i->fd.gltype , i->data);
 
 #ifdef DEBUG
@@ -910,7 +906,7 @@ shCopyPixels(SHuint8 * dst, VGImageFormat dstFormat, SHint dstStride,
 
       /* If the stride are the same, we can copy the whole block */
       if (srcStride == dstStride) {
-         memcpy(dst, src, width * height * dfd.bytes);
+         memcpy(dst, src, width * height * sfd.bytes);
          return ;
       }
 
@@ -992,15 +988,10 @@ vgGetImageSubData(VGImage image,
                   VGImageFormat dataFormat,
                   VGint x, VGint y, VGint width, VGint height)
 {
-   SHImage *i;
-
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    VG_RETURN_ERR_IF(!shIsValidImage(context, image),
                     VG_BAD_HANDLE_ERROR, VG_NO_RETVAL);
-
-   /* TODO: check if image current render target */
-   i = (SHImage *) image;
 
    /* Reject invalid formats */
    VG_RETURN_ERR_IF(!shIsValidImageFormat(dataFormat),
@@ -1013,11 +1004,14 @@ vgGetImageSubData(VGImage image,
    VG_RETURN_ERR_IF(width <= 0 || height <= 0 || !data,
                     VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
+   /* TODO: check if image current render target */
+   SHImage *img = (SHImage *) image;
+
    /* TODO: check data array alignment */
 
    shCopyPixels(data, dataFormat, dataStride,
-                i->data, i->fd.vgformat, i->texwidth * i->fd.bytes,
-                width, height, i->width, i->height,
+                img->data, img->fd.vgformat, img->texwidth * img->fd.bytes,
+                width, height, img->width, img->height,
                 0, 0, x, x, width, height);
 
    VG_RETURN(VG_NO_RETVAL);
@@ -1034,9 +1028,6 @@ vgCopyImage(VGImage dst, VGint dx, VGint dy,
             VGImage src, VGint sx, VGint sy,
             VGint width, VGint height, VGboolean dither)
 {
-   SHImage *s, *d;
-   SHuint8 *pixels;
-
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    VG_RETURN_ERR_IF(!shIsValidImage(context, src) ||
@@ -1045,8 +1036,8 @@ vgCopyImage(VGImage dst, VGint dx, VGint dy,
 
    /* TODO: check if images current render target */
 
-   s = (SHImage *) src;
-   d = (SHImage *) dst;
+   SHImage *s = (SHImage *) src;
+   SHImage *d = (SHImage *) dst;
    VG_RETURN_ERR_IF(width <= 0 || height <= 0,
                     VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
@@ -1064,7 +1055,7 @@ vgCopyImage(VGImage dst, VGint dx, VGint dy,
                    d->width, d->height, width, height,
                    dx, dy, 0, 0, width, height);
    } else {
-      pixels = (SHuint8 *) malloc(width * height * s->fd.bytes);
+      SHuint8 *pixels = (SHuint8 *) malloc(width * height * s->fd.bytes);
       SH_RETURN_ERR_IF(!pixels, VG_OUT_OF_MEMORY_ERROR, SH_NO_RETVAL);
 
       shCopyPixels(pixels, s->fd.vgformat, s->texwidth * s->fd.bytes,
@@ -1354,7 +1345,7 @@ vgColorMatrix(VGImage dst, VGImage src, const VGfloat * matrix)
    SHImageFormatDesc sfd = s->fd;
    SHImageFormatDesc dfd = d->fd;
 
-   const SHuint8 *SD;
+   SHuint8 *SD;
    SHuint8 *DD;
 
    SHint stride = s->texwidth * sfd.bytes;
@@ -1406,7 +1397,6 @@ vgColorMatrix(VGImage dst, VGImage src, const VGfloat * matrix)
                dc.b = tmpcolor.b;
             if (channelMask & VG_ALPHA)
                dc.a = tmpcolor.a;
-
 
             shStoreColor(&dc, DD, &dfd);
 
@@ -1494,6 +1484,8 @@ shGetTiledPixel(SHint x, SHint y, SHint w, SHint h, VGTilingMode tilingMode, con
    return c;
 }
 
+
+
 VG_API_CALL void
 vgGaussianBlur(VGImage dst, VGImage src,
                VGfloat stdDeviationX,
@@ -1511,6 +1503,7 @@ vgGaussianBlur(VGImage dst, VGImage src,
       VG_ILLEGAL_ARGUMENT_ERROR,
       VG_NO_RETVAL);
 
+   // TODO: mask color with channelMask
    VGbitfield channelMask = context->filterChannelMask;
 
    // gaussian blur only of the images intersection
@@ -1522,12 +1515,13 @@ vgGaussianBlur(VGImage dst, VGImage src,
    SHfloat expScaleX = -1.0f / (2.0f * (stdDeviationX * stdDeviationX));
    SHfloat expScaleY = -1.0f / (2.0f * (stdDeviationY * stdDeviationY));
 
-   int kernelWidth = (int)(stdDeviationX * 4.0f + 1.0f);
+   int kernelWidth = (int)(stdDeviationX *  4.0f + 1.0f);
    int kernelHeight = (int)(stdDeviationY * 4.0f + 1.0f);
 
    SHfloat scaleX = 0.0f , scaleY = 0.0f;
    SHfloat *kernelX, *kernelY;
    int kernelXSize, kernelYSize;
+
    kernelX = makeGaussianBlurKernel(kernelWidth, expScaleX, &scaleX, &kernelXSize);
    kernelY = makeGaussianBlurKernel(kernelHeight, expScaleY, &scaleY, &kernelYSize);
 
@@ -1544,19 +1538,17 @@ vgGaussianBlur(VGImage dst, VGImage src,
       }
    }
 
-   SHColor tmpc2;
-   SHfloat tmpc1;
+   SHColor tmpc;
    // horizontal pass
    int x;
    for (int i = 0; i < h; ++i) {
       for (int j = 0; j < w; ++j) {
-         SHColor sum = {.r = 0, .g = 0, .b =0, .a =0};
+         SHColor sum = {.r = 0.0f, .g = 0.0f, .b =0.0f, .a =0.0f};
          for (int k = 0; k < kernelXSize; ++k) {
             x = j + k - kernelWidth;
-            tmpc1 = kernelX[k];
-            tmpc2 = shGetTiledPixel(x, i, w, h, tilingMode, tmpColors, &edge);
-            CMUL(tmpc2, tmpc1);
-            CADDC(sum, tmpc2);
+            tmpc = shGetTiledPixel(x, i, w, h, tilingMode, tmpColors, &edge);
+            CMUL(tmpc, kernelX[k]);
+            CADDC(sum, tmpc);
          }
          CMUL(sum, scaleX);
          tmpColors[i*w+j] = sum;
@@ -1569,18 +1561,16 @@ vgGaussianBlur(VGImage dst, VGImage src,
    SHuint8 *px;
    for (int i = 0; i < h; ++i) {
       for (int j = 0; j < w; ++j) {
-         SHColor sum = {.r = 0, .g = 0, .b =0, .a =0};
+         SHColor sum = {.r = 0.0f, .g = 0.0f, .b =0.0f, .a =0.0f};
          for (int k = 0; k < kernelYSize; ++k) {
             y = i + k - kernelHeight;
-            tmpc1 = kernelY[k];
-            tmpc2 = shGetTiledPixel(j, y, w, h, tilingMode, tmpColors, &edge);
-            CMUL(tmpc2, tmpc1);
-            CADDC(sum, tmpc2);
+            tmpc = shGetTiledPixel(j, y, w, h, tilingMode, tmpColors, &edge);
+            CMUL(tmpc, kernelY[k]);
+            CADDC(sum, tmpc);
          }
          CMUL(sum, scaleY);
          px = (SHuint8 *) d->data + i * stride + j * d->fd.bytes;
          shStoreColor(&sum, px, &(d->fd));
-
       }
    }
    free(tmpColors);
@@ -1591,6 +1581,25 @@ vgGaussianBlur(VGImage dst, VGImage src,
    VG_RETURN(VG_NO_RETVAL);
 }
 
+
+static inline SHfloat
+shInt2ColorComponent(SHuint c)
+{
+   return (SHfloat) ((c) & 255) / 255.0f;
+}
+
+static inline SHuint
+shColorComponent2Int(SHfloat c)
+{
+   SHint t = (SHint)SH_FLOOR((c) * 255.0f + 0.5f);
+   if (t > 255)
+      return 255;
+   if (t < 0)
+      return 0;
+   return t;
+}
+
+
 VG_API_CALL void
 vgLookup(VGImage dst, VGImage src,
          const VGubyte * redLUT,
@@ -1599,6 +1608,64 @@ vgLookup(VGImage dst, VGImage src,
          const VGubyte * alphaLUT,
          VGboolean outputLinear, VGboolean outputPremultiplied)
 {
+   VG_GETCONTEXT(VG_NO_RETVAL);
+   VG_RETURN_ERR_IF(!shIsValidImage(context, src) || !shIsValidImage(context, dst), VG_BAD_HANDLE_ERROR, VG_NO_RETVAL);
+
+   SHImage *d = (SHImage*) dst;
+   SHImage *s = (SHImage*) src;
+   VG_RETURN_ERR_IF(
+      shOverlaps(s, d, 0, 0, 0, 0, s->width, s->height),
+      VG_ILLEGAL_ARGUMENT_ERROR,
+      VG_NO_RETVAL);
+
+   VG_RETURN_ERR_IF(
+      redLUT == NULL && greenLUT == NULL && blueLUT == NULL && alphaLUT == NULL,
+      VG_ILLEGAL_ARGUMENT_ERROR,
+      VG_NO_RETVAL);
+
+   SHint w = SH_MIN(d->width, s->width);
+   SHint h = SH_MIN(d->height, s->height);
+   SH_ASSERT(w > 0 && h > 0);
+
+   SHColor cl, cs;
+   if (s->fd.glformat == GL_LUMINANCE) {
+      for (int y = 0; y < h; y++) {
+         for (int x = 0; x < w; x++) {
+            shLoadPixelColor(&cl, s->data, &(s->fd), x, y, s->texwidth);
+
+            cs.r = shInt2ColorComponent(redLUT[shColorComponent2Int(cl.r)]);
+            cs.g = shInt2ColorComponent(greenLUT[shColorComponent2Int(cl.g)]);
+            cs.b = shInt2ColorComponent(blueLUT[shColorComponent2Int(cl.b)]);
+            cs.a = shInt2ColorComponent(alphaLUT[shColorComponent2Int(cl.a)]);
+
+            shStorePixelColor(&cs, d->data, &(d->fd), x, y, d->texwidth);
+         }
+      }
+   } else {
+      VGbitfield channelMask = context->filterChannelMask;
+      for (int y = 0; y < h; y++) {
+         for (int x = 0; x < w; x++) {
+            shLoadPixelColor(&cl, s->data, &(s->fd), x, y, s->texwidth);
+            cs = cl;
+
+            if (channelMask & VG_RED)
+               cs.r = shInt2ColorComponent(redLUT[shColorComponent2Int(cl.r)]);
+
+            if (channelMask & VG_GREEN)
+               cs.g = shInt2ColorComponent(greenLUT[shColorComponent2Int(cl.g)]);
+
+            if (channelMask & VG_BLUE)
+               cs.b = shInt2ColorComponent(blueLUT[shColorComponent2Int(cl.b)]);
+
+            if (channelMask & VG_ALPHA)
+               cs.a = shInt2ColorComponent(alphaLUT[shColorComponent2Int(cl.a)]);
+
+            shStorePixelColor(&cs, d->data, &(d->fd), x, y, d->texwidth);
+         }
+      }
+   }
+   shUpdateImageTexture(d, context);
+   VG_RETURN(VG_NO_RETVAL);
 }
 
 VG_API_CALL void
@@ -1607,4 +1674,78 @@ vgLookupSingle(VGImage dst, VGImage src,
                VGImageChannel sourceChannel,
                VGboolean outputLinear, VGboolean outputPremultiplied)
 {
+   VG_GETCONTEXT(VG_NO_RETVAL);
+   VG_RETURN_ERR_IF(!shIsValidImage(context, src) || !shIsValidImage(context, dst), VG_BAD_HANDLE_ERROR, VG_NO_RETVAL);
+
+   SHImage *d = (SHImage*) dst;
+   SHImage *s = (SHImage*) src;
+   VG_RETURN_ERR_IF(
+      shOverlaps(s, d, 0, 0, 0, 0, s->width, s->height),
+      VG_ILLEGAL_ARGUMENT_ERROR,
+      VG_NO_RETVAL);
+
+   VG_RETURN_ERR_IF(
+      lookupTable == NULL,
+      VG_ILLEGAL_ARGUMENT_ERROR,
+      VG_NO_RETVAL);
+
+   SHint w = SH_MIN(d->width, s->width);
+   SHint h = SH_MIN(d->height, s->height);
+   SH_ASSERT(w > 0 && h > 0);
+
+   // TODO: check this
+   if (s->fd.glformat == GL_LUMINANCE) {
+      sourceChannel = VG_RED;
+   } else if (s->fd.bytes == 1) {
+      if (s->fd.vgformat != VG_A_8) {
+         sourceChannel = VG_RED;
+      } else {
+         sourceChannel = VG_ALPHA;
+      }
+   }
+   
+   VGbitfield channelMask = context->filterChannelMask;
+   SHColor cl, cs;
+   SHuint32 tmp;
+   int e;
+   for (int y = 0; y < h; y++) {
+      for (int x = 0; x < w; x++) {
+         shLoadPixelColor(&cl, s->data, &(s->fd), x, y, s->texwidth);
+         switch(sourceChannel) {
+         case VG_RED:
+            e = shColorComponent2Int(cl.r);
+            break;
+         case VG_GREEN:
+            e = shColorComponent2Int(cl.g);
+            break;
+         case VG_BLUE:
+            e = shColorComponent2Int(cl.b);
+            break;
+         default:
+            SH_ASSERT(sourceChannel == VG_ALPHA);
+            e = shColorComponent2Int(cl.a);
+            break;
+         }
+
+         tmp = lookupTable[e];
+         cs = cl;
+
+         if (channelMask & VG_RED)
+            cs.r = shInt2ColorComponent(tmp >> 24);
+
+         if (channelMask & VG_GREEN)
+            cs.g = shInt2ColorComponent(tmp >> 16);
+
+         if (channelMask & VG_BLUE)
+            cs.b = shInt2ColorComponent(tmp >> 8);
+
+         if (channelMask & VG_ALPHA)
+            cs.a = shInt2ColorComponent(tmp);
+
+         shStorePixelColor(&cs, d->data, &(d->fd), x, y, d->texwidth);
+      }
+   }
+   shUpdateImageTexture(d, context);
+   VG_RETURN(VG_NO_RETVAL);
 }
+

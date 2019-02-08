@@ -36,10 +36,10 @@ void display(void)
                                  0.2126f, 0.7152f, 0.0722f, 0.0f, 0.0f,
                                  0.2126f, 0.7152f, 0.0722f, 0.0f, 0.0f };
 
-   VGfloat BiasMatrix[] = { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+   VGfloat BiasMatrix[] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
                             1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-                            1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-                            0.3f, 0.3f, 0.3f, 1.0f, 0.0f };
+                            0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+                            0.0f, 0.0f, 0.0f, 1.0f, 0.0f };
 
 
    VGfloat white[] = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -47,29 +47,35 @@ void display(void)
    vgSetfv(VG_CLEAR_COLOR, 4, white);
    vgClear(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-   srcImage = vgCreateImage( VG_sRGBA_8888, SCREEN_WIDTH, SCREEN_HEIGHT, VG_IMAGE_QUALITY_BETTER );
+   VGImageFormat imgFormat;
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+   imgFormat = VG_sABGR_8888;
+#else
+   imgFormat = VG_sRGBA_8888;
+#endif
 
-   #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-   vgImageSubData(srcImage, cimg, SCREEN_WIDTH * 4, VG_sABGR_8888 , 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT );
-   #else
+   srcImage = vgCreateImage(imgFormat, SCREEN_WIDTH, SCREEN_HEIGHT, VG_IMAGE_QUALITY_BETTER );
+
    vgImageSubData(srcImage, cimg, SCREEN_WIDTH * 4, VG_sRGBA_8888, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT );
-   #endif
 
-   dstImage = vgCreateImage( VG_sRGBA_8888, SCREEN_WIDTH, SCREEN_HEIGHT, VG_IMAGE_QUALITY_BETTER );
+   dstImage = vgCreateImage(imgFormat, SCREEN_WIDTH, SCREEN_HEIGHT, VG_IMAGE_QUALITY_BETTER );
 
    switch (matrixType) {
    case RGB_SWAP:
-      vgColorMatrix( dstImage, srcImage, RGBSwapMatrix );
+      vgColorMatrix( dstImage, srcImage, RGBSwapMatrix);
+      vgDrawImage(dstImage);
       break;
    case GREY_SCALE:
-      vgColorMatrix( dstImage, srcImage, GrayScaleMatrix );
+      vgColorMatrix( dstImage, srcImage, GrayScaleMatrix);
+      vgDrawImage(dstImage);
       break;
    case BIAS:
-      vgColorMatrix( dstImage, srcImage, BiasMatrix );
+      vgColorMatrix( dstImage, srcImage, BiasMatrix);
+      vgDrawImage(dstImage);
       break;
    case NONE:
    default:
-      vgCopyImage(dstImage, 0, 0, srcImage, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+      vgDrawImage(srcImage);
       break;
    }
 

@@ -9,10 +9,13 @@ include(CheckLibraryExists)
 include(CheckTypeSize)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
-set(CMAKE_C_FLAGS "-std=gnu99 -pedantic -Werror=incompatible-pointer-types -Werror=strict-prototypes -fno-strict-aliasing -Wall -Wvla")
+set(CMAKE_C_FLAGS "-O3 -mtune=generic -std=gnu99 -pedantic -Werror=incompatible-pointer-types -Werror=strict-prototypes -fno-strict-aliasing -Wall -Wvla")
 
-# Export json compilation database command, usefull for clang-check 
+# Export json compilation database command, usefull for clang-check
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# set GLVND as prefered OpenGL policy
+set(OpenGL_GL_PREFERENCE "GLVND")
 
 # Processing the generator options
 # TODO: can we have a master option that will turn others in UI?
@@ -38,6 +41,11 @@ option(BUILD_SUBWAYMAP      "Build Subwaymap example (default=yes)]"            
 option(BUILD_COMPOSITING    "Build Compositing example (default=yes)]"                  OFF)
 option(BUILD_COLORMATRIX    "Build Color matrix example (default=yes)]"                 OFF)
 option(BUILD_GAUSSIANBLUR   "Build Color gaussian blur example (default=yes)]"          OFF)
+option(BUILD_GAUSSIANBLUR2  "Build Color gaussian blur advanced example (default=yes)]" OFF)
+option(BUILD_LOOKUP         "Build Color lookup example (default=yes)]"                 OFF)
+option(BUILD_LOOKUP2        "Build Color lookup2 example (default=yes)]"                OFF)
+option(BUILD_LOOKUP_SINGLE  "Build Color lookup single example (default=yes)]"          OFF)
+option(BUILD_COLOR          "Build Simple color matrix example (default=yes)]"          OFF)
 
 if (BUILD_DEBUG)
   set(DEBUG ON CACHE BOOL "Compile with debug code")
@@ -64,10 +72,16 @@ if(BUILD_ALL_EXAMPLES)
     set(BUILD_COMPOSITING ON)
     set(BUILD_COLORMATRIX ON)
     set(BUILD_GAUSSIANBLUR ON)
+    set(BUILD_GAUSSIANBLUR2 ON)
+    set(BUILD_LOOKUP ON)
+    set(BUILD_LOOKUP2 ON)
+    set(BUILD_LOOKUP_SINGLE ON)
+    set(BUILD_COLOR ON)
 endif()
-set(BUILD_EXAMPLES BUILD_VGU OR BUILD_DASH OR BUILD_LINEAR OR BUILD_RADIAL OR BUILD_INTERPOLATE OR BUILD_TIGER OR
-  BUILD_IMAGE OR BUILD_PATTERN OR BUILD_BLEND OR BUILD_EB OR BUILD_WARP OR BUILD_PATH OR BUILD_FLOWERS
-  OR BUILD_STRESS OR BUILD_CLOCK OR BUILD_SUBWAYMAP OR BUILD_COMPOSITING OR BUILD_COLORMATRIX OR BUILD_GAUSSIANBLUR)
+set(BUILD_EXAMPLES BUILD_VGU OR BUILD_DASH OR BUILD_LINEAR OR BUILD_RADIAL OR BUILD_INTERPOLATE OR BUILD_TIGER
+  OR BUILD_IMAGE OR BUILD_PATTERN OR BUILD_BLEND OR BUILD_EB OR BUILD_WARP OR BUILD_PATH OR BUILD_FLOWERS
+  OR BUILD_STRESS OR BUILD_CLOCK OR BUILD_SUBWAYMAP OR BUILD_COMPOSITING OR BUILD_COLORMATRIX
+  OR BUILD_GAUSSIANBLUR OR BUILD_GAUSSIANBLUR2 OR BUILD_LOOKUP OR BUILD_LOOKUP2 OR BUID_LOOKUP_SINGLE OR BUILD_COLOR)
 
 # Finding packages
 # TODO: EGL/OpenGLES and friends?
@@ -155,7 +169,14 @@ message("ShivaVG will be compiled with the following example programs\n"
         "  Clock                     ${BUILD_CLOCK}\n"
         "  Subway Map                ${BUILD_SUBWAYMAP}\n"
         "  Compositing               ${BUILD_COMPOSITING}\n"
-        "  Color matrix              ${BUILD_COLORMATRIX}\n")
+        "  Color matrix              ${BUILD_COLORMATRIX}\n"
+        "  Gaussian blur             ${BUILD_GAUSSIANBLUR}\n"
+        "  Advanced Gaussian blur    ${BUILD_GAUSSIANBLUR2}\n"
+        "  Color lookup              ${BUILD_LOOKUP}\n"
+        "  Color lookup2             ${BUILD_LOOKUP2}\n"
+        "  Color lookup single       ${BUILD_LOOKUP_SINGLE}\n"
+        "  Simple color matrix       ${BUILD_COLOR}\n"
+        )
 
 # Pick up subdirectories 
 # TODO see if include_directories work like a stack and whether we can avoid duplication

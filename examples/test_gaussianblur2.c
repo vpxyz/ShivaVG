@@ -7,11 +7,15 @@
 #include <time.h>
 #include <math.h>
 #include <ctype.h>
-#include "./img_data.c"
+
+#ifndef IMAGE_DIR
+#define IMAGE_DIR "./"
+#endif
 
 #define SCREEN_WIDTH	320
 #define SCREEN_HEIGHT   240
 
+unsigned int screenWidth, screenHeight;
 enum deviationType {
    NONE,
    DEFAULT,
@@ -21,67 +25,72 @@ enum deviationType {
    S
 } deviationType;
 
+struct Image img;
+void initImage(void)
+{
+   img = testCreateImageFromJpeg(IMAGE_DIR "milano.jpg");
+}
+void cleanUp(void)
+{
+   vgDestroyImage(img.img);
+}
 
 void display(void)
 {
-   VGImage srcImage, dstImage;
+   VGImage dstImage;
    VGfloat white[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
    vgSetfv(VG_CLEAR_COLOR, 4, white);
-   vgClear(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+   vgClear(0, 0, img.width,img.height);
 
-   srcImage = vgCreateImage(VG_sRGBA_8888, SCREEN_WIDTH, SCREEN_HEIGHT, VG_IMAGE_QUALITY_BETTER);
-   vgImageSubData( srcImage, cimg, SCREEN_WIDTH*4, VG_sABGR_8888, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-   dstImage = vgCreateImage(VG_sRGBA_8888, SCREEN_WIDTH, SCREEN_HEIGHT, VG_IMAGE_QUALITY_BETTER);
+   dstImage = vgCreateImage(VG_lABGR_8888, img.width, img.height, VG_IMAGE_QUALITY_BETTER);
 
    switch (deviationType) {
    case DEFAULT:
-      vgGaussianBlur(dstImage, srcImage, 10.0f, 10.0f, VG_TILE_PAD);
+      vgGaussianBlur(dstImage, img.img, 10.0f, 10.0f, VG_TILE_PAD);
       vgDrawImage(dstImage);
       break;
    case X:
-      vgGaussianBlur( dstImage, srcImage, 10.0f, 1.0f, VG_TILE_PAD);
+      vgGaussianBlur( dstImage, img.img, 10.0f, 1.0f, VG_TILE_PAD);
       vgDrawImage(dstImage);
       break;
    case Y:
-      vgGaussianBlur( dstImage, srcImage, 1.0f, 10.0f, VG_TILE_PAD);
+      vgGaussianBlur( dstImage, img.img, 1.0f, 10.0f, VG_TILE_PAD);
       vgDrawImage(dstImage);
       break;
    case M:
-      vgGaussianBlur( dstImage, srcImage, 5.0f, 5.0f, VG_TILE_PAD);
+      vgGaussianBlur( dstImage, img.img, 5.0f, 5.0f, VG_TILE_PAD);
       vgDrawImage(dstImage);
       break;
    case S:
-      vgGaussianBlur( dstImage, srcImage, 1.0f, 1.0f, VG_TILE_PAD);
+      vgGaussianBlur(dstImage, img.img, 1.0f, 1.0f, VG_TILE_PAD);
       vgDrawImage(dstImage);
       break;
    default:
-      vgDrawImage(srcImage);
+      vgDrawImage(img.img);
       break;
 
    }
-   vgDestroyImage( srcImage );
-   vgDestroyImage( dstImage );
+   vgDestroyImage(dstImage);
 }
 
 const char commands[] =
    "Commands\n"
    "H - this help\n"
-   "t - sdtDev == 10.0\n"
+   "t - stdDev== 10.0\n"
    "x - stdDevX > stdDevY\n"
    "y - sdtDevY > stdDevX\n"
-   "5 - stdDev == 5.0\n"
-   "1 - stdDev == 1.0\n"
-   "n - none\n"
-   "q - quit\n";
+   "5 - stdDev == 5.0"
+   "1 - stdDev == 1.0"
+   "n - none \n"
+   "q - quit \n";
 
 const char help[] = "Press H for a list of commands";
 void key(unsigned char code, int x, int y)
 {
    static int open = 0;
    switch (tolower(code)) {
-   case 'd':
+   case 't':
       deviationType = DEFAULT;
       break;
    case 'x':
@@ -117,12 +126,14 @@ void key(unsigned char code, int x, int y)
 
 int main(int argc, char *argv[])
 {
-   testInit(argc, argv, SCREEN_WIDTH, SCREEN_HEIGHT , "ShivaVG: gaussian blur example");
+   testInit(argc, argv, 1600, 1066, "ShivaVG: gaussian blur advanced example");
    testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
    testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
    testOverlayColor(1, 1, 1, 1);
    testOverlayString(help);
+   initImage();
    testRun();
+   cleanUp();
 
    return EXIT_SUCCESS;
 }
