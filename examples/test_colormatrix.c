@@ -140,14 +140,7 @@ int main(int argc, char *argv[])
    testOverlayString(help);
    testOverlayColor(1, 1, 1, 1);
 
-   /*
-    * cover = testCreateImageFromJpeg(IMAGE_DIR "test_img_flute.jpg");
-    */
-   size_t cimgsize = sizeof(cimg) / sizeof(cimg[0]);
-
    matrixType = NONE;
-
-   printf("cimgsize = %ld\n", cimgsize);
 
    testRun();
    return EXIT_SUCCESS;
