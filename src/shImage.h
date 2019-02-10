@@ -116,6 +116,8 @@ void SHImage_dtor(SHImage * i);
 #define CMULTO(c1, c2, c3) { c3.r=c1.r*c2.r; c3.g=c1.g*c2.g;  c3.b=c1.b*c2.b; c3.a=c1.a*c2.a; }
 #define CDIV(c, s) { c.r/=s; c.g/=s; c.b/=s; c.a/=s; }
 
+#define CMULANDADDC(c1, c2, s) {c1.r += c2.r * s; c1.g += c2.g * s ; c1.b += c2.b * s ; c1.a += c2.a * s;}
+
 #define CPREMUL(c) { c.r*=c.a; c.g*=c.a; c.b*=c.a; }
 #define CUNPREMUL(c) { c.r/=c.a; c.g/=c.a; c.b/=c.a; }
 

@@ -1485,7 +1485,6 @@ shGetTiledPixel(SHint x, SHint y, SHint w, SHint h, VGTilingMode tilingMode, con
 }
 
 
-
 VG_API_CALL void
 vgGaussianBlur(VGImage dst, VGImage src,
                VGfloat stdDeviationX,
@@ -1546,9 +1545,10 @@ vgGaussianBlur(VGImage dst, VGImage src,
          SHColor sum = {.r = 0.0f, .g = 0.0f, .b =0.0f, .a =0.0f};
          for (int k = 0; k < kernelXSize; ++k) {
             x = j + k - kernelWidth;
+            // TODO: can I merge shGetTiledPixel with the previous tmp buffer copy?
             tmpc = shGetTiledPixel(x, i, w, h, tilingMode, tmpColors, &edge);
-            CMUL(tmpc, kernelX[k]);
-            CADDC(sum, tmpc);
+            // Multiply tmpc with kernelX[k] then add with color "sum"
+            CMULANDADDC(sum, tmpc, kernelX[k]);
          }
          CMUL(sum, scaleX);
          tmpColors[i*w+j] = sum;
@@ -1565,8 +1565,8 @@ vgGaussianBlur(VGImage dst, VGImage src,
          for (int k = 0; k < kernelYSize; ++k) {
             y = i + k - kernelHeight;
             tmpc = shGetTiledPixel(j, y, w, h, tilingMode, tmpColors, &edge);
-            CMUL(tmpc, kernelY[k]);
-            CADDC(sum, tmpc);
+            // Multiply tmpc with kernelY[k] then add with color "sum"
+            CMULANDADDC(sum, tmpc, kernelY[k]);
          }
          CMUL(sum, scaleY);
          px = (SHuint8 *) d->data + i * stride + j * d->fd.bytes;
@@ -1703,7 +1703,7 @@ vgLookupSingle(VGImage dst, VGImage src,
          sourceChannel = VG_ALPHA;
       }
    }
-   
+
    VGbitfield channelMask = context->filterChannelMask;
    SHColor cl, cs;
    SHuint32 tmp;

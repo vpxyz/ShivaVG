@@ -70,7 +70,7 @@ typedef struct
 #define _INLINE
 #endif
 
-VGErrorCode JN(_ARRAY_T, _ctor) (_ARRAY_T * a)
+VGErrorCode JN(_ARRAY_T, _ctor) (_ARRAY_T * restrict a)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL);
@@ -91,7 +91,7 @@ VGErrorCode JN(_ARRAY_T, _ctor) (_ARRAY_T * a)
 #endif
 
 
-VGErrorCode JN(_ARRAY_T, _dtor) (_ARRAY_T * a)
+VGErrorCode JN(_ARRAY_T, _dtor) (_ARRAY_T * restrict a)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL);
@@ -105,7 +105,7 @@ VGErrorCode JN(_ARRAY_T, _dtor) (_ARRAY_T * a)
 ;
 #endif
 
-_INLINE VGErrorCode JN(_FUNC_T, Clear) (_ARRAY_T * a)
+_INLINE VGErrorCode JN(_FUNC_T, Clear) (_ARRAY_T * restrict a)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL);
@@ -123,7 +123,7 @@ _INLINE VGErrorCode JN(_FUNC_T, Clear) (_ARRAY_T * a)
  * the items are not preserved.
  *--------------------------------------------------------*/
 
-_INLINE VGErrorCode JN(_FUNC_T, Realloc) (_ARRAY_T * a, SHint newsize)
+_INLINE VGErrorCode JN(_FUNC_T, Realloc) (_ARRAY_T * restrict a, SHint newsize)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL && newsize > 0);
@@ -154,7 +154,7 @@ _INLINE VGErrorCode JN(_FUNC_T, Realloc) (_ARRAY_T * a, SHint newsize)
  * of reallocation items are not preserved.
  *------------------------------------------------------*/
 
-_INLINE VGErrorCode JN(_FUNC_T, Reserve) (_ARRAY_T * a, SHint newsize)
+_INLINE VGErrorCode JN(_FUNC_T, Reserve) (_ARRAY_T * restrict a, SHint newsize)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL && newsize >= 0);
@@ -184,7 +184,7 @@ _INLINE VGErrorCode JN(_FUNC_T, Reserve) (_ARRAY_T * a, SHint newsize)
  * of reallocation items are copied.
  *------------------------------------------------------*/
 
-_INLINE VGErrorCode JN(_FUNC_T, ReserveAndCopy) (_ARRAY_T * a, SHint newsize)
+_INLINE VGErrorCode JN(_FUNC_T, ReserveAndCopy) (_ARRAY_T * restrict a, SHint newsize)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL && newsize >= 0);
@@ -205,7 +205,7 @@ _INLINE VGErrorCode JN(_FUNC_T, ReserveAndCopy) (_ARRAY_T * a, SHint newsize)
 #endif
 
 
-_INLINE VGErrorCode JN(_FUNC_T, PushBack) (_ARRAY_T * a, _ITEM_T item)
+_INLINE VGErrorCode JN(_FUNC_T, PushBack) (_ARRAY_T * restrict a, _ITEM_T item)
 #ifdef _ARRAY_DEFINE
 {
    if (a->capacity == 0) {
@@ -228,7 +228,7 @@ _INLINE VGErrorCode JN(_FUNC_T, PushBack) (_ARRAY_T * a, _ITEM_T item)
 #endif
 
 
-_INLINE VGErrorCode JN(_FUNC_T, PushBackP) (_ARRAY_T * a, _ITEM_T * item)
+_INLINE VGErrorCode JN(_FUNC_T, PushBackP) (_ARRAY_T * restrict a, _ITEM_T * restrict item)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL);
@@ -251,7 +251,7 @@ _INLINE VGErrorCode JN(_FUNC_T, PushBackP) (_ARRAY_T * a, _ITEM_T * item)
 #endif
 
 
-_INLINE void JN(_FUNC_T, PopBack) (_ARRAY_T * a)
+_INLINE void JN(_FUNC_T, PopBack) (_ARRAY_T * restrict a)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL && a->size);
@@ -262,7 +262,7 @@ _INLINE void JN(_FUNC_T, PopBack) (_ARRAY_T * a)
 #endif
 
 
-_INLINE _ITEM_T JN(_FUNC_T, Front) (_ARRAY_T * a)
+_INLINE _ITEM_T JN(_FUNC_T, Front) (_ARRAY_T * restrict a)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL && a->size);
@@ -273,7 +273,7 @@ _INLINE _ITEM_T JN(_FUNC_T, Front) (_ARRAY_T * a)
 #endif
 
 
-_INLINE _ITEM_T *JN(_FUNC_T, FrontP) (_ARRAY_T * a)
+_INLINE _ITEM_T *JN(_FUNC_T, FrontP) (_ARRAY_T * restrict a)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL && a->size);
@@ -284,7 +284,7 @@ _INLINE _ITEM_T *JN(_FUNC_T, FrontP) (_ARRAY_T * a)
 #endif
 
 
-_INLINE _ITEM_T JN(_FUNC_T, Back) (_ARRAY_T * a)
+_INLINE _ITEM_T JN(_FUNC_T, Back) (_ARRAY_T * restrict a)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL && a->size);
@@ -295,7 +295,7 @@ _INLINE _ITEM_T JN(_FUNC_T, Back) (_ARRAY_T * a)
 #endif
 
 
-_INLINE _ITEM_T *JN(_FUNC_T, BackP) (_ARRAY_T * a)
+_INLINE _ITEM_T *JN(_FUNC_T, BackP) (_ARRAY_T * restrict a)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a->size);
@@ -306,7 +306,7 @@ _INLINE _ITEM_T *JN(_FUNC_T, BackP) (_ARRAY_T * a)
 #endif
 
 
-_INLINE _ITEM_T JN(_FUNC_T, At) (_ARRAY_T * a, SHint index)
+_INLINE _ITEM_T JN(_FUNC_T, At) (_ARRAY_T * restrict a, SHint index)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL && index >= 0 && index < a->size);
@@ -327,11 +327,11 @@ _INLINE _ITEM_T *JN(_FUNC_T, AtP) (_ARRAY_T * a, SHint index)
 ;
 #endif
 
-_INLINE SHint JN(_FUNC_T, Find) (_ARRAY_T * a, _ITEM_T item)
+_INLINE SHint JN(_FUNC_T, Find) (_ARRAY_T * restrict a, _ITEM_T item)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL);
-   for (SHint32 i = 0; i < a->size; ++i) {
+   for (SHint32 i = 0; i < a->size; i++) {
 #ifdef _COMPARE_T
       if (_COMPARE_T(a->items[i], item))
          return i;
@@ -347,11 +347,11 @@ _INLINE SHint JN(_FUNC_T, Find) (_ARRAY_T * a, _ITEM_T item)
 ;
 #endif
 
-void JN(_FUNC_T, RemoveAt) (_ARRAY_T * a, SHint index)
+void JN(_FUNC_T, RemoveAt) (_ARRAY_T * restrict a, SHint index)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL && index >= 0 && index < a->size);
-   for (SHint32 i = index; i < a->size - 1; ++i) {
+   for (SHint32 i = index; i < a->size - 1; i++) {
       a->items[i] = a->items[i + 1];
    }
    a->size--;
