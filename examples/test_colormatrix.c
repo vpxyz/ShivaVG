@@ -110,7 +110,9 @@ void key(unsigned char code, int x, int y)
    case 'n':
       matrixType = NONE;
       break;
-
+   case 'q':
+      exit(EXIT_SUCCESS);
+      break;
    case 'h':
       /* Show help */
       if (!open) {

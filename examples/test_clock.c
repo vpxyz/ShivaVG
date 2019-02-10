@@ -481,8 +481,9 @@ void initApp(void)
 
 const char commands[] =
    "Commands\n"
-   "H - this help\n"
-   "Q - change display render quality\n";
+   "h - this help\n"
+   "r - change display render quality\n"
+   "q - quit";
 
 const char help[] = "Press H for a list of commands";
 
@@ -491,6 +492,9 @@ void key(unsigned char code, int x, int y)
    static int open = 0;
    switch (tolower(code)) {
    case 'q':
+      exit(EXIT_SUCCESS);
+      break;
+   case 'r':
       if (quality == VG_RENDERING_QUALITY_FASTER)
          quality = VG_RENDERING_QUALITY_BETTER;
       else
