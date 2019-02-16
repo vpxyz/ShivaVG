@@ -42,12 +42,9 @@ void genPaints(void)
 
 void genPaths(void)
 {
-   VGint i;
-
-   for (i = 0; i < NUM_PATHS; i++)
-   {
+   for (VGint i = 0; i < NUM_PATHS; i++) {
       paths[i] = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 0, 0, VG_PATH_CAPABILITY_ALL);
-      vgAppendPathData(paths[i], objl_paths[i].nCommands, (VGubyte *)objl_paths[i].cmds, objl_paths[i].floats);
+      vgAppendPathData(paths[i], objl_paths[i].nCommands, (VGubyte *) objl_paths[i].cmds, objl_paths[i].floats);
    }
 }
 
@@ -67,7 +64,7 @@ void display(void)
    vgSeti(VG_MATRIX_MODE, VG_MATRIX_PATH_USER_TO_SURFACE);
    vgLoadIdentity();
    vgTranslate(0.0f, (VGfloat)windowHeight);
-   vgScale((VGfloat)windowWidth / (x1 - x0), -(VGfloat)windowHeight / (y1 - y0));
+   vgScale((VGfloat)windowWidth / (x1 - x0), - (VGfloat) windowHeight / (y1 - y0));
    vgTranslate(-x0, -y0);
 
    for (VGint i = 0; i < NUM_PATHS; ++i) {
@@ -98,9 +95,17 @@ void initApp(void)
    vgSeti(VG_MASKING, VG_FALSE);
    vgSeti(VG_IMAGE_MODE, VG_DRAW_IMAGE_NORMAL);
 }
+const char commands[] =
+   "Commands\n"
+   "h - this help\n"
+   "a - zoom in\n"
+   "z - zoom out\n"
+   "q - quit \n" ;
 
+const char help[] = "Press H for a list of commands";
 void key(unsigned char code, int x, int y)
 {
+   static int open = 0;
    switch (tolower(code)) {
    case 'a':
       logicHalfWidth /= 1.04f;
@@ -115,6 +120,19 @@ void key(unsigned char code, int x, int y)
          logicHalfWidth = MAP_WIDTH * 0.5f;
       }
       logicHalfHeight = logicHalfWidth * MAP_HEIGHT / MAP_WIDTH;
+      break;
+   case 'q':
+      exit(EXIT_SUCCESS);
+      break;
+   case 'h':
+      /* Show help */
+      if (!open) {
+         testOverlayString(commands);
+         open = 1;
+      } else {
+         testOverlayString(help);
+         open = 0;
+      }
       break;
    }
    glutPostRedisplay();
@@ -153,7 +171,6 @@ void specialKey(int key, int x, int y )
 void
 drag(int x, int y)
 {
-   SH_DEBUG("x = %d, y = %d, logicCenterX = %f, logicCenterY = %f\n", x , y, logicCenterX, logicCenterY);
    // detect drag direction
    if (logicCenterX - x < 0) {
       // move to right

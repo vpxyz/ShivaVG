@@ -106,7 +106,7 @@ void SHImage_dtor(SHImage * i);
 #define CSUBC(c1, c2) { c1.r-=c2.r; c1.g-=c2.g; c1.b-=c2.b; c1.a-=c2.a; }
 #define CSUBCTO(c1, c2, c3) { c3.r=c1.r-c2.r; c3.g=c1.g-c2.g;  c3.b=c1.b-c2.b; c3.a=c1.a-c2.a; }
 
-#define CADD(c1, rr,gg,bb,aa) { c.r+=rr; c.g+=gg; c.b+=bb; c.a+=aa; }
+#define CADD(c1, rr,gg,bb,aa) { c1.r+=rr; c1.g+=gg; c1.b+=bb; c1.a+=aa; }
 #define CADDC(c1, c2) { c1.r+=c2.r; c1.g+=c2.g; c1.b+=c2.b; c1.a+=c2.a; }
 #define CADDTO(c1, c2, c3) { c3.r=c1.r+c2.r; c3.g=c1.g+c2.g;  c3.b=c1.b+c2.b; c3.a=c1.a+c2.a; }
 #define CADDCK(c1, c2, k) { c1.r+=k*c2.r; c1.g+=k*c2.g; c1.b+=k*c2.b; c1.a+=k*c2.a; }

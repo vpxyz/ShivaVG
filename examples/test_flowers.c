@@ -113,8 +113,8 @@ void display(void)
 const char commands[] =
    "Click & drag mouse to change\n"
    "value for current mode\n\n"
-   "H - this help\n"
-   "Q - change display rendere quality\n";
+   "h - this help\n"
+   "q - change display rendere quality\n";
 
 
 void key(unsigned char code, int x, int y)
@@ -135,19 +135,18 @@ void key(unsigned char code, int x, int y)
 
 void click(int button, int state, int x, int y)
 {
-   SH_DEBUG("position x=%d, y=%d\n", x, y);
    if (button == GLUT_LEFT_BUTTON) {
       flowerIndex = (flowerIndex % MAX_FLOWERS);
-      flowers[flowerIndex].dx = (VGfloat)(0.5f*(rand()%255)/255.0f) -0.5f;
-      flowers[flowerIndex].dy = (VGfloat)(0.5f*(rand()%255)/255.0f) -0.5f;
+      flowers[flowerIndex].dx = (VGfloat)(0.5f * (rand() % 255) / 255.0f) - 0.5f;
+      flowers[flowerIndex].dy = (VGfloat)(0.5f * (rand() % 255) / 255.0f) - 0.5f;
       flowers[flowerIndex].x = ((VGfloat) x);
       flowers[flowerIndex].y = ((VGfloat) windowHeight - y);
       flowers[flowerIndex].x = (((flowers[flowerIndex].x - (VGfloat)windowWidth * 0.5f)) / zoomFactor) + ((VGfloat)windowWidth * 0.5f);
       flowers[flowerIndex].y = (((flowers[flowerIndex].y - (VGfloat)windowHeight * 0.5f)) / zoomFactor) + ((VGfloat)windowHeight * 0.5f);
-      flowers[flowerIndex].scl = (VGfloat)0.05f*((rand()%255)/255.0f);
-      flowers[flowerIndex].sclf = (VGfloat)0.5f*(((rand()%255)/255.0f)-0.5f);
-      flowers[flowerIndex].rot = (VGfloat)(rand()%360);
-      flowers[flowerIndex].rotf = (VGfloat)((rand()%255)/255.0f)-0.5f;
+      flowers[flowerIndex].scl = (VGfloat)0.05f * ((rand() % 255) / 255.0f);
+      flowers[flowerIndex].sclf = (VGfloat)0.5f * (((rand() % 255)/ 255.0f) - 0.5f);
+      flowers[flowerIndex].rot = (VGfloat)(rand() % 360);
+      flowers[flowerIndex].rotf = (VGfloat)((rand() % 255) / 255.0f) - 0.5f;
       flowerIndex++;
    } else if (button == GLUT_RIGHT_BUTTON) {
       VGint xPos = x;
@@ -174,16 +173,16 @@ void click(int button, int state, int x, int y)
 void drag(int x, int y)
 {
    flowerIndex = (flowerIndex % MAX_FLOWERS);
-   flowers[flowerIndex].dx = (VGfloat)(0.5f*(rand()%255)/255.0f) - 0.5f;
-   flowers[flowerIndex].dy = (VGfloat)(0.5f*(rand()%255)/255.0f) - 0.5f;
+   flowers[flowerIndex].dx = (VGfloat)(0.5f * (rand() % 255) / 255.0f) - 0.5f;
+   flowers[flowerIndex].dy = (VGfloat)(0.5f * (rand() % 255) / 255.0f) - 0.5f;
    flowers[flowerIndex].x = ((VGfloat) x);
    flowers[flowerIndex].y = ((VGfloat) windowHeight - y);
    flowers[flowerIndex].x = (((flowers[flowerIndex].x - (VGfloat)windowWidth * 0.5f)) / zoomFactor) + ((VGfloat)windowWidth * 0.5f);
    flowers[flowerIndex].y = (((flowers[flowerIndex].y - (VGfloat)windowHeight * 0.5f)) / zoomFactor) + ((VGfloat)windowHeight * 0.5f);
-   flowers[flowerIndex].scl = (VGfloat)0.05f*((rand()%255)/255.0f);
-   flowers[flowerIndex].sclf = (VGfloat)0.5f*(((rand()%255)/255.0f)-0.5f);
-   flowers[flowerIndex].rot = (VGfloat)(rand()%360);
-   flowers[flowerIndex].rotf = (VGfloat)((rand()%255)/255.0f)-0.5f;
+   flowers[flowerIndex].scl = (VGfloat)0.05f * ((rand() % 255) / 255.0f);
+   flowers[flowerIndex].sclf = (VGfloat)0.5f * (((rand() % 255) / 255.0f) - 0.5f);
+   flowers[flowerIndex].rot = (VGfloat)(rand() % 360);
+   flowers[flowerIndex].rotf = (VGfloat)((rand() % 255) / 255.0f) - 0.5f;
    flowerIndex++;
    oldMouseX = x;
    oldMouseY = y;

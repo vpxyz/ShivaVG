@@ -8,6 +8,18 @@
 #include <stdbool.h>
 #include <ctype.h>
 
+
+#define MOUSE_BUTTON_NONE  0
+#define MOUSE_BUTTON_LEFT  1
+#define MOUSE_BUTTON_RIGHT 2
+
+#define X_COORD 0
+#define Y_COORD 1
+
+#define CONTROL_POINT_NONE      0
+#define CONTROL_POINT_SRC_IMAGE 1
+#define CONTROL_POINT_DST_IMAGE 2
+
 bool openVGInitialized = false;
 bool imageGrabbed = false;
 VGint windowWidth = 512;
@@ -22,6 +34,16 @@ VGfloat dstCenter[2];
 VGBlendMode blendMode;
 VGint pickedPoint, lastPickedPoint;
 
+VGint imageSize = 384;
+
+// control points
+static VGfloat controlPointsRadius = 14.0f;
+static VGint pickedControlPoint = CONTROL_POINT_NONE;
+
+// mouse state
+static VGint oldMouseX = 0;
+static VGint oldMouseY = 0;
+static VGint mouseButton = MOUSE_BUTTON_NONE;
 
 void genPaints(void)
 {
@@ -60,37 +82,37 @@ void genPaints(void)
 
 void genImages(void)
 {
-   srcImage = vgCreateImage(VG_sRGBA_8888, 384, 384, VG_IMAGE_QUALITY_FASTER);
-   dstImage = vgCreateImage(VG_sRGBA_8888, 384, 384, VG_IMAGE_QUALITY_FASTER);
-}
-
-void grabImages(void)
-{
-   VGfloat clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
+   VGfloat black[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+   srcImage = vgCreateImage(VG_sRGBA_8888, imageSize, imageSize, VG_IMAGE_QUALITY_FASTER);
+   dstImage = vgCreateImage(VG_sRGBA_8888, imageSize, imageSize, VG_IMAGE_QUALITY_FASTER);
+   // clear surface with a transparent black
+   vgSetfv(VG_CLEAR_COLOR, 4, black);
    vgSeti(VG_BLEND_MODE, VG_BLEND_SRC);
-   vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
-
-   // draw and grab source image
+   vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
+   // generate SRC image
    vgClear(0, 0, windowWidth, windowHeight);
    vgSetPaint(paintSrc, VG_FILL_PATH);
    vgSeti(VG_MATRIX_MODE, VG_MATRIX_PATH_USER_TO_SURFACE);
    vgLoadIdentity();
-   vgTranslate(192.0f, 192.0f);
+   vgTranslate(173.0f, 173.0f);
    vgRotate(180.0f);
-   vgScale(1.2f, 1.2f);
+   /*
+    * vgScale(scl, scl);
+    */
    vgDrawPath(flower, VG_FILL_PATH);
-   vgGetPixels(srcImage, 0, 0, 0, 0, 384, 384);
-
-   // draw and grab dest image
+   vgGetPixels(srcImage, 0, 0, 0, 0, imageSize, imageSize);
+   // generate DST image
    vgClear(0, 0, windowWidth, windowHeight);
    vgSetPaint(paintDst, VG_FILL_PATH);
    vgLoadIdentity();
-   vgTranslate(192.0f, 192.0f);
+   vgTranslate(173.0f, 173.0f);
    vgRotate(45.0f);
-   vgScale(1.2f, 1.2f);
+   /*
+    * vgScale(scl, scl);
+    */
    vgDrawPath(flower, VG_FILL_PATH);
-   vgGetPixels(dstImage, 0, 0, 0, 0, 384, 384);
+   vgGetPixels(dstImage, 0, 0, 0, 0, imageSize, imageSize);
+
 }
 
 void genPaths(void)
@@ -122,72 +144,59 @@ void display(void)
 {
    VGfloat clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
    VGfloat dashPattern[4] = { 5.0f, 5.0f };
-   VGfloat col[4];
 
+   vgSetfv(VG_STROKE_DASH_PATTERN, 0, NULL);
+   vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
+   vgSeti(VG_RENDERING_QUALITY, quality);
+   vgClear(0, 0, windowWidth, windowHeight);
 
-   if (imageGrabbed == false) {
-      imageGrabbed = true;
-      grabImages();
-   } else {
-      vgSetfv(VG_STROKE_DASH_PATTERN, 0, NULL);
-      vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
-      vgSeti(VG_RENDERING_QUALITY, quality);
-      vgClear(0, 0, windowWidth, windowHeight);
+   // draw destination image
+   vgSeti(VG_BLEND_MODE, VG_BLEND_SRC);
+   vgSeti(VG_MATRIX_MODE, VG_MATRIX_IMAGE_USER_TO_SURFACE);
+   vgLoadIdentity();
+   vgTranslate(dstCenter[X_COORD] - 173.0f, dstCenter[Y_COORD] - 173.0f);
+   /*
+    * vgTranslate(dstCenter[0] - 173.0f, dstCenter[1] - 173.0f);
+    */
+   vgScale(0.90f, 0.90f);
+   vgDrawImage(dstImage);
 
-      // draw destination image
-      vgSeti(VG_BLEND_MODE, VG_BLEND_SRC);
-      vgSeti(VG_MATRIX_MODE, VG_MATRIX_IMAGE_USER_TO_SURFACE);
-      vgLoadIdentity();
-      vgTranslate(dstCenter[0] - 173.0f, dstCenter[1] - 173.0f);
-      vgScale(0.90f, 0.90f);
-      vgDrawImage(dstImage);
+   // draw source image according to the current blend mode
+   vgSeti(VG_BLEND_MODE, blendMode);
+   vgSeti(VG_MATRIX_MODE, VG_MATRIX_IMAGE_USER_TO_SURFACE);
+   vgLoadIdentity();
+   vgTranslate(srcCenter[X_COORD] - 173.0f, srcCenter[Y_COORD] - 173.0f);
+   /*
+    * vgTranslate(srcCenter[0] - 173.0f, srcCenter[1] - 173.0f);
+    */
+   vgScale(0.90f, 0.90f);
+   vgDrawImage(srcImage);
 
-      // draw source image according to the current blend mode
-      vgSeti(VG_BLEND_MODE, blendMode);
-      vgSeti(VG_MATRIX_MODE, VG_MATRIX_IMAGE_USER_TO_SURFACE);
-      vgLoadIdentity();
-      vgTranslate(srcCenter[0] - 173.0f, srcCenter[1] - 173.0f);
-      vgScale(0.90f, 0.90f);
-      vgDrawImage(srcImage);
+   // draw control points
+   vgSetf(VG_STROKE_LINE_WIDTH, 2.0f);
+   vgSetfv(VG_STROKE_DASH_PATTERN, 0, NULL);
+   vgSeti(VG_BLEND_MODE, VG_BLEND_SRC);
+   vgSetPaint(solidColor, VG_STROKE_PATH);
+   vgSeti(VG_MATRIX_MODE, VG_MATRIX_PATH_USER_TO_SURFACE);
+   vgLoadIdentity();
+   vgTranslate(dstCenter[X_COORD], dstCenter[Y_COORD]);
+   vgDrawPath(circle, VG_STROKE_PATH);
+   vgLoadIdentity();
+   vgTranslate(srcCenter[X_COORD], srcCenter[Y_COORD]);
+   vgDrawPath(circle, VG_STROKE_PATH);
 
-      // draw images centers
-      col[0] = 1.0f; col[1] = 1.0f; col[2] = 1.0f; col[3] = 1.0f;
-      vgSetParameterfv(solidColor, VG_PAINT_COLOR, 4, col);
-      vgSetPaint(solidColor, VG_STROKE_PATH);
-      vgSeti(VG_BLEND_MODE, VG_BLEND_SRC_OVER);
-      vgSeti(VG_MATRIX_MODE, VG_MATRIX_PATH_USER_TO_SURFACE);
-      vgLoadIdentity();
-      vgTranslate(srcCenter[0], srcCenter[1]);
-      vgDrawPath(circle, VG_STROKE_PATH);
-      vgLoadIdentity();
-      vgTranslate(dstCenter[0], dstCenter[1]);
-      vgDrawPath(circle, VG_STROKE_PATH);
+   // draw images bounds
+   vgSetf(VG_STROKE_LINE_WIDTH, 1.0f);
+   vgSetfv(VG_STROKE_DASH_PATTERN, 2, dashPattern);
+   vgLoadIdentity();
+   vgTranslate(dstCenter[X_COORD] - 173.0f, dstCenter[Y_COORD] - 173.0f);
+   vgDrawPath(square, VG_STROKE_PATH);
+   vgLoadIdentity();
+   vgTranslate(srcCenter[X_COORD] - 173.0f, srcCenter[Y_COORD] - 173.0f);
+   vgDrawPath(square, VG_STROKE_PATH);
 
-      // draw images bounds, with color in accord with the current selected image
-      if (lastPickedPoint == 1) {
-         col[0] = 1.0f; col[1] = 0.0f; col[2] = 0.0f; col[3] = 1.0f;
-         vgSetParameterfv(solidColor, VG_PAINT_COLOR, 4, col);
-      } else {
-         col[0] = 1.0f; col[1] = 1.0f; col[2] = 1.0f; col[3] = 1.0f;
-         vgSetParameterfv(solidColor, VG_PAINT_COLOR, 4, col);
-      }
-      vgSetfv(VG_STROKE_DASH_PATTERN, 2, dashPattern);
-      vgSetf(VG_STROKE_DASH_PHASE, 0.0f);
-      vgLoadIdentity();
-      vgTranslate(srcCenter[0] - 173.0f, srcCenter[1] - 173.0f);
-      vgDrawPath(square, VG_STROKE_PATH);
-      if (lastPickedPoint == 2) {
-         col[0] = 1.0f; col[1] = 0.0f; col[2] = 0.0f; col[3] = 1.0f;
-         vgSetParameterfv(solidColor, VG_PAINT_COLOR, 4, col);
-      } else {
-         col[0] = 1.0f; col[1] = 1.0f; col[2] = 1.0f; col[3] = 1.0f;
-         vgSetParameterfv(solidColor, VG_PAINT_COLOR, 4, col);
-      }
-      vgLoadIdentity();
-      vgTranslate(dstCenter[0] - 173.0f, dstCenter[1] - 173.0f);
-      vgDrawPath(square, VG_STROKE_PATH);
-   }
 }
+
 
 void
 reshape(int x, int y)
@@ -201,12 +210,123 @@ reshape(int x, int y)
    vgClear(0, 0, x, y);
 }
 
+// calculate the distance between two points
+static VGfloat distance(const VGfloat x0,
+                        const VGfloat y0,
+                        const VGfloat x1,
+                        const VGfloat y1) {
+
+   VGfloat dx = x0 - x1;
+   VGfloat dy = y0 - y1;
+   return (VGfloat)hypot(dx, dy);
+}
+
+void mouseLeftButtonDown(const VGint x,
+                         const VGint y) {
+
+   VGfloat distSrc, distDst;
+   VGfloat mouseX = (VGfloat)x;
+   VGfloat mouseY = (VGfloat)y;
+
+   // calculate mouse distance from control points
+   distSrc = distance(mouseX, mouseY, srcCenter[X_COORD], srcCenter[Y_COORD]);
+   distDst = distance(mouseX, mouseY, dstCenter[X_COORD], dstCenter[Y_COORD]);
+   // check if we have picked a control point
+   if (distSrc < distDst) {
+      pickedControlPoint = (distSrc < controlPointsRadius * 1.1f) ? CONTROL_POINT_SRC_IMAGE : CONTROL_POINT_NONE;
+   }
+   else {
+      pickedControlPoint = (distDst < controlPointsRadius * 1.1f) ? CONTROL_POINT_DST_IMAGE : CONTROL_POINT_NONE;
+   }
+   // keep track of current mouse position
+   oldMouseX = x;
+   oldMouseY = y;
+   mouseButton = MOUSE_BUTTON_LEFT;
+}
+
+void mouseLeftButtonUp(const VGint x,
+                       const VGint y) {
+
+   (void)x;
+   (void)y;
+   mouseButton = MOUSE_BUTTON_NONE;
+   pickedControlPoint = CONTROL_POINT_NONE;
+}
+
+void mouseRightButtonDown(const VGint x,
+                          const VGint y) {
+
+   // keep track of current mouse position
+   oldMouseX = x;
+   oldMouseY = y;
+   mouseButton = MOUSE_BUTTON_RIGHT;
+}
+
+void mouseRightButtonUp(const VGint x,
+                        const VGint y) {
+
+   (void)x;
+   (void)y;
+   mouseButton = MOUSE_BUTTON_NONE;
+}
+
+void mouseMove(const VGint x,
+               const VGint y) {
+
+   if (mouseButton == MOUSE_BUTTON_LEFT) {
+      if (pickedControlPoint != CONTROL_POINT_NONE) {
+         VGfloat* controlPoint = (pickedControlPoint == CONTROL_POINT_SRC_IMAGE) ? srcCenter : dstCenter;       // assign the new control point position
+         controlPoint[X_COORD] = (VGfloat)x;
+         controlPoint[Y_COORD] = (VGfloat)y;
+      }
+   }
+
+   // keep track of current mouse position
+   oldMouseX = x;
+   oldMouseY = y;
+}
+
+void click(int button, int state, int x, int y)
+{
+   switch (button) {
+   case GLUT_LEFT_BUTTON:
+   {
+      switch (state) {
+      case GLUT_DOWN:
+         mouseLeftButtonDown(x, y);
+         break;
+      case GLUT_UP:
+         mouseLeftButtonUp(x, y);
+         break;
+      }
+   }
+   case GLUT_RIGHT_BUTTON: {
+      switch (state) {
+      case GLUT_DOWN:
+         mouseRightButtonDown(x, y);
+         break;
+      case GLUT_UP:
+         mouseRightButtonUp(x, y);
+         break;
+      }
+   }
+   }
+   glutPostRedisplay();
+}
+
+void drag(int x, int y)
+{
+   mouseMove(x, y);
+   glutPostRedisplay();
+}
+
 const char commands[] =
    "Click & drag mouse to change\n"
    "value for current mode\n\n"
-   "H - this help\n"
-   "A - change blend mode\n"
-   "Q - change display render quality\n";
+   "a - this help\n"
+   "a - change blend mode\n"
+   "r - change display render quality\n"
+   "q - quit";
 
 const char help[] = "Press H for a list of commands";
 
@@ -214,13 +334,12 @@ void key(unsigned char code, int x, int y)
 {
    static int open = 0;
    switch (tolower(code)) {
-   case 'q':
+   case 'r':
       if (quality == VG_RENDERING_QUALITY_FASTER)
          quality = VG_RENDERING_QUALITY_BETTER;
       else
          quality = VG_RENDERING_QUALITY_FASTER;
       break;
-
    case 'a':
    {
       VGuint i = (VGuint) blendMode;
@@ -230,7 +349,9 @@ void key(unsigned char code, int x, int y)
          blendMode = VG_BLEND_SRC;
    }
    break;
-
+   case 'q':
+      exit(EXIT_SUCCESS);
+      break;
    case 'h':
       if (!open) {
          /* Show help */
@@ -261,36 +382,7 @@ void move(int button, int state, int x, int y)
 
 }
 
-void click(int button, int state, int x, int y)
-{
-   if (state != GLUT_DOWN) {
-      pickedPoint = 0;
-      return;
-   }
-
-   VGfloat dist0 = ((x - srcCenter[0]) * (x - srcCenter[0])) +
-      ((y - srcCenter[1]) * (y - srcCenter[1]));
-   VGfloat dist1 = ((x - dstCenter[0]) * (x - dstCenter[0])) +
-      ((y - dstCenter[1]) * (y - dstCenter[1]));
-
-   if (dist0 < dist1) {
-      if (dist0 < 36.0f) {
-         pickedPoint = 1;
-         lastPickedPoint = 1;
-      } else {
-         pickedPoint = 0;
-         lastPickedPoint = 0;
-      }
-   } else if (dist1 < 36.0f) {
-      pickedPoint = 2;
-      lastPickedPoint = 2;
-   } else {
-      pickedPoint = 0;
-      lastPickedPoint = 0;
-   }
-}
-
-void initApp(void)
+static void initApp(void)
 {
    srcCenter[0] = 200.0f;
    srcCenter[1] = 200.0f;
@@ -322,9 +414,12 @@ int main(int argc, char *argv[])
    testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
    testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
    testCallback(TEST_CALLBACK_BUTTON, (CallbackFunc) click);
-   testCallback(TEST_CALLBACK_BUTTON, (CallbackFunc) move);
+   testCallback(TEST_CALLBACK_DRAG, (CallbackFunc) drag);
+   /*
+    * testCallback(TEST_CALLBACK_BUTTON, (CallbackFunc) move);
+    */
    testCallback(TEST_CALLBACK_RESHAPE, (CallbackFunc) reshape);
-   
+
    testOverlayString(help);
    testOverlayColor(1, 1, 1, 1);
 

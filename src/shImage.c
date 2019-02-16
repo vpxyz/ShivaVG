@@ -46,7 +46,7 @@
 static inline bool
 shOverlaps(SHImage *src, SHImage *dst, SHint sx, SHint sy, SHint dx, SHint dy, SHint width, SHint height)
 {
-   SH_ASSERT(src != NULL && dst != NULL);
+   SH_ASSERT(src != NULL && dst != NULL && src->data != NULL && dst->data != NULL);
    if (src->data != dst->data)
       return false; // images don't share data
 
@@ -1410,42 +1410,6 @@ vgColorMatrix(VGImage dst, VGImage src, const VGfloat * matrix)
    VG_RETURN(VG_NO_RETVAL);
 }
 
-VG_API_CALL void
-vgConvolve(VGImage dst, VGImage src,
-           VGint kernelWidth, VGint kernelHeight,
-           VGint shiftX, VGint shiftY,
-           const VGshort * kernel,
-           VGfloat scale, VGfloat bias, VGTilingMode tilingMode)
-{
-}
-
-VG_API_CALL void
-vgSeparableConvolve(VGImage dst, VGImage src,
-                    VGint kernelWidth,
-                    VGint kernelHeight,
-                    VGint shiftX, VGint shiftY,
-                    const VGshort * kernelX,
-                    const VGshort * kernelY,
-                    VGfloat scale, VGfloat bias, VGTilingMode tilingMode)
-{
-}
-
-static inline SHfloat *
-makeGaussianBlurKernel(int kernelElement, SHfloat expScale, SHfloat * restrict scale, int * restrict kernelSize)
-{
-   *kernelSize = kernelElement * 2 + 1;
-   SHfloat *kernel = (SHfloat *) malloc((*kernelSize) * sizeof(SHfloat));
-   SH_ASSERT(kernel != NULL); // Should return an error ?
-
-   SHfloat32 tmp = *scale;
-   for (int i = 0; i < *kernelSize; ++i) {
-      kernel[i] = expf(((i - kernelElement) * (i - kernelElement)) * expScale);
-      tmp += kernel[i];
-   }
-   *scale = 1.0f / tmp;
-   return kernel;
-}
-
 static inline SHColor
 shGetTiledPixel(SHint x, SHint y, SHint w, SHint h, VGTilingMode tilingMode, const SHColor * restrict data , const SHColor * restrict edge)
 {
@@ -1484,6 +1448,113 @@ shGetTiledPixel(SHint x, SHint y, SHint w, SHint h, VGTilingMode tilingMode, con
    return c;
 }
 
+
+VG_API_CALL void
+vgConvolve(VGImage dst, VGImage src,
+           VGint kernelWidth, VGint kernelHeight,
+           VGint shiftX, VGint shiftY,
+           const VGshort * kernel,
+           VGfloat scale, VGfloat bias, VGTilingMode tilingMode)
+{
+   VG_GETCONTEXT(VG_NO_RETVAL);
+   VG_RETURN_ERR_IF(!shIsValidImage(context, src) || !shIsValidImage(context, dst), VG_BAD_HANDLE_ERROR, VG_NO_RETVAL);
+   VG_RETURN_ERR_IF(kernel == NULL ||
+                    SH_IS_NOT_ALIGNED(kernel) ||
+                    kernelWidth <= 0 ||
+                    kernelHeight <= 0 ||
+                    kernelWidth > VG_MAX_KERNEL_SIZE ||
+                    kernelHeight > VG_MAX_KERNEL_SIZE,
+                    VG_ILLEGAL_ARGUMENT_ERROR,
+                    VG_NO_RETVAL);
+   VG_RETURN_ERR_IF(tilingMode < VG_TILE_FILL || tilingMode > VG_TILE_REFLECT, VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
+
+   SHImage *d = (SHImage*) dst;
+   SHImage *s = (SHImage*) src;
+   VG_RETURN_ERR_IF(
+      shOverlaps(s, d, 0, 0, 0, 0, s->width, s->height),
+      VG_ILLEGAL_ARGUMENT_ERROR,
+      VG_NO_RETVAL);
+
+   SHint w = SH_MIN(d->width, s->width);
+   SHint h = SH_MIN(d->height, s->height);
+   SH_ASSERT(w > 0 && h > 0);
+
+   VGbitfield channelMask = context->filterChannelMask;
+   SHColor edge = context->tileFillColor;
+   // TODO: replace malloc with a "safe" malloc that always test return pointer with assert
+   SHColor *tmpColors = (SHColor *) malloc(w * h * sizeof(SHColor));
+   SH_ASSERT(tmpColors != NULL);
+
+   // copy source image region to tmp buffer
+   SHColor c;
+   for(int y = 0; y < h; y++) {
+      for(int x = 0; x < w; x++) {
+         shLoadPixelColor(&c, s->data, &(s->fd), x, y, s->texwidth);
+         tmpColors[y*w + x] = c;
+      }
+   }
+
+   int x, y, kx, ky;
+   SHColor tmpc;
+   SHfloat kernelValue;
+   SHint stride = d->texwidth * d->fd.bytes;
+   SHuint8 *px;
+
+   for (int i = 0; i < h; ++i) {
+      for (int j = 0; j < w; ++j) {
+         SHColor sum = {.r = 0.0f, .g = 0.0f, .b =0.0f, .a =0.0f};
+         for (int ki = 0; ki < kernelHeight; ++ki) {
+            for (int kj = 0; kj < kernelWidth; ++kj) {
+               x = j + kj - shiftX;
+               y = i + ki - shiftY;
+               tmpc = shGetTiledPixel(x, y, w, h, tilingMode, tmpColors, &edge);
+               kx = kernelWidth - kj - 1;
+               ky = kernelHeight - ki - 1;
+               SH_ASSERT(kx >= 0 && kx < kernelWidth && ky >= 0 && ky < kernelHeight);
+               kernelValue = (SHfloat) kernel [kx * kernelHeight + ky];
+               CMULANDADDC(sum, tmpc, kernelValue );
+            }
+         }
+         CMUL(sum, scale);
+         CADD(sum, bias, bias, bias, bias);
+         px = (SHuint8 *) d->data + i * stride + j * d->fd.bytes;
+         CCLAMP(sum);
+         shStoreColor(&sum, px, &(d->fd));
+      }
+   }
+   free(tmpColors);
+
+   shUpdateImageTexture(d, context);
+   VG_RETURN(VG_NO_RETVAL);
+
+}
+
+VG_API_CALL void
+vgSeparableConvolve(VGImage dst, VGImage src,
+                    VGint kernelWidth,
+                    VGint kernelHeight,
+                    VGint shiftX, VGint shiftY,
+                    const VGshort * kernelX,
+                    const VGshort * kernelY,
+                    VGfloat scale, VGfloat bias, VGTilingMode tilingMode)
+{
+}
+
+static inline SHfloat *
+makeGaussianBlurKernel(int kernelElement, SHfloat expScale, SHfloat * restrict scale, int * restrict kernelSize)
+{
+   *kernelSize = kernelElement * 2 + 1;
+   SHfloat *kernel = (SHfloat *) malloc((*kernelSize) * sizeof(SHfloat));
+   SH_ASSERT(kernel != NULL); // Should return an error ?
+
+   SHfloat32 tmp = *scale;
+   for (int i = 0; i < *kernelSize; ++i) {
+      kernel[i] = expf(((i - kernelElement) * (i - kernelElement)) * expScale);
+      tmp += kernel[i];
+   }
+   *scale = 1.0f / tmp;
+   return kernel;
+}
 
 VG_API_CALL void
 vgGaussianBlur(VGImage dst, VGImage src,
@@ -1570,6 +1641,7 @@ vgGaussianBlur(VGImage dst, VGImage src,
          }
          CMUL(sum, scaleY);
          px = (SHuint8 *) d->data + i * stride + j * d->fd.bytes;
+         CCLAMP(sum);
          shStoreColor(&sum, px, &(d->fd));
       }
    }
@@ -1638,6 +1710,7 @@ vgLookup(VGImage dst, VGImage src,
             cs.b = shInt2ColorComponent(blueLUT[shColorComponent2Int(cl.b)]);
             cs.a = shInt2ColorComponent(alphaLUT[shColorComponent2Int(cl.a)]);
 
+            CCLAMP(cs);
             shStorePixelColor(&cs, d->data, &(d->fd), x, y, d->texwidth);
          }
       }
@@ -1660,6 +1733,7 @@ vgLookup(VGImage dst, VGImage src,
             if (channelMask & VG_ALPHA)
                cs.a = shInt2ColorComponent(alphaLUT[shColorComponent2Int(cl.a)]);
 
+            CCLAMP(cs);
             shStorePixelColor(&cs, d->data, &(d->fd), x, y, d->texwidth);
          }
       }
@@ -1742,6 +1816,7 @@ vgLookupSingle(VGImage dst, VGImage src,
          if (channelMask & VG_ALPHA)
             cs.a = shInt2ColorComponent(tmp);
 
+         CCLAMP(cs);
          shStorePixelColor(&cs, d->data, &(d->fd), x, y, d->texwidth);
       }
    }
