@@ -111,6 +111,9 @@ what features it highlights:
 * *test_gaussianblur2*
   Another example of gaussian blur usage
 
+* *test_convolve*
+  A simple example of vgConvolve usage
+
 * *test_lookup*
   A simple example of vgLookup usage
 
@@ -238,7 +241,7 @@ vgCopyPixels .......................... FULLY implemented
 
 ```
 vgColorMatrix ......................... PARTIALLY implemented
-vgConvolve ............................ NOT implemented
+vgConvolve ............................ PARTIALLY implemented
 vgSeparableConvolve ................... NOT implemented
 vgGaussianBlur ........................ PARTIALLY implemented
 vgLookup .............................. PARTIALLY implemented
