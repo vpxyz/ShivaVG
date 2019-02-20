@@ -532,16 +532,14 @@ shLoadColor(SHColor * restrict c, const void * restrict data, const SHImageForma
  * given coordinates
  *---------------------------------------------------------*/
 
-inline void shLoadPixelColor(SHColor * restrict c, const void * restrict data, const SHImageFormatDesc * restrict f, SHint x, SHint y, SHint32 texwidth)
+inline void shLoadPixelColor(SHColor * restrict c, const void * restrict data, const SHImageFormatDesc * restrict f, SHint x, SHint y, SHint32 stride)
 {
-   SHint stride = texwidth * f->bytes;
    SHuint8 *px = (SHuint8 *) data + y * stride + x * f->bytes;
    shLoadColor(c,  px, f);
 }
 
-inline void shStorePixelColor(SHColor * restrict c, const void * restrict data, const SHImageFormatDesc * restrict f, SHint x, SHint y, SHint32 texwidth)
+inline void shStorePixelColor(SHColor * restrict c, const void * restrict data, const SHImageFormatDesc * restrict f, SHint x, SHint y, SHint32 stride)
 {
-   SHint stride = texwidth * f->bytes;
    SHuint8 *px = (SHuint8 *) data + y * stride + x * f->bytes;
    shStoreColor(c,  px, f);
 }
@@ -603,6 +601,9 @@ shUpdateImageTextureSize(SHImage * i)
    i->texheight = i->height;
    i->texwidthK = 1.0f;
    i->texheightK = 1.0f;
+
+   // update stride
+   i->stride = i->texwidth * i->fd.bytes;
 
    /* Round size to nearest power of 2 */
    /* TODO: might be dropped out if it works without  */
@@ -719,6 +720,7 @@ vgCreateImage(VGImageFormat format,
    i->width = width;
    i->height = height;
    i->fd = fd;
+   i->stride = i->texwidth * fd.bytes;
 
    /* Allocate data memory */
    shUpdateImageTextureSize(i);
@@ -782,20 +784,19 @@ vgClearImage(VGImage image, VGint x, VGint y, VGint width, VGint height)
       VG_RETURN(VG_NO_RETVAL);
 
    /* Clamp to image bounds */
-   SHint X, Y, ix, iy, dx, dy, stride;
+   SHint X, Y, ix, iy, dx, dy;
    ix = SH_MAX(x, 0);
    dx = ix - x;
    iy = SH_MAX(y, 0);
    dy = iy - y;
    width = SH_MIN(width - dx, i->width - ix);
    height = SH_MIN(height - dy, i->height - iy);
-   stride = i->texwidth * i->fd.bytes;
 
    /* Walk pixels and clear */
    SHuint8 *data;
    SHuint32 packedColor = shPackColor(&context->clearColor, &i->fd);
    for (Y = iy; Y < iy + height; ++Y) {
-      data = i->data + (Y * stride + ix * i->fd.bytes);
+      data = i->data + (Y * i->stride + ix * i->fd.bytes);
 
       for (X = ix; X < ix + width; ++X) {
          shStorePackedColor(data, i->fd.bytes, packedColor);
@@ -1348,7 +1349,7 @@ vgColorMatrix(VGImage dst, VGImage src, const VGfloat * matrix)
    SHuint8 *SD;
    SHuint8 *DD;
 
-   SHint stride = s->texwidth * sfd.bytes;
+   SHint stride = s->stride;
 
    VGbitfield channelMask = context->filterChannelMask;
 
@@ -1489,7 +1490,7 @@ vgConvolve(VGImage dst, VGImage src,
    SHColor c;
    for(int y = 0; y < h; y++) {
       for(int x = 0; x < w; x++) {
-         shLoadPixelColor(&c, s->data, &(s->fd), x, y, s->texwidth);
+         shLoadPixelColor(&c, s->data, &(s->fd), x, y, s->stride);
          tmpColors[y*w + x] = c;
       }
    }
@@ -1497,7 +1498,7 @@ vgConvolve(VGImage dst, VGImage src,
    int x, y, kx, ky;
    SHColor tmpc;
    SHfloat kernelValue;
-   SHint stride = d->texwidth * d->fd.bytes;
+   SHint stride = d->stride;
    SHuint8 *px;
 
    for (int i = 0; i < h; ++i) {
@@ -1538,6 +1539,31 @@ vgSeparableConvolve(VGImage dst, VGImage src,
                     const VGshort * kernelY,
                     VGfloat scale, VGfloat bias, VGTilingMode tilingMode)
 {
+   VG_GETCONTEXT(VG_NO_RETVAL);
+   VG_RETURN_ERR_IF(!shIsValidImage(context, src) || !shIsValidImage(context, dst), VG_BAD_HANDLE_ERROR, VG_NO_RETVAL);
+   VG_RETURN_ERR_IF(kernelX == NULL || kernelX == NULL ||
+                    SH_IS_NOT_ALIGNED(kernelX) || SH_IS_NOT_ALIGNED(kernelY) ||
+                    kernelWidth <= 0 ||
+                    kernelHeight <= 0 ||
+                    kernelWidth > VG_MAX_KERNEL_SIZE ||
+                    kernelHeight > VG_MAX_KERNEL_SIZE,
+                    VG_ILLEGAL_ARGUMENT_ERROR,
+                    VG_NO_RETVAL);
+   VG_RETURN_ERR_IF(tilingMode < VG_TILE_FILL || tilingMode > VG_TILE_REFLECT, VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
+
+   SHImage *d = (SHImage*) dst;
+   SHImage *s = (SHImage*) src;
+   VG_RETURN_ERR_IF(
+      shOverlaps(s, d, 0, 0, 0, 0, s->width, s->height),
+      VG_ILLEGAL_ARGUMENT_ERROR,
+      VG_NO_RETVAL);
+
+   SHint w = SH_MIN(d->width, s->width);
+   SHint h = SH_MIN(d->height, s->height);
+   SH_ASSERT(w > 0 && h > 0);
+
+   VGbitfield channelMask = context->filterChannelMask;
+   SHColor edge = context->tileFillColor;
 }
 
 static inline SHfloat *
@@ -1603,7 +1629,7 @@ vgGaussianBlur(VGImage dst, VGImage src,
    SHColor c;
    for(int y = 0; y < h; y++) {
       for(int x = 0; x < w; x++) {
-         shLoadPixelColor(&c, s->data, &(s->fd), x, y, s->texwidth);
+         shLoadPixelColor(&c, s->data, &(s->fd), x, y, s->stride);
          tmpColors[y*w + x] = c;
       }
    }
@@ -1628,7 +1654,7 @@ vgGaussianBlur(VGImage dst, VGImage src,
 
    // vertical pass
    int y;
-   SHint stride = d->texwidth * d->fd.bytes;
+   SHint stride = d->stride;
    SHuint8 *px;
    for (int i = 0; i < h; ++i) {
       for (int j = 0; j < w; ++j) {
@@ -1703,7 +1729,7 @@ vgLookup(VGImage dst, VGImage src,
    if (s->fd.glformat == GL_LUMINANCE) {
       for (int y = 0; y < h; y++) {
          for (int x = 0; x < w; x++) {
-            shLoadPixelColor(&cl, s->data, &(s->fd), x, y, s->texwidth);
+            shLoadPixelColor(&cl, s->data, &(s->fd), x, y, s->stride);
 
             cs.r = shInt2ColorComponent(redLUT[shColorComponent2Int(cl.r)]);
             cs.g = shInt2ColorComponent(greenLUT[shColorComponent2Int(cl.g)]);
@@ -1711,14 +1737,14 @@ vgLookup(VGImage dst, VGImage src,
             cs.a = shInt2ColorComponent(alphaLUT[shColorComponent2Int(cl.a)]);
 
             CCLAMP(cs);
-            shStorePixelColor(&cs, d->data, &(d->fd), x, y, d->texwidth);
+            shStorePixelColor(&cs, d->data, &(d->fd), x, y, d->stride);
          }
       }
    } else {
       VGbitfield channelMask = context->filterChannelMask;
       for (int y = 0; y < h; y++) {
          for (int x = 0; x < w; x++) {
-            shLoadPixelColor(&cl, s->data, &(s->fd), x, y, s->texwidth);
+            shLoadPixelColor(&cl, s->data, &(s->fd), x, y, s->stride);
             cs = cl;
 
             if (channelMask & VG_RED)
@@ -1734,7 +1760,7 @@ vgLookup(VGImage dst, VGImage src,
                cs.a = shInt2ColorComponent(alphaLUT[shColorComponent2Int(cl.a)]);
 
             CCLAMP(cs);
-            shStorePixelColor(&cs, d->data, &(d->fd), x, y, d->texwidth);
+            shStorePixelColor(&cs, d->data, &(d->fd), x, y, d->stride);
          }
       }
    }
@@ -1784,7 +1810,7 @@ vgLookupSingle(VGImage dst, VGImage src,
    int e;
    for (int y = 0; y < h; y++) {
       for (int x = 0; x < w; x++) {
-         shLoadPixelColor(&cl, s->data, &(s->fd), x, y, s->texwidth);
+         shLoadPixelColor(&cl, s->data, &(s->fd), x, y, s->stride);
          switch(sourceChannel) {
          case VG_RED:
             e = shColorComponent2Int(cl.r);
@@ -1817,7 +1843,7 @@ vgLookupSingle(VGImage dst, VGImage src,
             cs.a = shInt2ColorComponent(tmp);
 
          CCLAMP(cs);
-         shStorePixelColor(&cs, d->data, &(d->fd), x, y, d->texwidth);
+         shStorePixelColor(&cs, d->data, &(d->fd), x, y, d->stride);
       }
    }
    shUpdateImageTexture(d, context);

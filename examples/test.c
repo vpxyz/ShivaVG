@@ -1,7 +1,6 @@
 #include "test.h"
 #include <jpeglib.h>
 #include <alloca.h>
-
 static int testW = 0;
 static int testH = 0;
 
@@ -428,7 +427,6 @@ testRun()
 {
    glutMainLoop();
 }
-
 
 struct Image
 testCreateImageFromJpeg(const char *filename)

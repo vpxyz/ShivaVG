@@ -83,6 +83,7 @@ typedef struct
    SHfloat texwidthK;
    SHfloat texheightK;
    GLuint texture;
+   SHint32 stride;
 
 } SHImage;
 
@@ -162,6 +163,6 @@ SHuint32 shPackColor(SHColor *c, const SHImageFormatDesc *f);
 void shStorePackedColor(void *data, SHuint8 colorFormatSize, SHuint32 packedColor);
 void shStoreColor(SHColor *c, void *data, const SHImageFormatDesc *f);
 void shLoadColor(SHColor *c, const void *data, const SHImageFormatDesc *f);
-void shLoadPixelColor(SHColor * restrict c, const void * restrict data, const SHImageFormatDesc * restrict f, SHint x, SHint y, SHint32 texwidth);
+void shLoadPixelColor(SHColor * restrict c, const void * restrict data, const SHImageFormatDesc * restrict f, SHint x, SHint y, SHint32 stride);
 
 #endif /* __SHIMAGE_H */
