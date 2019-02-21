@@ -724,7 +724,7 @@ vgCreateImage(VGImageFormat format,
 
    /* Allocate data memory */
    shUpdateImageTextureSize(i);
-   i->data = (SHuint8 *) malloc(i->texwidth * i->texheight * fd.bytes);
+   i->data = (SHuint8 *) malloc(i->stride * i->texheight);
 
    if (i->data == NULL) {
       SH_DELETEOBJ(SHImage, i);
@@ -968,7 +968,7 @@ vgImageSubData(VGImage image,
 
    /* TODO: check data array alignment */
 
-   shCopyPixels(i->data, i->fd.vgformat, i->texwidth * i->fd.bytes,
+   shCopyPixels(i->data, i->fd.vgformat, i->stride,
                 data, dataFormat, dataStride,
                 i->width, i->height, width, height,
                 x, y, 0, 0, width, height);
@@ -1011,7 +1011,7 @@ vgGetImageSubData(VGImage image,
    /* TODO: check data array alignment */
 
    shCopyPixels(data, dataFormat, dataStride,
-                img->data, img->fd.vgformat, img->texwidth * img->fd.bytes,
+                img->data, img->fd.vgformat, img->stride,
                 width, height, img->width, img->height,
                 0, 0, x, x, width, height);
 
@@ -1051,21 +1051,21 @@ vgCopyImage(VGImage dst, VGint dx, VGint dy,
       we can copy directly */
    if (!shOverlaps(s, d, sx, sy, dx, dy, width, height)) {
       // TODO: CHECK this!!!!
-      shCopyPixels(d->data, d->fd.vgformat, d->texwidth * d->fd.bytes,
-                   s->data, s->fd.vgformat, s->texwidth * s->fd.bytes,
+      shCopyPixels(d->data, d->fd.vgformat, d->stride,
+                   s->data, s->fd.vgformat, s->stride,
                    d->width, d->height, width, height,
                    dx, dy, 0, 0, width, height);
    } else {
       SHuint8 *pixels = (SHuint8 *) malloc(width * height * s->fd.bytes);
       SH_RETURN_ERR_IF(!pixels, VG_OUT_OF_MEMORY_ERROR, SH_NO_RETVAL);
 
-      shCopyPixels(pixels, s->fd.vgformat, s->texwidth * s->fd.bytes,
-                   s->data, s->fd.vgformat, s->texwidth * s->fd.bytes,
+      shCopyPixels(pixels, s->fd.vgformat, s->stride,
+                   s->data, s->fd.vgformat, s->stride,
                    width, height, s->width, s->height,
                    0, 0, sx, sy, width, height);
 
-      shCopyPixels(d->data, d->fd.vgformat, d->texwidth * d->fd.bytes,
-                   pixels, s->fd.vgformat, s->texwidth * s->fd.bytes,
+      shCopyPixels(d->data, d->fd.vgformat, d->stride,
+                   pixels, s->fd.vgformat, s->stride,
                    d->width, d->height, width, height,
                    dx, dy, 0, 0, width, height);
 
@@ -1114,7 +1114,7 @@ vgSetPixels(VGint dx, VGint dy,
    SH_RETURN_ERR_IF(!pixels, VG_OUT_OF_MEMORY_ERROR, SH_NO_RETVAL);
 
    shCopyPixels(pixels, winfd.vgformat, -1,
-                i->data, i->fd.vgformat, i->texwidth * i->fd.bytes,
+                i->data, i->fd.vgformat, i->stride,
                 width, height, i->width, i->height,
                 0, 0, sx, sy, width, height);
 
@@ -1227,7 +1227,7 @@ vgGetPixels(VGImage dst, VGint dx, VGint dy,
    for (int k = 3; k < i->width * i->height * 4; k += 4)
       pixels[k] = 255;
 
-   shCopyPixels(i->data, i->fd.vgformat, i->texwidth * i->fd.bytes,
+   shCopyPixels(i->data, i->fd.vgformat, i->stride,
                 pixels, winfd.vgformat, -1,
                 i->width, i->height, width, height,
                 dx, dy, 0, 0, width, height);

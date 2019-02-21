@@ -80,8 +80,8 @@ const char commands[] =
    "t - stdDev== 10.0\n"
    "x - stdDevX > stdDevY\n"
    "y - sdtDevY > stdDevX\n"
-   "5 - stdDev == 5.0"
-   "1 - stdDev == 1.0"
+   "5 - stdDev == 5.0\n"
+   "1 - stdDev == 1.0\n"
    "n - none \n"
    "q - quit \n";
 
