@@ -1596,7 +1596,7 @@ vgSeparableConvolve(VGImage dst, VGImage src,
       }
    }
 
-   // TODO: mmh, this second buffer can be removed. In this loop we rewrite multiple time the same pixel.
+   // TODO: mmh, I guess this second buffer can be removed. 
    SHColor *tmpColors2 = (SHColor *) malloc(w * h * sizeof(SHColor));
    SH_ASSERT(tmpColors2 != NULL);
 

@@ -1089,7 +1089,8 @@ vgSetParameterfv(VGHandle object, VGint paramType,
    VG_RETURN_ERR_IF(resType == SH_RESOURCE_INVALID,
                     VG_BAD_HANDLE_ERROR, VG_NO_RETVAL);
 
-   /* TODO: Check for input array alignment */
+   /* Check for input array alignment */
+   VG_RETURN_ERR_IF(SH_IS_NOT_ALIGNED(values), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
    /* Error code will be set by shSetParam() */
    shSetParameter(context, object, resType, paramType, count, values, 1);
@@ -1112,7 +1113,8 @@ vgSetParameteriv(VGHandle object, VGint paramType,
    VG_RETURN_ERR_IF(resType == SH_RESOURCE_INVALID,
                     VG_BAD_HANDLE_ERROR, VG_NO_RETVAL);
 
-   /* TODO: Check for input array alignment */
+   /* Check for input array alignment */
+   VG_RETURN_ERR_IF(SH_IS_NOT_ALIGNED(values), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
    /* Error code will be set by shSetParam() */
    shSetParameter(context, object, resType, paramType, count, values, 0);
@@ -1129,11 +1131,13 @@ shGetParameter(VGContext * context, VGHandle object,
                SHResourceType rtype, VGint ptype,
                SHint count, void *values, SHint floats)
 {
-   int i;
+
 
    /* Check for invalid array / count */
-   SH_RETURN_ERR_IF(!values
-                    || count <= 0, VG_ILLEGAL_ARGUMENT_ERROR, SH_NO_RETVAL);
+   SH_RETURN_ERR_IF(!values || count <= 0, VG_ILLEGAL_ARGUMENT_ERROR, SH_NO_RETVAL);
+
+   /* Check for input array alignment */
+   VG_RETURN_ERR_IF(SH_IS_NOT_ALIGNED(values), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
    switch (rtype) {
    case SH_RESOURCE_PATH:
@@ -1221,13 +1225,12 @@ shGetParameter(VGContext * context, VGHandle object,
 
       case VG_PAINT_COLOR_RAMP_STOPS:{
 
-            int i;
             SHPaint *paint = (SHPaint *) object;
             SHStop *stop;
             SH_RETURN_ERR_IF(count > paint->stops.size * 5,
                              VG_ILLEGAL_ARGUMENT_ERROR, SH_NO_RETVAL);
 
-            for (i = 0; i < paint->stops.size; ++i) {
+            for (SHint i = 0; i < paint->stops.size; ++i) {
                stop = &paint->stops.items[i];
                shFloatToParam(stop->offset, count, values, floats, i * 5 + 0);
                shFloatToParam(stop->color.r, count, values, floats,
@@ -1245,14 +1248,14 @@ shGetParameter(VGContext * context, VGHandle object,
 
       case VG_PAINT_LINEAR_GRADIENT:
          SH_RETURN_ERR_IF(count > 4, VG_ILLEGAL_ARGUMENT_ERROR, SH_NO_RETVAL);
-         for (i = 0; i < 4; ++i)
+         for (SHint i = 0; i < 4; ++i)
             shFloatToParam(((SHPaint *) object)->linearGradient[i],
                            count, values, floats, i);
          break;
 
       case VG_PAINT_RADIAL_GRADIENT:
          SH_RETURN_ERR_IF(count > 5, VG_ILLEGAL_ARGUMENT_ERROR, SH_NO_RETVAL);
-         for (i = 0; i < 5; ++i)
+         for (SHint i = 0; i < 5; ++i)
             shFloatToParam(((SHPaint *) object)->radialGradient[i],
                            count, values, floats, i);
          break;
@@ -1365,7 +1368,8 @@ vgGetParameterfv(VGHandle object, VGint paramType,
    VG_RETURN_ERR_IF(resType == SH_RESOURCE_INVALID,
                     VG_BAD_HANDLE_ERROR, VG_NO_RETVAL);
 
-   /* TODO: Check output array alignment */
+   /* Check for input array alignment */
+   VG_RETURN_ERR_IF(SH_IS_NOT_ALIGNED(values), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
    /* Error code will be set by shGetParameter() */
    shGetParameter(context, object, resType, paramType, count, values, 1);
@@ -1388,7 +1392,8 @@ vgGetParameteriv(VGHandle object, VGint paramType,
    VG_RETURN_ERR_IF(resType == SH_RESOURCE_INVALID,
                     VG_BAD_HANDLE_ERROR, VG_NO_RETVAL);
 
-   /* TODO: Check output array alignment */
+   /* Check for input array alignment */
+   VG_RETURN_ERR_IF(SH_IS_NOT_ALIGNED(values), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
    /* Error code will be set by shGetParameter() */
    shGetParameter(context, object, resType, paramType, count, values, 0);
