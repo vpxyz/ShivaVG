@@ -114,6 +114,9 @@ what features it highlights:
 * *test_convolve*
   A simple example of vgConvolve usage
 
+* *test_separableconvolve*
+  A simple example of vgSeparableConvolve usage
+
 * *test_lookup*
   A simple example of vgLookup usage
 
