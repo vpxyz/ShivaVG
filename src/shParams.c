@@ -5,12 +5,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library in the file COPYING;
  * if not, write to the Free Software Foundation, Inc.,
@@ -181,7 +181,7 @@ static inline SHint
 shParamToInt(const void *values, SHint floats, SHint index)
 {
    SH_ASSERT(values != NULL);
-   
+
    if (floats) {
       return shValidInputFloat2Int(((const VGfloat *) values)[index]);
    }
@@ -197,7 +197,7 @@ static inline VGfloat
 shParamToFloat(const void *values, SHint floats, SHint index)
 {
    SH_ASSERT(values != NULL);
-   
+
    if (floats) {
       return shValidInputFloat(((const VGfloat *) values)[index]);
    }
@@ -213,7 +213,7 @@ static inline void
 shIntToParam(SHint i, SHint count, void *output, SHint floats, SHint index)
 {
    SH_ASSERT(output != NULL);
-   
+
    if (index >= count)
       return;
    if (floats)
@@ -779,7 +779,8 @@ vgGetfv(VGParamType type, VGint count, VGfloat * values)
 {
    VG_GETCONTEXT(VG_NO_RETVAL);
 
-   /* TODO: check output array alignment */
+   /* Check for input array alignment */
+   VG_RETURN_ERR_IF(SH_IS_NOT_ALIGNED(values), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
    /* Error code will be set by shGet */
    shGet(context, type, count, values, 1);
@@ -795,7 +796,8 @@ vgGetiv(VGParamType type, VGint count, VGint * values)
 {
    VG_GETCONTEXT(VG_NO_RETVAL);
 
-   /* TODO: check output array alignment */
+   /* Check for input array alignment */
+   VG_RETURN_ERR_IF(SH_IS_NOT_ALIGNED(values), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
    /* Error code will be set by shGet */
    shGet(context, type, count, values, 0);
@@ -946,27 +948,27 @@ shSetParameter(VGContext * context, VGHandle object,
          break;
 
       case VG_PAINT_COLOR_RAMP_STOPS:{
-            SHPaint *paint;
-            SHStop stop;
-            SH_RETURN_ERR_IF(count % 5, VG_ILLEGAL_ARGUMENT_ERROR,
-                             SH_NO_RETVAL);
-            SHint max = SH_MIN(count, SH_MAX_COLOR_RAMP_STOPS * 5);
-            paint = (SHPaint *) object;
-            shStopArrayClear(&paint->instops);
+         SHPaint *paint;
+         SHStop stop;
+         SH_RETURN_ERR_IF(count % 5, VG_ILLEGAL_ARGUMENT_ERROR,
+                          SH_NO_RETVAL);
+         SHint max = SH_MIN(count, SH_MAX_COLOR_RAMP_STOPS * 5);
+         paint = (SHPaint *) object;
+         shStopArrayClear(&paint->instops);
 
-            for (SHint i = 0; i < max; i += 5) {
-               stop.offset = shParamToFloat(values, floats, i + 0);
-               CSET(stop.color,
-                    shParamToFloat(values, floats, i + 1),
-                    shParamToFloat(values, floats, i + 2),
-                    shParamToFloat(values, floats, i + 3),
-                    shParamToFloat(values, floats, i + 4));
-               shStopArrayPushBackP(&paint->instops, &stop);
-            }
-
-            shValidateInputStops(paint);
-            break;
+         for (SHint i = 0; i < max; i += 5) {
+            stop.offset = shParamToFloat(values, floats, i + 0);
+            CSET(stop.color,
+                 shParamToFloat(values, floats, i + 1),
+                 shParamToFloat(values, floats, i + 2),
+                 shParamToFloat(values, floats, i + 3),
+                 shParamToFloat(values, floats, i + 4));
+            shStopArrayPushBackP(&paint->instops, &stop);
          }
+
+         shValidateInputStops(paint);
+         break;
+      }
 
       case VG_PAINT_LINEAR_GRADIENT:
          SH_RETURN_ERR_IF(count != 4, VG_ILLEGAL_ARGUMENT_ERROR,
@@ -1133,9 +1135,6 @@ shGetParameter(VGContext * context, VGHandle object,
    /* Check for invalid array / count */
    SH_RETURN_ERR_IF(!values || count <= 0, VG_ILLEGAL_ARGUMENT_ERROR, SH_NO_RETVAL);
 
-   /* Check for input array alignment */
-   VG_RETURN_ERR_IF(SH_IS_NOT_ALIGNED(values), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
-
    switch (rtype) {
    case SH_RESOURCE_PATH:
       switch (ptype) {          /* Path parameters */
@@ -1222,26 +1221,26 @@ shGetParameter(VGContext * context, VGHandle object,
 
       case VG_PAINT_COLOR_RAMP_STOPS:{
 
-            SHPaint *paint = (SHPaint *) object;
-            SHStop *stop;
-            SH_RETURN_ERR_IF(count > paint->stops.size * 5,
-                             VG_ILLEGAL_ARGUMENT_ERROR, SH_NO_RETVAL);
+         SHPaint *paint = (SHPaint *) object;
+         SHStop *stop;
+         SH_RETURN_ERR_IF(count > paint->stops.size * 5,
+                          VG_ILLEGAL_ARGUMENT_ERROR, SH_NO_RETVAL);
 
-            for (SHint i = 0; i < paint->stops.size; ++i) {
-               stop = &paint->stops.items[i];
-               shFloatToParam(stop->offset, count, values, floats, i * 5 + 0);
-               shFloatToParam(stop->color.r, count, values, floats,
-                              i * 5 + 1);
-               shFloatToParam(stop->color.g, count, values, floats,
-                              i * 5 + 2);
-               shFloatToParam(stop->color.b, count, values, floats,
-                              i * 5 + 3);
-               shFloatToParam(stop->color.a, count, values, floats,
-                              i * 5 + 4);
-            }
-
-            break;
+         for (SHint i = 0; i < paint->stops.size; ++i) {
+            stop = &paint->stops.items[i];
+            shFloatToParam(stop->offset, count, values, floats, i * 5 + 0);
+            shFloatToParam(stop->color.r, count, values, floats,
+                           i * 5 + 1);
+            shFloatToParam(stop->color.g, count, values, floats,
+                           i * 5 + 2);
+            shFloatToParam(stop->color.b, count, values, floats,
+                           i * 5 + 3);
+            shFloatToParam(stop->color.a, count, values, floats,
+                           i * 5 + 4);
          }
+
+         break;
+      }
 
       case VG_PAINT_LINEAR_GRADIENT:
          SH_RETURN_ERR_IF(count > 4, VG_ILLEGAL_ARGUMENT_ERROR, SH_NO_RETVAL);
