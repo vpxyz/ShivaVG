@@ -242,7 +242,7 @@ vgCopyPixels .......................... FULLY implemented
 ```
 vgColorMatrix ......................... PARTIALLY implemented
 vgConvolve ............................ PARTIALLY implemented
-vgSeparableConvolve ................... NOT implemented
+vgSeparableConvolve ................... PARTIALLY implemented
 vgGaussianBlur ........................ PARTIALLY implemented
 vgLookup .............................. PARTIALLY implemented
 vgLookupSingle ........................ PARTIALLY implemented
