@@ -711,22 +711,19 @@ shGet(VGContext * context, VGParamType type, SHint count, void *values,
       shFloatToParam(getMaxFloat(), count, values, floats, 0);
       break;
 
-   case VG_MAX_KERNEL_SIZE:    /* TODO: depends on convolution implementation */
+   case VG_MAX_KERNEL_SIZE:
       SH_RETURN_ERR_IF(count != 1, VG_ILLEGAL_ARGUMENT_ERROR, SH_NO_RETVAL);
-      shIntToParam(0, count, values, floats, 0);
+      shIntToParam(SH_MAX_KERNEL_SIZE, count, values, floats, 0);
       break;
 
-   case VG_MAX_SEPARABLE_KERNEL_SIZE:  /* TODO: depends on convolution implementation */
+   case VG_MAX_SEPARABLE_KERNEL_SIZE:
       SH_RETURN_ERR_IF(count != 1, VG_ILLEGAL_ARGUMENT_ERROR, SH_NO_RETVAL);
-      shIntToParam(0, count, values, floats, 0);
+      shIntToParam(SH_MAX_SEPARABLE_KERNEL_SIZE, count, values, floats, 0);
       break;
 
-   case VG_MAX_GAUSSIAN_STD_DEVIATION: /* TODO: depends on gaussian blur implementation */
+   case VG_MAX_GAUSSIAN_STD_DEVIATION:
       SH_RETURN_ERR_IF(count != 1, VG_ILLEGAL_ARGUMENT_ERROR, SH_NO_RETVAL);
-      /*
-       * shFloatToParam(0.0f, count, values, floats, 0);
-       */
-      shFloatToParam(0.0f, count, values, floats, 0);
+      shFloatToParam(SH_MAX_GAUSSIAN_STD_DEVIATION, count, values, floats, 0);
       break;
 
    default:

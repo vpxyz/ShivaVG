@@ -1565,8 +1565,8 @@ vgSeparableConvolve(VGImage dst, VGImage src,
                     SH_IS_NOT_ALIGNED(kernelX) || SH_IS_NOT_ALIGNED(kernelY) ||
                     kernelWidth <= 0 ||
                     kernelHeight <= 0 ||
-                    kernelWidth > VG_MAX_KERNEL_SIZE ||
-                    kernelHeight > VG_MAX_KERNEL_SIZE,
+                    kernelWidth > SH_MAX_KERNEL_SIZE ||
+                    kernelHeight > SH_MAX_KERNEL_SIZE,
                     VG_ILLEGAL_ARGUMENT_ERROR,
                     VG_NO_RETVAL);
    VG_RETURN_ERR_IF(tilingMode < VG_TILE_FILL || tilingMode > VG_TILE_REFLECT, VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
