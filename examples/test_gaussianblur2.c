@@ -77,7 +77,7 @@ void display(void)
 const char commands[] =
    "Commands\n"
    "H - this help\n"
-   "t - stdDev== 10.0\n"
+   "t - stdDev == 10.0\n"
    "x - stdDevX > stdDevY\n"
    "y - sdtDevY > stdDevX\n"
    "5 - stdDev == 5.0\n"

@@ -75,7 +75,7 @@ setRenderQualityGL(VGRenderingQuality quality)
 }
 
 static void
-updateBlendingStateGL(VGContext * c, int alphaIsOne)
+updateBlendingStateGL(VGContext * restrict c, int alphaIsOne)
 {
    /* Most common drawing mode (SRC_OVER with alpha=1)
       as well as SRC is optimized by turning OpenGL
@@ -167,7 +167,7 @@ updateBlendingStateGL(VGContext * c, int alphaIsOne)
  *-----------------------------------------------------------*/
 
 static void
-shDrawStroke(SHPath * p)
+shDrawStroke(SHPath * restrict p)
 {
 
    SH_ASSERT(p != NULL);
@@ -183,7 +183,7 @@ shDrawStroke(SHPath * p)
  *-----------------------------------------------------------*/
 
 static void
-shDrawVertices(SHPath * p, GLenum mode)
+shDrawVertices(SHPath * restrict p, GLenum mode)
 {
    int start = 0;
    int size = 0;
@@ -208,7 +208,7 @@ shDrawVertices(SHPath * p, GLenum mode)
  *-------------------------------------------------------------*/
 
 static void
-shDrawBoundBox(VGContext * c, SHPath * p, VGPaintMode mode)
+shDrawBoundBox(VGContext * restrict c, SHPath * restrict p, VGPaintMode mode)
 {
    SHfloat K = 1.0f;
 
@@ -288,7 +288,7 @@ shDrawPaintMesh(VGContext * c, SHVector2 * min, SHVector2 * max,
 }
 
 VGboolean
-shIsTessCacheValid(VGContext * c, SHPath * p)
+shIsTessCacheValid(VGContext * restrict c, SHPath * restrict p)
 {
    SHfloat nX, nY;
    SHVector2 X, Y;
@@ -326,7 +326,7 @@ shIsTessCacheValid(VGContext * c, SHPath * p)
 }
 
 VGboolean
-shIsStrokeCacheValid(VGContext * c, SHPath * p)
+shIsStrokeCacheValid(VGContext * restrict c, SHPath * restrict p)
 {
    VGboolean valid = VG_TRUE;
 

@@ -20,33 +20,34 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 # Processing the generator options
 # TODO: can we have a master option that will turn others in UI?
 # TODO: nicer display in UI? http://www.kitware.com/blog/home/post/82
-option(BUILD_DEBUG          "Build with debug (default=no)"                             OFF)
-option(BUILD_ALL_EXAMPLES   "Initialize build values for all examples (default=yes)]"   ON)
-option(BUILD_VGU            "Build VGU example (default=yes)]"                          OFF)
-option(BUILD_DASH           "Build Dashing example (default=yes)]"                      OFF)
-option(BUILD_LINEAR         "Build Linear Gradient example (default=yes)]"              OFF)
-option(BUILD_RADIAL         "Build Radial Gradient example (default=yes)]"              OFF)
-option(BUILD_INTERPOLATE    "Build Path Interpolation example (default=yes)]"           OFF)
-option(BUILD_TIGER          "Build Tiger SVG example (default=yes)]"                    OFF)
-option(BUILD_IMAGE          "Build Images example (default=yes)]"                       OFF)
-option(BUILD_PATTERN        "Build Pattern Paint example (default=yes)]"                OFF)
-option(BUILD_BLEND          "Build Blending example (default=yes)]"                     OFF)
-option(BUILD_EB             "Build Electro Body example (default=yes)]"                 OFF)
-option(BUILD_WARP           "Build Warp image example (default=yes)]"                   OFF)
-option(BUILD_PATH           "Build Path image example (default=yes)]"                   OFF)
-option(BUILD_FLOWERS        "Build Flowers example (default=yes)]"                      OFF)
-option(BUILD_STRESS         "Build Stress test example (default=yes)]"                  OFF)
-option(BUILD_CLOCK          "Build Clock example (default=yes)]"                        OFF)
-option(BUILD_SUBWAYMAP      "Build Subwaymap example (default=yes)]"                    OFF)
-option(BUILD_COMPOSITING    "Build Compositing example (default=yes)]"                  OFF)
-option(BUILD_COLORMATRIX    "Build Color matrix example (default=yes)]"                 OFF)
-option(BUILD_GAUSSIANBLUR   "Build Color gaussian blur example (default=yes)]"          OFF)
-option(BUILD_GAUSSIANBLUR2  "Build Color gaussian blur advanced example (default=yes)]" OFF)
-option(BUILD_CONVOLVE       "Build Convolve example (default=yes)]"                     OFF)
-option(BUILD_LOOKUP         "Build Color lookup example (default=yes)]"                 OFF)
-option(BUILD_LOOKUP2        "Build Color lookup2 example (default=yes)]"                OFF)
-option(BUILD_LOOKUP_SINGLE  "Build Color lookup single example (default=yes)]"          OFF)
-option(BUILD_COLOR          "Build Simple color matrix example (default=yes)]"          OFF)
+option(BUILD_DEBUG             "Build with debug (default=no)"                             OFF)
+option(BUILD_ALL_EXAMPLES      "Initialize build values for all examples (default=yes)]"   ON)
+option(BUILD_VGU               "Build VGU example (default=yes)]"                          OFF)
+option(BUILD_DASH              "Build Dashing example (default=yes)]"                      OFF)
+option(BUILD_LINEAR            "Build Linear Gradient example (default=yes)]"              OFF)
+option(BUILD_RADIAL            "Build Radial Gradient example (default=yes)]"              OFF)
+option(BUILD_INTERPOLATE       "Build Path Interpolation example (default=yes)]"           OFF)
+option(BUILD_TIGER             "Build Tiger SVG example (default=yes)]"                    OFF)
+option(BUILD_IMAGE             "Build Images example (default=yes)]"                       OFF)
+option(BUILD_PATTERN           "Build Pattern Paint example (default=yes)]"                OFF)
+option(BUILD_BLEND             "Build Blending example (default=yes)]"                     OFF)
+option(BUILD_EB                "Build Electro Body example (default=yes)]"                 OFF)
+option(BUILD_WARP              "Build Warp image example (default=yes)]"                   OFF)
+option(BUILD_PATH              "Build Path image example (default=yes)]"                   OFF)
+option(BUILD_FLOWERS           "Build Flowers example (default=yes)]"                      OFF)
+option(BUILD_STRESS            "Build Stress test example (default=yes)]"                  OFF)
+option(BUILD_CLOCK             "Build Clock example (default=yes)]"                        OFF)
+option(BUILD_SUBWAYMAP         "Build Subwaymap example (default=yes)]"                    OFF)
+option(BUILD_COMPOSITING       "Build Compositing example (default=yes)]"                  OFF)
+option(BUILD_COLORMATRIX       "Build Color matrix example (default=yes)]"                 OFF)
+option(BUILD_GAUSSIANBLUR      "Build Color gaussian blur example (default=yes)]"          OFF)
+option(BUILD_GAUSSIANBLUR2     "Build Color gaussian blur advanced example (default=yes)]" OFF)
+option(BUILD_CONVOLVE          "Build Convolve example (default=yes)]"                     OFF)
+option(BUILD_SEPARABLECONVOLVE "Build Separable Convolve example (default=yes)]"           OFF)
+option(BUILD_LOOKUP            "Build Color lookup example (default=yes)]"                 OFF)
+option(BUILD_LOOKUP2           "Build Color lookup2 example (default=yes)]"                OFF)
+option(BUILD_LOOKUP_SINGLE     "Build Color lookup single example (default=yes)]"          OFF)
+option(BUILD_COLOR             "Build Simple color matrix example (default=yes)]"          OFF)
 
 if (BUILD_DEBUG)
   set(DEBUG ON CACHE BOOL "Compile with debug code")
@@ -75,6 +76,7 @@ if(BUILD_ALL_EXAMPLES)
     set(BUILD_GAUSSIANBLUR ON)
     set(BUILD_GAUSSIANBLUR2 ON)
     set(BUILD_CONVOLVE ON)
+    set(BUILD_SEPARABLECONVOLVE ON)
     set(BUILD_LOOKUP ON)
     set(BUILD_LOOKUP2 ON)
     set(BUILD_LOOKUP_SINGLE ON)
@@ -82,7 +84,7 @@ if(BUILD_ALL_EXAMPLES)
 endif()
 set(BUILD_EXAMPLES BUILD_VGU OR BUILD_DASH OR BUILD_LINEAR OR BUILD_RADIAL OR BUILD_INTERPOLATE OR BUILD_TIGER
   OR BUILD_IMAGE OR BUILD_PATTERN OR BUILD_BLEND OR BUILD_EB OR BUILD_WARP OR BUILD_PATH OR BUILD_FLOWERS
-  OR BUILD_STRESS OR BUILD_CLOCK OR BUILD_SUBWAYMAP OR BUILD_COMPOSITING OR BUILD_COLORMATRIX OR BUILD_CONVOLVE
+  OR BUILD_STRESS OR BUILD_CLOCK OR BUILD_SUBWAYMAP OR BUILD_COMPOSITING OR BUILD_COLORMATRIX OR BUILD_CONVOLVE OR BUILD_SEPARABLECONVOLVE
   OR BUILD_GAUSSIANBLUR OR BUILD_GAUSSIANBLUR2 OR BUILD_LOOKUP OR BUILD_LOOKUP2 OR BUID_LOOKUP_SINGLE OR BUILD_COLOR)
 
 # Finding packages
@@ -175,6 +177,7 @@ message("ShivaVG will be compiled with the following example programs\n"
         "  Gaussian blur             ${BUILD_GAUSSIANBLUR}\n"
         "  Advanced Gaussian blur    ${BUILD_GAUSSIANBLUR2}\n"
         "  Convolve                  ${BUILD_CONVOLVE}\n"
+        "  Separable Convolve        ${BUILD_CONVOLVE}\n"
         "  Color lookup              ${BUILD_LOOKUP}\n"
         "  Color lookup2             ${BUILD_LOOKUP2}\n"
         "  Color lookup single       ${BUILD_LOOKUP_SINGLE}\n"

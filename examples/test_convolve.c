@@ -158,7 +158,4 @@ int main(int argc, char *argv[])
    kernelType = NONE;
    testRun();
    return EXIT_SUCCESS;
-
-
-   return 0;
 }

@@ -68,7 +68,7 @@ void display(void)
 const char commands[] =
    "Commands\n"
    "H - this help\n"
-   "d - sdtDev == 10.0\n"
+   "t - sdtDev == 10.0\n"
    "x - stdDevX > stdDevY\n"
    "y - sdtDevY > stdDevX\n"
    "5 - stdDev == 5.0\n"
@@ -81,7 +81,7 @@ void key(unsigned char code, int x, int y)
 {
    static int open = 0;
    switch (tolower(code)) {
-   case 'd':
+   case 't':
       deviationType = DEFAULT;
       break;
    case 'x':

@@ -43,8 +43,26 @@
 
 #define SH_BASE_IMAGE_FORMAT(format) (format & 0x1F)
 
+static inline SHfloat
+shInt2ColorComponent(SHuint c)
+{
+   return (SHfloat) ((c) & 255) / 255.0f;
+}
+
+static inline SHuint
+shColorComponent2Int(SHfloat c)
+{
+   SHint t = (SHint)SH_FLOOR((c) * 255.0f + 0.5f);
+   if (t > 255)
+      return 255;
+   if (t < 0)
+      return 0;
+   return t;
+}
+
+
 static inline bool
-shOverlaps(SHImage *src, SHImage *dst, SHint sx, SHint sy, SHint dx, SHint dy, SHint width, SHint height)
+shOverlaps(SHImage * restrict src, SHImage * restrict dst, SHint sx, SHint sy, SHint dx, SHint dy, SHint width, SHint height)
 {
    SH_ASSERT(src != NULL && dst != NULL && src->data != NULL && dst->data != NULL);
    if (src->data != dst->data)
@@ -623,17 +641,13 @@ shUpdateImageTextureSize(SHImage * i)
  *--------------------------------------------------*/
 
 void
-shUpdateImageTexture(SHImage *i, VGContext *context)
+shUpdateImageTexture(SHImage * restrict i, VGContext * restrict context)
 {
-   SHint potwidth;
-   SHint potheight;
-   SHint8 *potdata;
-
    SH_ASSERT(i != NULL && context != NULL);
 
    /* Find nearest power of two size */
-   potwidth = shClp2(i->width);
-   potheight = shClp2(i->height);
+   SHint potwidth = shClp2(i->width);
+   SHint potheight = shClp2(i->height);
 
    /* Scale into a temp buffer if image not a power-of-two size (pot)
       and non-power-of-two textures are not supported by OpenGL */
@@ -641,7 +655,7 @@ shUpdateImageTexture(SHImage *i, VGContext *context)
    if ((i->width < potwidth || i->height < potheight) &&
        !context->isGLAvailable_TextureNonPowerOfTwo) {
 
-      potdata = (SHint8 *) malloc(potwidth * potheight * i->fd.bytes);
+      SHint8 *potdata = (SHint8 *) malloc(potwidth * potheight * i->fd.bytes);
       SH_RETURN_ERR_IF(!potdata, VG_OUT_OF_MEMORY_ERROR, SH_NO_RETVAL);
 
       SH_DEBUG("shUpdateImageTexture: scale texture as power-of-two for OpenGL\n");
@@ -1411,37 +1425,45 @@ vgColorMatrix(VGImage dst, VGImage src, const VGfloat * matrix)
    VG_RETURN(VG_NO_RETVAL);
 }
 
-static inline SHColor
+
+/*
+ * Return a pointer to a color into "data" or a pointe to the same color of *edge
+ */
+static inline const SHColor *
 shGetTiledPixel(SHint x, SHint y, SHint w, SHint h, VGTilingMode tilingMode, const SHColor * restrict data , const SHColor * restrict edge)
 {
-   SHColor c;
+   const SHColor *c;
    if  (x >= 0 && x < w && y >= 0 && y < h) {
-      c = data[y*w+x];
+      c = &(data[y * w + x]);
    } else {
-      switch(tilingMode) {
+      switch (tilingMode) {
       case VG_TILE_FILL:
-         c = *edge;
+         c = edge;
          break;
       case VG_TILE_PAD:
          x = SH_MIN(SH_MAX(x, 0), w - 1);
          y = SH_MIN(SH_MAX(y, 0), h - 1);
          SH_ASSERT(x >= 0 && x < w && y >= 0 && y < h);
-         c = data[y*w+x];
+         c = &(data[y * w + x]);
          break;
       case VG_TILE_REPEAT:
          x = shIntMod(x, w);
          y = shIntMod(y, h);
          SH_ASSERT(x >= 0 && x < w && y >= 0 && y < h);
-         c = data[y*w+x];
+         c = &(data[y * w + x]);
          break;
       case VG_TILE_REFLECT:
       default:
          x = shIntMod(x, w * 2);
          y = shIntMod(y, h * 2);
-         if(x >= w) x = w * 2 - 1 - x;
-         if(y >= h) y = h * 2 - 1 - y;
+         if (x >= w) {
+            x = w * 2 - 1 - x;
+         }
+         if (y >= h) {
+            y = h * 2 - 1 - y;
+         }
          SH_ASSERT(x >= 0 && x < w && y >= 0 && y < h);
-         c = data[y*w+x];
+         c = &(data[y * w + x]);
          break;
       }
    }
@@ -1483,7 +1505,7 @@ vgConvolve(VGImage dst, VGImage src,
    VGbitfield channelMask = context->filterChannelMask;
    SHColor edge = context->tileFillColor;
    // TODO: replace malloc with a "safe" malloc that always test return pointer with assert
-   SHColor *tmpColors = (SHColor *) malloc(w * h * sizeof(SHColor));
+   SHColor *tmpColors = (SHColor *) malloc(s->width * s->height * sizeof(SHColor));
    SH_ASSERT(tmpColors != NULL);
 
    // copy source image region to tmp buffer
@@ -1491,34 +1513,32 @@ vgConvolve(VGImage dst, VGImage src,
    for(int y = 0; y < h; y++) {
       for(int x = 0; x < w; x++) {
          shLoadPixelColor(&c, s->data, &(s->fd), x, y, s->stride);
-         tmpColors[y*w + x] = c;
+         tmpColors[y * w + x] = c;
       }
    }
 
-   int x, y, kx, ky;
-   SHColor tmpc;
+   SHint x, y, kx, ky;
+   const SHColor *tmpc;
    SHfloat kernelValue;
-   SHint stride = d->stride;
    SHuint8 *px;
-
-   for (int i = 0; i < h; ++i) {
-      for (int j = 0; j < w; ++j) {
+   for (SHint i = 0; i < h; ++i) {
+      for (SHint j = 0; j < w; ++j) {
          SHColor sum = {.r = 0.0f, .g = 0.0f, .b =0.0f, .a =0.0f};
-         for (int ki = 0; ki < kernelHeight; ++ki) {
-            for (int kj = 0; kj < kernelWidth; ++kj) {
+         for (SHint ki = 0; ki < kernelHeight; ++ki) {
+            for (SHint kj = 0; kj < kernelWidth; ++kj) {
                x = j + kj - shiftX;
                y = i + ki - shiftY;
                tmpc = shGetTiledPixel(x, y, w, h, tilingMode, tmpColors, &edge);
                kx = kernelWidth - kj - 1;
                ky = kernelHeight - ki - 1;
                SH_ASSERT(kx >= 0 && kx < kernelWidth && ky >= 0 && ky < kernelHeight);
-               kernelValue = (SHfloat) kernel [kx * kernelHeight + ky];
-               CMULANDADDC(sum, tmpc, kernelValue );
+               kernelValue = (SHfloat) kernel[ky * kernelWidth + kx];
+               CMULANDADDC(sum, *tmpc, kernelValue );
             }
          }
          CMUL(sum, scale);
          CADD(sum, bias, bias, bias, bias);
-         px = (SHuint8 *) d->data + i * stride + j * d->fd.bytes;
+         px = (SHuint8 *) d->data + i * d->stride + j * d->fd.bytes;
          CCLAMP(sum);
          shStoreColor(&sum, px, &(d->fd));
       }
@@ -1564,6 +1584,71 @@ vgSeparableConvolve(VGImage dst, VGImage src,
 
    VGbitfield channelMask = context->filterChannelMask;
    SHColor edge = context->tileFillColor;
+
+   SHColor *tmpColors = (SHColor *) malloc(w * h * sizeof(SHColor));
+   SH_ASSERT(tmpColors != NULL);
+   // copy source image region to tmp buffer 
+   SHColor c;
+   for (SHint y = 0; y < h; ++y) {
+      for (SHint x = 0; x < w; ++x) {
+         shLoadPixelColor(&c, s->data, &(s->fd), x, y, s->stride);
+         tmpColors[y * w + x] = c;
+      }
+   }
+
+   // TODO: mmh, this second buffer can be removed. In this loop we rewrite multiple time the same pixel.
+   SHColor *tmpColors2 = (SHColor *) malloc(w * h * sizeof(SHColor));
+   SH_ASSERT(tmpColors2 != NULL);
+
+   const SHColor *tmpc; // pointer to a color from tempColors array
+   SHint x, kx;
+   for (SHint i = 0; i < h; ++i) {
+      for (SHint j = 0; j < w; ++j) {
+         SHColor sum = {.r = 0.0f, .g = 0.0f, .b =0.0f, .a =0.0f};
+         for (SHint k = 0; k < kernelWidth; ++k) {
+            x = j + k - shiftX;
+            tmpc = shGetTiledPixel(x, i, w, h, tilingMode, tmpColors, &edge);
+            kx = kernelWidth - k - 1;
+            SH_ASSERT(kx >= 0 && kx < kernelWidth);
+            CMULANDADDC(sum, *tmpc, (SHfloat) kernelX[kx]);
+         }
+         CCLAMP(sum);
+         tmpColors2[i * w + j] = sum;
+      }
+   }
+
+   // convolve the edge color if needed
+   if (tilingMode == VG_TILE_FILL) {
+      SHColor sum = {.r = 0.0f, .g = 0.0f, .b =0.0f, .a =0.0f};
+      for (SHint i = 0; i < kernelWidth; ++i) {
+         CMULANDADDC(sum, edge, (SHfloat) kernelX[i]);
+      }
+      edge = sum;
+      CCLAMP(edge);
+   }
+
+   // vertical pass
+   SHint y, ky;
+   for (SHint i = 0; i < h; ++i) {
+      for (SHint j = 0; j < w; ++j) {
+         SHColor sum = {.r = 0.0f, .g = 0.0f, .b =0.0f, .a =0.0f};
+         for (SHint k = 0; k < kernelHeight; ++k) {
+            y = i + k - shiftY;
+            tmpc = shGetTiledPixel(j, y, w, h, tilingMode, tmpColors2, &edge);
+            ky = kernelHeight - k - 1;
+            SH_ASSERT(ky >= 0 && ky < kernelHeight);
+            CMULANDADDC(sum, *tmpc, (SHfloat) kernelY[ky]);
+         }
+         CMUL(sum, scale);
+         CADD(sum, bias, bias, bias, bias);
+         CCLAMP(sum);
+         shStorePixelColor(&sum, d->data, &(d->fd), j, i, d->stride);
+      }
+   }
+
+   free(tmpColors);
+   shUpdateImageTexture(d, context);
+   VG_RETURN(VG_NO_RETVAL);
 }
 
 static inline SHfloat *
@@ -1574,7 +1659,7 @@ makeGaussianBlurKernel(int kernelElement, SHfloat expScale, SHfloat * restrict s
    SH_ASSERT(kernel != NULL); // Should return an error ?
 
    SHfloat32 tmp = *scale;
-   for (int i = 0; i < *kernelSize; ++i) {
+   for (SHint i = 0; i < *kernelSize; ++i) {
       kernel[i] = expf(((i - kernelElement) * (i - kernelElement)) * expScale);
       tmp += kernel[i];
    }
@@ -1611,12 +1696,12 @@ vgGaussianBlur(VGImage dst, VGImage src,
    SHfloat expScaleX = -1.0f / (2.0f * (stdDeviationX * stdDeviationX));
    SHfloat expScaleY = -1.0f / (2.0f * (stdDeviationY * stdDeviationY));
 
-   int kernelWidth = (int)(stdDeviationX *  4.0f + 1.0f);
-   int kernelHeight = (int)(stdDeviationY * 4.0f + 1.0f);
+   SHint kernelWidth = (SHint)(stdDeviationX *  4.0f + 1.0f);
+   SHint kernelHeight = (SHint)(stdDeviationY * 4.0f + 1.0f);
 
    SHfloat scaleX = 0.0f , scaleY = 0.0f;
    SHfloat *kernelX, *kernelY;
-   int kernelXSize, kernelYSize;
+   SHint kernelXSize, kernelYSize;
 
    kernelX = makeGaussianBlurKernel(kernelWidth, expScaleX, &scaleX, &kernelXSize);
    kernelY = makeGaussianBlurKernel(kernelHeight, expScaleY, &scaleY, &kernelYSize);
@@ -1627,48 +1712,45 @@ vgGaussianBlur(VGImage dst, VGImage src,
 
    // copy source image region to tmp buffer
    SHColor c;
-   for(int y = 0; y < h; y++) {
-      for(int x = 0; x < w; x++) {
+   for (SHint y = 0; y < h; ++y) {
+      for (SHint x = 0; x < w; ++x) {
          shLoadPixelColor(&c, s->data, &(s->fd), x, y, s->stride);
-         tmpColors[y*w + x] = c;
+         tmpColors[y * w + x] = c;
       }
    }
 
-   SHColor tmpc;
+   const SHColor *tmpc;
    // horizontal pass
-   int x;
-   for (int i = 0; i < h; ++i) {
-      for (int j = 0; j < w; ++j) {
+   SHint x;
+   for (SHint i = 0; i < h; ++i) {
+      for (SHint j = 0; j < w; ++j) {
          SHColor sum = {.r = 0.0f, .g = 0.0f, .b =0.0f, .a =0.0f};
-         for (int k = 0; k < kernelXSize; ++k) {
+         for (SHint k = 0; k < kernelXSize; ++k) {
             x = j + k - kernelWidth;
             // TODO: can I merge shGetTiledPixel with the previous tmp buffer copy?
             tmpc = shGetTiledPixel(x, i, w, h, tilingMode, tmpColors, &edge);
             // Multiply tmpc with kernelX[k] then add with color "sum"
-            CMULANDADDC(sum, tmpc, kernelX[k]);
+            CMULANDADDC(sum, *tmpc, kernelX[k]);
          }
          CMUL(sum, scaleX);
-         tmpColors[i*w+j] = sum;
+         tmpColors[i * w + j] = sum;
       }
    }
 
    // vertical pass
-   int y;
-   SHint stride = d->stride;
-   SHuint8 *px;
-   for (int i = 0; i < h; ++i) {
-      for (int j = 0; j < w; ++j) {
+   SHint y;
+   for (SHint i = 0; i < h; ++i) {
+      for (SHint j = 0; j < w; ++j) {
          SHColor sum = {.r = 0.0f, .g = 0.0f, .b =0.0f, .a =0.0f};
-         for (int k = 0; k < kernelYSize; ++k) {
+         for (SHint k = 0; k < kernelYSize; ++k) {
             y = i + k - kernelHeight;
             tmpc = shGetTiledPixel(j, y, w, h, tilingMode, tmpColors, &edge);
             // Multiply tmpc with kernelY[k] then add with color "sum"
-            CMULANDADDC(sum, tmpc, kernelY[k]);
+            CMULANDADDC(sum, *tmpc, kernelY[k]);
          }
          CMUL(sum, scaleY);
-         px = (SHuint8 *) d->data + i * stride + j * d->fd.bytes;
          CCLAMP(sum);
-         shStoreColor(&sum, px, &(d->fd));
+         shStorePixelColor(&sum, d->data, &(d->fd), j, i, d->stride);
       }
    }
    free(tmpColors);
@@ -1678,25 +1760,6 @@ vgGaussianBlur(VGImage dst, VGImage src,
    shUpdateImageTexture(d, context);
    VG_RETURN(VG_NO_RETVAL);
 }
-
-
-static inline SHfloat
-shInt2ColorComponent(SHuint c)
-{
-   return (SHfloat) ((c) & 255) / 255.0f;
-}
-
-static inline SHuint
-shColorComponent2Int(SHfloat c)
-{
-   SHint t = (SHint)SH_FLOOR((c) * 255.0f + 0.5f);
-   if (t > 255)
-      return 255;
-   if (t < 0)
-      return 0;
-   return t;
-}
-
 
 VG_API_CALL void
 vgLookup(VGImage dst, VGImage src,
@@ -1849,4 +1912,3 @@ vgLookupSingle(VGImage dst, VGImage src,
    shUpdateImageTexture(d, context);
    VG_RETURN(VG_NO_RETVAL);
 }
-

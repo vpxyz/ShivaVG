@@ -100,64 +100,64 @@ void SHImage_dtor(SHImage * i);
  * Color operators
  *-------------------------------------------------------*/
 
-#define CSET(c, rr,gg,bb,aa) { c.r=rr; c.g=gg; c.b=bb; c.a=aa; }
-#define CSETC(c1, c2) { c1.r=c2.r; c1.g=c2.g; c1.b=c2.b; c1.a=c2.a; }
+#define CSET(c, rr,gg,bb,aa) { (c).r=rr; (c).g=gg; (c).b=bb; (c).a=aa; }
+#define CSETC(c1, c2) { (c1).r=(c2).r; (c1).g=(c2).g; (c1).b=(c2).b; (c1).a=(c2).a; }
 
-#define CSUB(c1, rr,gg,bb,aa) { c.r-=rr; c.g-=gg; c.b-=bb; c.a-=aa; }
-#define CSUBC(c1, c2) { c1.r-=c2.r; c1.g-=c2.g; c1.b-=c2.b; c1.a-=c2.a; }
-#define CSUBCTO(c1, c2, c3) { c3.r=c1.r-c2.r; c3.g=c1.g-c2.g;  c3.b=c1.b-c2.b; c3.a=c1.a-c2.a; }
+#define CSUB(c1, rr,gg,bb,aa) { (c).r-=rr; (c).g-=gg; (c).b-=bb; (c).a-=aa; }
+#define CSUBC(c1, c2) { (c1).r-=(c2).r; (c1).g-=(c2).g; (c1).b-=(c2).b; (c1).a-=(c2).a; }
+#define CSUBCTO(c1, c2, c3) { (c3).r=(c1).r-(c2).r; (c3).g=(c1).g-(c2).g;  (c3).b=(c1).b-(c2).b; (c3).a=(c1).a-(c2).a; }
 
-#define CADD(c1, rr,gg,bb,aa) { c1.r+=rr; c1.g+=gg; c1.b+=bb; c1.a+=aa; }
-#define CADDC(c1, c2) { c1.r+=c2.r; c1.g+=c2.g; c1.b+=c2.b; c1.a+=c2.a; }
-#define CADDTO(c1, c2, c3) { c3.r=c1.r+c2.r; c3.g=c1.g+c2.g;  c3.b=c1.b+c2.b; c3.a=c1.a+c2.a; }
-#define CADDCK(c1, c2, k) { c1.r+=k*c2.r; c1.g+=k*c2.g; c1.b+=k*c2.b; c1.a+=k*c2.a; }
+#define CADD(c1, rr,gg,bb,aa) { (c1).r+=rr; (c1).g+=gg; (c1).b+=bb; (c1).a+=aa; }
+#define CADDC(c1, c2) { (c1).r+=(c2).r; (c1).g+=(c2).g; (c1).b+=(c2).b; (c1).a+=(c2).a; }
+#define CADDTO(c1, c2, c3) { (c3).r=(c1).r+(c2).r; (c3).g=(c1).g+(c2).g;  (c3).b=(c1).b+(c2).b; (c3).a=(c1).a+(c2).a; }
+#define CADDCK(c1, c2, k) { (c1).r+=k*(c2).r; (c1).g+=k*(c2).g; (c1).b+=k*(c2).b; (c1).a+=k*(c2).a; }
 
-#define CMUL(c, s) { c.r*=s; c.g*=s; c.b*=s; c.a*=s; }
-#define CMULC(c1, c2) { c1.r *= c2.r; c1.g *= c2.g ; c1.b *= c2.b; c1.a *= c2.a; }
-#define CMULTO(c1, c2, c3) { c3.r=c1.r*c2.r; c3.g=c1.g*c2.g;  c3.b=c1.b*c2.b; c3.a=c1.a*c2.a; }
-#define CDIV(c, s) { c.r/=s; c.g/=s; c.b/=s; c.a/=s; }
+#define CMUL(c, s) { (c).r*=s; (c).g*=s; (c).b*=s; (c).a*=s; }
+#define CMULC(c1, c2) { (c1).r *= (c2).r; (c1).g *= (c2).g ; (c1).b *= (c2).b; (c1).a *= (c2).a; }
+#define CMULTO(c1, c2, c3) { (c3).r=(c1).r*(c2).r; (c3).g=(c1).g*(c2).g;  (c3).b=(c1).b*(c2).b; (c3).a=(c1).a*(c2).a; }
+#define CDIV(c, s) { (c).r/=s; (c).g/=s; (c).b/=s; (c).a/=s; }
 
-#define CMULANDADDC(c1, c2, s) {c1.r += c2.r * s; c1.g += c2.g * s ; c1.b += c2.b * s ; c1.a += c2.a * s;}
+#define CMULANDADDC(c1, c2, s) {(c1).r += (c2).r * (s); (c1).g += (c2).g * (s) ; (c1).b += (c2).b * (s) ; (c1).a += (c2).a * (s);}
 
-#define CPREMUL(c) { c.r*=c.a; c.g*=c.a; c.b*=c.a; }
-#define CUNPREMUL(c) { c.r/=c.a; c.g/=c.a; c.b/=c.a; }
+#define CPREMUL(c) { (c).r*=(c).a; (c).g*=(c).a; (c).b*=(c).a; }
+#define CUNPREMUL(c) { (c).r/=(c).a; (c).g/=(c).a; (c).b/=(c).a; }
 
 #define CCLAMP(c) { \
-      c.r = ((c.r) > 1.0f ? 1.0f : ((c.r < 0.0f ? 0.0f : (c.r)))); \
-      c.g = ((c.g) > 1.0f ? 1.0f : ((c.g < 0.0f ? 0.0f : (c.g)))); \
-      c.b = ((c.b) > 1.0f ? 1.0f : ((c.b < 0.0f ? 0.0f : (c.b)))); \
-      c.a = ((c.a) > 1.0f ? 1.0f : ((c.a < 0.0f ? 0.0f : (c.a)))); \
+      (c).r = ((c).r > 1.0f ? 1.0f : (((c).r < 0.0f ? 0.0f : ((c).r)))); \
+      (c).g = ((c).g > 1.0f ? 1.0f : (((c).g < 0.0f ? 0.0f : ((c).g)))); \
+      (c).b = ((c).b > 1.0f ? 1.0f : (((c).b < 0.0f ? 0.0f : ((c).b)))); \
+      (c).a = ((c).a > 1.0f ? 1.0f : (((c).a < 0.0f ? 0.0f : ((c).a)))); \
 }
 /*-------------------------------------------------------
  * Color-to-memory functions
  *-------------------------------------------------------*/
 
 #define CSTORE_RGBA1D_8(c, rgba, x)  { \
-  rgba[x*4+0] = (SHuint8)SH_FLOOR(c.r * 255); \
-  rgba[x*4+1] = (SHuint8)SH_FLOOR(c.g * 255); \
-  rgba[x*4+2] = (SHuint8)SH_FLOOR(c.b * 255); \
-  rgba[x*4+3] = (SHuint8)SH_FLOOR(c.a * 255); }
+      rgba[x*4+0] = (SHuint8)SH_FLOOR((c).r * 255);     \
+      rgba[x*4+1] = (SHuint8)SH_FLOOR((c).g * 255);     \
+      rgba[x*4+2] = (SHuint8)SH_FLOOR((c).b * 255);     \
+      rgba[x*4+3] = (SHuint8)SH_FLOOR((c).a * 255); }
 
 #define CSTORE_RGBA1D_F(c, rgba, x)  { \
-  rgba[x*4+0] = c.r; \
-  rgba[x*4+1] = c.g; \
-  rgba[x*4+2] = c.b; \
-  rgba[x*4+3] = c.a; }
+      rgba[x*4+0] = (c).r;             \
+      rgba[x*4+1] = (c).g;             \
+      rgba[x*4+2] = (c).b;             \
+      rgba[x*4+3] = (c).a; }
 
 #define CSTORE_RGBA2D_8(c, rgba, x, y, width) { \
-  rgba[y*width*4+x*4+0] = (SHuint8)SH_FLOOR(c.r * 255); \
-  rgba[y*width*4+x*4+1] = (SHuint8)SH_FLOOR(c.g * 255); \
-  rgba[y*width*4+x*4+2] = (SHuint8)SH_FLOOR(c.b * 255); \
-  rgba[y*width*4+x*4+3] = (SHuint8)SH_FLOOR(c.a * 255); }
+  rgba[y*width*4+x*4+0] = (SHuint8)SH_FLOOR((c).r * 255); \
+  rgba[y*width*4+x*4+1] = (SHuint8)SH_FLOOR((c).g * 255); \
+  rgba[y*width*4+x*4+2] = (SHuint8)SH_FLOOR((c).b * 255); \
+  rgba[y*width*4+x*4+3] = (SHuint8)SH_FLOOR((c).a * 255); }
 
 #define CSTORE_RGBA2D_F(c, rgba, x, y, width) { \
-  rgba[y*width*4+x*4+0] = c.r; \
-  rgba[y*width*4+x*4+1] = c.g; \
-  rgba[y*width*4+x*4+2] = c.b; \
-  rgba[y*width*4+x*4+3] = c.a; }
+  rgba[y*width*4+x*4+0] = (c).r; \
+  rgba[y*width*4+x*4+1] = (c).g; \
+  rgba[y*width*4+x*4+2] = (c).b; \
+  rgba[y*width*4+x*4+3] = (c).a; }
 
-#define INT2COLCOORD(i, max) ( (SHfloat)i / (SHfloat)max  )
-#define COL2INTCOORD(c, max) ( (SHuint)SH_FLOOR(c * (SHfloat)max + 0.5f) )
+#define INT2COLCOORD(i, max) ( (SHfloat)(i) / (SHfloat)(max)  )
+#define COL2INTCOORD(c, max) ( (SHuint)SH_FLOOR((c) * (SHfloat)(max) + 0.5f) )
 
 SHuint32 shPackColor(SHColor *c, const SHImageFormatDesc *f);
 void shStorePackedColor(void *data, SHuint8 colorFormatSize, SHuint32 packedColor);
