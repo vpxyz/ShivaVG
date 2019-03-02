@@ -1354,8 +1354,8 @@ vgColorMatrix(VGImage dst, VGImage src, const VGfloat * matrix)
    SHint32 h = SH_MIN(d->height, s->height);
    SH_ASSERT(w > 0 && h > 0);
 
-   SHColor sc;
-   SHColor dc;
+   SHColor sc; // source color
+   SHColor dc; // destination color
    SHColor tmpcolor;
    SHImageFormatDesc sfd = s->fd;
    SHImageFormatDesc dfd = d->fd;
@@ -1791,8 +1791,8 @@ vgLookup(VGImage dst, VGImage src,
 
    SHColor cl, cs;
    if (s->fd.glformat == GL_LUMINANCE) {
-      for (int y = 0; y < h; y++) {
-         for (int x = 0; x < w; x++) {
+      for (SHint y = 0; y < h; y++) {
+         for (SHint x = 0; x < w; x++) {
             shLoadPixelColor(&cl, s->data, &(s->fd), x, y, s->stride);
 
             cs.r = shInt2ColorComponent(redLUT[shColorComponent2Int(cl.r)]);
@@ -1806,8 +1806,8 @@ vgLookup(VGImage dst, VGImage src,
       }
    } else {
       VGbitfield channelMask = context->filterChannelMask;
-      for (int y = 0; y < h; y++) {
-         for (int x = 0; x < w; x++) {
+      for (SHint y = 0; y < h; y++) {
+         for (SHint x = 0; x < w; x++) {
             shLoadPixelColor(&cl, s->data, &(s->fd), x, y, s->stride);
             cs = cl;
 
@@ -1869,11 +1869,12 @@ vgLookupSingle(VGImage dst, VGImage src,
    }
 
    VGbitfield channelMask = context->filterChannelMask;
-   SHColor cl, cs;
+   SHColor cl; // color loaded from source image
+   SHColor cs; // color to store in the destination image
    SHuint32 tmp;
-   int e;
-   for (int y = 0; y < h; y++) {
-      for (int x = 0; x < w; x++) {
+   SHint e; // element to get from lookupTable
+   for (SHint y = 0; y < h; y++) {
+      for (SHint x = 0; x < w; x++) {
          shLoadPixelColor(&cl, s->data, &(s->fd), x, y, s->stride);
          switch(sourceChannel) {
          case VG_RED:
