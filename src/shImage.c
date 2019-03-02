@@ -1647,6 +1647,7 @@ vgSeparableConvolve(VGImage dst, VGImage src,
    }
 
    free(tmpColors);
+   free(tmpColors2);
    shUpdateImageTexture(d, context);
    VG_RETURN(VG_NO_RETVAL);
 }
