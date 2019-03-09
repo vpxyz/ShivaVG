@@ -5,12 +5,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library in the file COPYING;
  * if not, write to the Free Software Foundation, Inc.,
@@ -61,7 +61,7 @@ void shRectangleSet(SHRectangle * r, SHfloat x,
 
 typedef struct
 {
-   SHfloat m[4][4]; // 3x3 matrix with padding
+   SHfloat m[3][3];
 } SHMatrix3x3;
 
 void SHMatrix3x3_ctor(SHMatrix3x3 * m);
@@ -160,9 +160,9 @@ void SHMatrix3x3_dtor(SHMatrix3x3 * m);
  *-----------------------------------------------------*/
 
 #define SETMAT(mat, m00, m01, m02, m10, m11, m12, m20, m21, m22) { \
-  mat.m[0][0] = m00; mat.m[0][1] = m01; mat.m[0][2] = m02; \
-  mat.m[1][0] = m10; mat.m[1][1] = m11; mat.m[1][2] = m12; \
-  mat.m[2][0] = m20; mat.m[2][1] = m21; mat.m[2][2] = m22; }
+      mat.m[0][0] = (m00); mat.m[0][1] = (m01); mat.m[0][2] = (m02);    \
+      mat.m[1][0] = (m10); mat.m[1][1] = (m11); mat.m[1][2] = (m12);    \
+      mat.m[2][0] = (m20); mat.m[2][1] = (m21); mat.m[2][2] = (m22); }
 
 #define SETMATMAT(m1, m2) { \
    m1 = m2; \
@@ -179,33 +179,33 @@ void SHMatrix3x3_dtor(SHMatrix3x3 * m);
      mat.m[i][j] /= (s); }
 
 #define MULMATMAT(m1,m2,mout) { \
-                mout.m[0][0] = m1.m[0][0]*m2.m[0][0];   \
-                mout.m[0][1] = m1.m[0][0]*m2.m[0][1];   \
-                mout.m[0][2] = m1.m[0][0]*m2.m[0][2];   \
-                mout.m[0][0] += m1.m[0][1]*m2.m[1][0];  \
-                mout.m[0][1] += m1.m[0][1]*m2.m[1][1];  \
-                mout.m[0][2] += m1.m[0][1]*m2.m[1][2];  \
-                mout.m[0][0] += m1.m[0][2]*m2.m[2][0];  \
-                mout.m[0][1] += m1.m[0][2]*m2.m[2][1];  \
-                mout.m[0][2] += m1.m[0][2]*m2.m[2][2];  \
-                mout.m[1][0] = m1.m[1][0]*m2.m[0][0];   \
-                mout.m[1][1] = m1.m[1][0]*m2.m[0][1];   \
-                mout.m[1][2] = m1.m[1][0]*m2.m[0][2];   \
-                mout.m[1][0] += m1.m[1][1]*m2.m[1][0];  \
-                mout.m[1][1] += m1.m[1][1]*m2.m[1][1];  \
-                mout.m[1][2] += m1.m[1][1]*m2.m[1][2];  \
-                mout.m[1][0] += m1.m[1][2]*m2.m[2][0];  \
-                mout.m[1][1] += m1.m[1][2]*m2.m[2][1];  \
-                mout.m[1][2] += m1.m[1][2]*m2.m[2][2];  \
-                mout.m[2][0] = m1.m[2][0]*m2.m[0][0];   \
-                mout.m[2][1] = m1.m[2][0]*m2.m[0][1];   \
-                mout.m[2][2] = m1.m[2][0]*m2.m[0][2];   \
-                mout.m[2][0] += m1.m[2][1]*m2.m[1][0];  \
-                mout.m[2][1] += m1.m[2][1]*m2.m[1][1];  \
-                mout.m[2][2] += m1.m[2][1]*m2.m[1][2];  \
-                mout.m[2][0] += m1.m[2][2]*m2.m[2][0];  \
-                mout.m[2][1] += m1.m[2][2]*m2.m[2][1];  \
-                mout.m[2][2] += m1.m[2][2]*m2.m[2][2];  \
+                mout.m[0][0] = m1.m[0][0] * m2.m[0][0];   \
+                mout.m[0][1] = m1.m[0][0] * m2.m[0][1];   \
+                mout.m[0][2] = m1.m[0][0] * m2.m[0][2];   \
+                mout.m[0][0] += m1.m[0][1] * m2.m[1][0];  \
+                mout.m[0][1] += m1.m[0][1] * m2.m[1][1];  \
+                mout.m[0][2] += m1.m[0][1] * m2.m[1][2];  \
+                mout.m[0][0] += m1.m[0][2] * m2.m[2][0];  \
+                mout.m[0][1] += m1.m[0][2] * m2.m[2][1];  \
+                mout.m[0][2] += m1.m[0][2] * m2.m[2][2];  \
+                mout.m[1][0] = m1.m[1][0] * m2.m[0][0];   \
+                mout.m[1][1] = m1.m[1][0] * m2.m[0][1];   \
+                mout.m[1][2] = m1.m[1][0] * m2.m[0][2];   \
+                mout.m[1][0] += m1.m[1][1] * m2.m[1][0];  \
+                mout.m[1][1] += m1.m[1][1] * m2.m[1][1];  \
+                mout.m[1][2] += m1.m[1][1] * m2.m[1][2];  \
+                mout.m[1][0] += m1.m[1][2] * m2.m[2][0];  \
+                mout.m[1][1] += m1.m[1][2] * m2.m[2][1];  \
+                mout.m[1][2] += m1.m[1][2] * m2.m[2][2];  \
+                mout.m[2][0] = m1.m[2][0] * m2.m[0][0];   \
+                mout.m[2][1] = m1.m[2][0] * m2.m[0][1];   \
+                mout.m[2][2] = m1.m[2][0] * m2.m[0][2];   \
+                mout.m[2][0] += m1.m[2][1] * m2.m[1][0];  \
+                mout.m[2][1] += m1.m[2][1] * m2.m[1][1];  \
+                mout.m[2][2] += m1.m[2][1] * m2.m[1][2];  \
+                mout.m[2][0] += m1.m[2][2] * m2.m[2][0];  \
+                mout.m[2][1] += m1.m[2][2] * m2.m[2][1];  \
+                mout.m[2][2] += m1.m[2][2] * m2.m[2][2];  \
 }
 
 #define IDMAT(mat) SETMAT(mat, 1,0,0, 0,1,0, 0,0,1)
