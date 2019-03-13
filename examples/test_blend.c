@@ -59,16 +59,13 @@ void createOperands(void)
      exit(EXIT_FAILURE);
   }
 
-  // TODO: replace picu with libpng. What tipe of data format require vgImageSubData?
-
   isrc = vgCreateImage(VG_sRGBA_8888, wsrc,
                        hsrc, VG_IMAGE_QUALITY_BETTER);
 
-  // come calcolo lo stride?
   vgImageSubData(isrc, src, wsrc * 4, VG_sRGBA_8888,
                   0,0, wsrc, hsrc);
   SH_DEBUG("src image loaded\n");
-  
+
   idst = vgCreateImage(VG_sRGBA_8888, wdst,
                        hdst, VG_IMAGE_QUALITY_BETTER);
   vgImageSubData(idst, dst, wdst * 4 , VG_sRGBA_8888,

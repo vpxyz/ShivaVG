@@ -723,9 +723,7 @@ vgCreateImage(VGImageFormat format,
                       VG_IMAGE_QUALITY_FASTER | VG_IMAGE_QUALITY_BETTER),
                     VG_ILLEGAL_ARGUMENT_ERROR, VG_INVALID_HANDLE);
 
-#ifdef DEBUG
-   SH_DEBUG("VGImageformat 0x%x, in decimale %d\n ", format, format);
-#endif
+   SH_DEBUG("VGImageformat 0x%x, in decimal %d\n ", format, format);
 
    /* Create new image object */
    SHImage *i = NULL;
@@ -1137,6 +1135,14 @@ vgSetPixels(VGint dx, VGint dy,
    glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
    glRasterPos2i(0, 0);
 
+
+   /* TODO: try to replace the previous block with this
+    * glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    * glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    * glBindTexture(GL_TEXTURE_2D, i->texture);
+    * glTexSubImage2D(GL_TEXTURE_2D, 0, dx, dy, width, height, i->fd.glintformat, i->fd.gltype, pixels);
+    */
+
    free(pixels);
 
    VG_RETURN(VG_NO_RETVAL);
@@ -1153,9 +1159,6 @@ vgWritePixels(const void *data, VGint dataStride,
               VGImageFormat dataFormat,
               VGint dx, VGint dy, VGint width, VGint height)
 {
-   SHuint8 *pixels;
-   SHImageFormatDesc winfd;
-
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    /* Reject invalid formats */
@@ -1174,13 +1177,14 @@ vgWritePixels(const void *data, VGint dataStride,
    /* Setup window image format descriptor */
    /* TODO: this actually depends on the target framebuffer type
       if we really want the copy to be optimized */
+   SHImageFormatDesc winfd;
    shSetupImageFormat(VG_sRGBA_8888, &winfd);
 
    /* OpenGL doesn't allow us to use random stride. We have to
       manually copy the image data and write from a copy with
       normal row length */
 
-   pixels = (SHuint8 *) malloc(width * height * winfd.bytes);
+   SHuint8 *pixels = (SHuint8 *) malloc(width * height * winfd.bytes);
    SH_RETURN_ERR_IF(!pixels, VG_OUT_OF_MEMORY_ERROR, SH_NO_RETVAL);
 
    shCopyPixels(pixels, winfd.vgformat, -1,
@@ -1587,7 +1591,7 @@ vgSeparableConvolve(VGImage dst, VGImage src,
 
    SHColor *tmpColors = (SHColor *) malloc(w * h * sizeof(SHColor));
    SH_ASSERT(tmpColors != NULL);
-   // copy source image region to tmp buffer 
+   // copy source image region to tmp buffer
    SHColor c;
    for (SHint y = 0; y < h; ++y) {
       for (SHint x = 0; x < w; ++x) {
@@ -1596,7 +1600,7 @@ vgSeparableConvolve(VGImage dst, VGImage src,
       }
    }
 
-   // TODO: mmh, I guess this second buffer can be removed. 
+   // TODO: mmh, I guess this second buffer can be removed.
    SHColor *tmpColors2 = (SHColor *) malloc(w * h * sizeof(SHColor));
    SH_ASSERT(tmpColors2 != NULL);
 
@@ -1629,6 +1633,7 @@ vgSeparableConvolve(VGImage dst, VGImage src,
 
    // vertical pass
    SHint y, ky;
+   SHColor cs; // color to store in the destination image
    for (SHint i = 0; i < h; ++i) {
       for (SHint j = 0; j < w; ++j) {
          SHColor sum = {.r = 0.0f, .g = 0.0f, .b =0.0f, .a =0.0f};
@@ -1642,7 +1647,21 @@ vgSeparableConvolve(VGImage dst, VGImage src,
          CMUL(sum, scale);
          CADD(sum, bias, bias, bias, bias);
          CCLAMP(sum);
-         shStorePixelColor(&sum, d->data, &(d->fd), j, i, d->stride);
+         cs = tmpColors[i * w + j];
+
+         if (channelMask & VG_RED)
+            cs.r = sum.r;
+
+         if (channelMask & VG_GREEN)
+            cs.g = sum.g;
+
+         if (channelMask & VG_BLUE)
+            cs.b = sum.b;
+
+         if (channelMask & VG_ALPHA)
+            cs.a = sum.a;
+
+         shStorePixelColor(&cs, d->data, &(d->fd), j, i, d->stride);
       }
    }
 

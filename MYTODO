@@ -20,7 +20,8 @@ Even if PBO available we'd need to gluScaleImage into it.
 
 --> means: no NOPS, need intermediate buffer anyway
 
-=== Solution1: PBO are available ==== ( EXT_pixel_buffer_object esiste dal 2013 e richiede solo opengl 2 https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_pixel_buffer_object.txt)
+=== Solution1: PBO are available ====
+( EXT_pixel_buffer_object require only opengl2 https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_pixel_buffer_object.txt)
 
 Extension required: EXT_pixel_buffer_object (ARB_pixel_buffer_object ?)
 

@@ -270,7 +270,7 @@ shValidateInputStops(SHPaint * p)
    shStopArrayReserve(&p->stops, p->instops.size);
 
    /* Assure input stops are properly defined */
-   for (int i = 0; i < p->instops.size; ++i) {
+   for (SHint i = 0; i < p->instops.size; ++i) {
 
       /* Copy stop color */
       instop = &p->instops.items[i];
@@ -429,8 +429,8 @@ shGenerateStops(SHPaint * p, SHfloat minOffset, SHfloat maxOffset,
    }
 }
 
-void
-shSetGradientTexGLState(SHPaint * p)
+static void
+shSetGradientTexGLState(SHPaint * restrict p)
 {
    SH_ASSERT(p != NULL);
 
@@ -451,11 +451,11 @@ shSetGradientTexGLState(SHPaint * p)
    }
 
    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-   glColor4f(1, 1, 1, 1);
+   glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
-void
-shSetPatternTexGLState(SHPaint * p, VGContext * c)
+static void
+shSetPatternTexGLState(SHPaint * restrict p, VGContext * restrict c)
 {
    SH_ASSERT(p != NULL && c != NULL);
 
@@ -505,10 +505,6 @@ shDrawLinearGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    SHMatrix3x3 mi;
    SHint invertible;
    SHVector2 corners[4];
-   SHfloat minOffset = 0.0f;
-   SHfloat maxOffset = 0.0f;
-   SHfloat left = 0.0f;
-   SHfloat right = 0.0f;
    SHVector2 l1, r1, l2, r2;
 
    /* Pick paint transform matrix */
@@ -552,13 +548,19 @@ shDrawLinearGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       SHColor *c = &p->stops.items[p->stops.size - 1].color;
       glColor4fv((GLfloat *) c);
       glBegin(GL_QUADS);
-      for (SHint i = 0; i < 4; ++i)
-         glVertex2fv((GLfloat *) & corners[i]);
+         glVertex2fv((GLfloat *) & corners[0]);
+         glVertex2fv((GLfloat *) & corners[1]);
+         glVertex2fv((GLfloat *) & corners[2]);
+         glVertex2fv((GLfloat *) & corners[3]);
       glEnd();
       return 1;
    }
 
    /*--------------------------------------------------------*/
+   SHfloat minOffset = FLT_MAX;
+   SHfloat maxOffset = FLT_MIN;
+   SHfloat left = FLT_MAX;
+   SHfloat right = FLT_MIN;
 
    for (SHint i = 0; i < 4; ++i) {
 
@@ -568,17 +570,11 @@ shDrawLinearGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       SUB2V(corners[i], c);
       o = DOT2(corners[i], ux) / n;
       s = DOT2(corners[i], uy);
-      if (i != 0) {
-         minOffset = (o < minOffset ? o : minOffset);
-         maxOffset = (o > maxOffset ? o : maxOffset);
-         left = (s < left ? s : left);
-         right = (s > right ? s : right);
-      } else {
-         minOffset = o;
-         maxOffset = o;
-         left = s;
-         right = s;
-      }
+
+      minOffset = (o < minOffset ? o : minOffset);
+      maxOffset = (o > maxOffset ? o : maxOffset);
+      left = (s < left ? s : left);
+      right = (s > right ? s : right);
    }
 
    /*---------------------------------------------------------*/
@@ -604,13 +600,13 @@ shDrawLinearGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    glEnable(GL_TEXTURE_1D);
    glBegin(GL_QUAD_STRIP);
 
-   glMultiTexCoord1f(texUnit, minOffset);
-   glVertex2fv((GLfloat *) & r1);
-   glVertex2fv((GLfloat *) & l1);
+      glMultiTexCoord1f(texUnit, minOffset);
+      glVertex2fv((GLfloat *) & r1);
+      glVertex2fv((GLfloat *) & l1);
 
-   glMultiTexCoord1f(texUnit, maxOffset);
-   glVertex2fv((GLfloat *) & r2);
-   glVertex2fv((GLfloat *) & l2);
+      glMultiTexCoord1f(texUnit, maxOffset);
+      glVertex2fv((GLfloat *) & r2);
+      glVertex2fv((GLfloat *) & l2);
 
    glEnd();
    glDisable(GL_TEXTURE_1D);
@@ -622,17 +618,20 @@ int
 shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
                          VGPaintMode mode, GLenum texUnit)
 {
-   SHint i, j;
-   float a, n;
-
    SH_ASSERT(p != NULL && min != NULL && max != NULL);
 
+   // gradient center
    SHfloat cx = p->radialGradient[0];
    SHfloat cy = p->radialGradient[1];
+
+   // gradient focal point
    SHfloat fx = p->radialGradient[2];
    SHfloat fy = p->radialGradient[3];
-   float r = p->radialGradient[4];
-   float fcx, fcy, rr, C;
+
+   // gradient radius
+   SHfloat r = p->radialGradient[4];
+
+   SHfloat fcx, fcy, rr, C;
 
    SHVector2 ux;
    SHVector2 uy;
@@ -651,8 +650,8 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    SHfloat maxA = 0.0f;
    SHfloat startA = 0.0f;
 
-   int numsteps = 100;
-   float step;
+   SHint numsteps = 100;
+   SHfloat step;
    SHVector2 tmin, tmax;
    SHVector2 min1, max1, min2, max2;
 
@@ -666,7 +665,7 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    /* Move focus into circle if outside */
    SET2(cf, fx, fy);
    SUB2(cf, cx, cy);
-   n = NORM2(cf);
+   SHfloat n = NORM2(cf);
    if (n > r) {
       DIV2(cf, n);
       fx = cx + 0.995f * r * cf.x;
@@ -719,7 +718,7 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    /*--------------------------------------------------------*/
 
    /* Find min/max offset */
-   for (i = 0; i < 4; ++i) {
+   for (SHint i = 0; i < 4; ++i) {
 
       /* Transform to paint space */
       SHfloat ax, ay, A, B, D, t, off;
@@ -731,8 +730,7 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
          /* Avoid zero-length vectors */
          off = 0.0f;
 
-      }
-      else {
+      } else {
 
          /* Distance from focus to circle at corner angle */
          DIV2(fcorners[i], n);
@@ -767,10 +765,11 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    } else {
 
       /* Find most distant corner pair */
-      for (i = 0; i < 3; ++i) {
+      SHfloat a;
+      for (SHint i = 0; i < 3; ++i) {
          if (ISZERO2(fcorners[i]))
             continue;
-         for (j = i + 1; j < 4; ++j) {
+         for (SHint j = i + 1; j < 4; ++j) {
             if (ISZERO2(fcorners[j]))
                continue;
             a = ANGLE2N(fcorners[i], fcorners[j]);
@@ -806,16 +805,18 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    glBegin(GL_QUADS);
 
    /* Walk the steps and draw gradient mesh */
+   SHint i;
+   SHfloat a;
    for (i = 0, a = startA; i < numsteps; ++i, a += step) {
 
       /* Distance from focus to circle border
          at current angle (gradient space) */
-      float ax = SH_COS(a);
-      float ay = SH_SIN(a);
-      float A = ax * ax + ay * ay;
-      float B = 2 * (fcx * ax + fcy * ay);
-      float D = B * B - 4 * A * C;
-      float t = (-B + SH_SQRT(D)) / (2 * A);
+      SHfloat ax = SH_COS(a);
+      SHfloat ay = SH_SIN(a);
+      SHfloat A = ax * ax + ay * ay;
+      SHfloat B = 2 * (fcx * ax + fcy * ay);
+      SHfloat D = B * B - 4 * A * C;
+      SHfloat t = (-B + SH_SQRT(D)) / (2 * A);
       if (D <= 0.0f)
          t = 0.0f;
 

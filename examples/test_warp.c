@@ -63,14 +63,14 @@ display(float interval)
       }
       grow_descr += OFFSET;
       break;
-      
+
    case DECREASE:
       if (grow_descr <= MINOFFSET) {
          dir = ENLARGE;
       }
       grow_descr -= OFFSET;
       break;
-      
+
    case ENLARGE:
       if (enlarge_restrict >= MAXOFFSET) {
          dir = RESTRICT;
@@ -78,7 +78,7 @@ display(float interval)
       }
       enlarge_restrict += OFFSET;
       break;
-      
+
    case RESTRICT:
       if (enlarge_restrict <= MINOFFSET) {
          dir = GROW;
@@ -100,7 +100,7 @@ main(int argc, char **argv)
    warpMatrix = (VGfloat *) malloc(9 * sizeof(VGfloat));
 
    testRun();
-   
+
    free(warpMatrix);
 
    return EXIT_SUCCESS;

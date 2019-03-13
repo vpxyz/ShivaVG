@@ -39,40 +39,32 @@ shAppend(VGPath path, SHint commSize, const VGubyte * comm,
 
    switch (type) {
    case VG_PATH_DATATYPE_S_8:{
-
          SHint8 data8[26];
-         int i;
-         for (i = 0; i < dataSize; ++i)
+         for (SHint i = 0; i < dataSize; ++i)
             data8[i] = (SHint8) SH_FLOOR((data[i] - bias) / scale + 0.5f);
          vgAppendPathData(path, commSize, comm, data8);
 
          break;
       }
    case VG_PATH_DATATYPE_S_16:{
-
          SHint16 data16[26];
-         int i;
-         for (i = 0; i < dataSize; ++i)
+         for (SHint i = 0; i < dataSize; ++i)
             data16[i] = (SHint16) SH_FLOOR((data[i] - bias) / scale + 0.5f);
          vgAppendPathData(path, commSize, comm, data16);
 
          break;
       }
    case VG_PATH_DATATYPE_S_32:{
-
          SHint32 data32[26];
-         int i;
-         for (i = 0; i < dataSize; ++i)
+         for (SHint i = 0; i < dataSize; ++i)
             data32[i] = (SHint32) SH_FLOOR((data[i] - bias) / scale + 0.5f);
          vgAppendPathData(path, commSize, comm, data32);
 
          break;
       }
    default:{
-
          VGfloat dataF[26];
-         int i;
-         for (i = 0; i < dataSize; ++i)
+         for (SHint i = 0; i < dataSize; ++i)
             dataF[i] = (data[i] - bias) / scale;
          vgAppendPathData(path, commSize, comm, dataF);
 
@@ -323,8 +315,7 @@ vguArc(VGPath path,
       if (err != VGU_NO_ERROR)
          return err;
 
-   }
-   else {
+   } else {
 
       a = startAngle - PI;
       while (a > alast) {
@@ -348,8 +339,7 @@ vguArc(VGPath path,
       dataEndPie[0] = x;
       dataEndPie[1] = y;
       err = shAppend(path, 2, commEndPie, 2, dataEndPie);
-   }
-   else if (arcType == VGU_ARC_CHORD) {
+   } else if (arcType == VGU_ARC_CHORD) {
       err = shAppend(path, 1, commEndChord, 0, dataEndChord);
    }
 
@@ -379,7 +369,7 @@ vguComputeWarpQuadToSquare(VGfloat sx0, VGfloat sy0,
    if (mat == NULL)
       return VGU_OUT_OF_MEMORY_ERROR;
 
-   int nonsingular = shInvertMatrix(&m, mat);
+   SHint nonsingular = shInvertMatrix(&m, mat);
 
    if (!nonsingular) {
       free(mat);
