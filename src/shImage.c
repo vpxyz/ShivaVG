@@ -424,8 +424,7 @@ shIsSupportedImageFormat(VGImageFormat format)
    SHuint32 baseFormat = SH_BASE_IMAGE_FORMAT(format);
    if (baseFormat == VG_sRGBA_8888_PRE ||
        baseFormat == VG_lRGBA_8888_PRE ||
-       baseFormat == VG_BW_1)
-      return 0;
+       baseFormat == VG_BW_1)  return 0;
 
    return 1;
 }
@@ -580,6 +579,7 @@ SHColor_ctor(SHColor * c)
 void
 SHColor_dtor(SHColor * c)
 {
+
 }
 
 void
@@ -1439,23 +1439,28 @@ shGetTiledPixel(SHint x, SHint y, SHint w, SHint h, VGTilingMode tilingMode, con
    const SHColor *c;
    if  (x >= 0 && x < w && y >= 0 && y < h) {
       c = &(data[y * w + x]);
-   } else {
-      switch (tilingMode) {
+      return c;
+   }
+
+   switch (tilingMode) {
       case VG_TILE_FILL:
          c = edge;
          break;
+
       case VG_TILE_PAD:
          x = SH_MIN(SH_MAX(x, 0), w - 1);
          y = SH_MIN(SH_MAX(y, 0), h - 1);
          SH_ASSERT(x >= 0 && x < w && y >= 0 && y < h);
          c = &(data[y * w + x]);
          break;
+
       case VG_TILE_REPEAT:
          x = shIntMod(x, w);
          y = shIntMod(y, h);
          SH_ASSERT(x >= 0 && x < w && y >= 0 && y < h);
          c = &(data[y * w + x]);
          break;
+
       case VG_TILE_REFLECT:
       default:
          x = shIntMod(x, w * 2);
@@ -1470,8 +1475,6 @@ shGetTiledPixel(SHint x, SHint y, SHint w, SHint h, VGTilingMode tilingMode, con
          c = &(data[y * w + x]);
          break;
       }
-   }
-
    return c;
 }
 
@@ -1524,7 +1527,7 @@ vgConvolve(VGImage dst, VGImage src,
    SHint x, y, kx, ky;
    const SHColor *tmpc;
    SHfloat kernelValue;
-   SHuint8 *px;
+   SHColor cs; // color to store in the destination image
    for (SHint i = 0; i < h; ++i) {
       for (SHint j = 0; j < w; ++j) {
          SHColor sum = {.r = 0.0f, .g = 0.0f, .b =0.0f, .a =0.0f};
@@ -1542,9 +1545,28 @@ vgConvolve(VGImage dst, VGImage src,
          }
          CMUL(sum, scale);
          CADD(sum, bias, bias, bias, bias);
-         px = (SHuint8 *) d->data + i * d->stride + j * d->fd.bytes;
          CCLAMP(sum);
-         shStoreColor(&sum, px, &(d->fd));
+
+         cs = tmpColors[i * w + j];
+
+         if (channelMask & (VG_RED | VG_GREEN | VG_RED | VG_ALPHA)) {
+            cs = sum;
+         } else {
+
+            if (channelMask & VG_RED)
+               cs.r = sum.r;
+
+            if (channelMask & VG_GREEN)
+               cs.g = sum.g;
+
+            if (channelMask & VG_BLUE)
+               cs.b = sum.b;
+
+            if (channelMask & VG_ALPHA)
+               cs.a = sum.a;
+         }
+
+         shStorePixelColor(&cs, d->data, &(d->fd), j, i, d->stride);
       }
    }
    free(tmpColors);
@@ -1649,17 +1671,22 @@ vgSeparableConvolve(VGImage dst, VGImage src,
          CCLAMP(sum);
          cs = tmpColors[i * w + j];
 
-         if (channelMask & VG_RED)
-            cs.r = sum.r;
+         if (channelMask & (VG_RED | VG_GREEN | VG_RED | VG_ALPHA)) {
+            cs = sum;
+         } else {
 
-         if (channelMask & VG_GREEN)
-            cs.g = sum.g;
+            if (channelMask & VG_RED)
+               cs.r = sum.r;
 
-         if (channelMask & VG_BLUE)
-            cs.b = sum.b;
+            if (channelMask & VG_GREEN)
+               cs.g = sum.g;
 
-         if (channelMask & VG_ALPHA)
-            cs.a = sum.a;
+            if (channelMask & VG_BLUE)
+               cs.b = sum.b;
+
+            if (channelMask & VG_ALPHA)
+               cs.a = sum.a;
+         }
 
          shStorePixelColor(&cs, d->data, &(d->fd), j, i, d->stride);
       }
