@@ -405,21 +405,18 @@ vgLoadIdentity(void)
 VG_API_CALL void
 vgLoadMatrix(const VGfloat * mm)
 {
-   SHMatrix3x3 *m;
-
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    VG_RETURN_ERR_IF(!mm, VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
-   /* TODO: check matrix array alignment */
+   VG_RETURN_ERR_IF(SH_IS_NOT_ALIGNED(mm), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
-   m = shCurrentMatrix(context);
+   SHMatrix3x3 *m = shCurrentMatrix(context);
 
    if (context->matrixMode == VG_MATRIX_IMAGE_USER_TO_SURFACE) {
 
       SETMAT((*m),
              mm[0], mm[3], mm[6], mm[1], mm[4], mm[7], mm[2], mm[5], mm[8]);
-   }
-   else {
+   } else {
 
       SETMAT((*m),
              mm[0], mm[3], mm[6], mm[1], mm[4], mm[7], 0.0f, 0.0f, 1.0f);
@@ -435,14 +432,12 @@ vgLoadMatrix(const VGfloat * mm)
 VG_API_CALL void
 vgGetMatrix(VGfloat * mm)
 {
-   SHMatrix3x3 *m;
-
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    VG_RETURN_ERR_IF(!mm, VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
-   /* TODO: check matrix array alignment */
+   VG_RETURN_ERR_IF(SH_IS_NOT_ALIGNED(mm), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
-   m = shCurrentMatrix(context);
+   SHMatrix3x3 *m = shCurrentMatrix(context);
 
    int k = 0;
    for (int i = 0; i < 3; ++i)
