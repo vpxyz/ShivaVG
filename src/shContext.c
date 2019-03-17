@@ -196,13 +196,13 @@ VGContext_dtor(VGContext * c)
    SH_DEINITOBJ(SHFloatArray, c->strokeDashPattern);
 
    /* Destroy resources */
-   for (int i = 0; i < c->paths.size; ++i)
+   for (SHint i = 0; i < c->paths.size; ++i)
       SH_DELETEOBJ(SHPath, c->paths.items[i]);
 
-   for (int i = 0; i < c->paints.size; ++i)
+   for (SHint i = 0; i < c->paints.size; ++i)
       SH_DELETEOBJ(SHPaint, c->paints.items[i]);
 
-   for (int i = 0; i < c->images.size; ++i)
+   for (SHint i = 0; i < c->images.size; ++i)
       SH_DELETEOBJ(SHImage, c->images.items[i]);
 }
 
@@ -214,7 +214,7 @@ inline SHint
 shIsValidPath(VGContext * c, VGHandle h)
 {
    SH_ASSERT(c != NULL && h != NULL);
-   int index = shPathArrayFind(&c->paths, (SHPath *) h);
+   SHint index = shPathArrayFind(&c->paths, (SHPath *) h);
    return (index == -1) ? 0 : 1;
 }
 
@@ -222,7 +222,7 @@ inline SHint
 shIsValidPaint(VGContext * c, VGHandle h)
 {
    SH_ASSERT(c != NULL);
-   int index = shPaintArrayFind(&c->paints, (SHPaint *) h);
+   SHint index = shPaintArrayFind(&c->paints, (SHPaint *) h);
    return (index == -1) ? 0 : 1;
 }
 
@@ -230,7 +230,7 @@ inline SHint
 shIsValidImage(VGContext * c, VGHandle h)
 {
    SH_ASSERT(c != NULL);
-   int index = shImageArrayFind(&c->images, (SHImage *) h);
+   SHint index = shImageArrayFind(&c->images, (SHImage *) h);
    return (index == -1) ? 0 : 1;
 }
 
@@ -309,16 +309,16 @@ vgMask(VGImage mask, VGMaskOperation operation,
    case VG_FILL_MASK:
       break;
    case VG_SET_MASK:
-      break;      
+      break;
    case VG_UNION_MASK:
       break;
    case VG_INTERSECT_MASK:
       break;
    case VG_SUBTRACT_MASK:
-      break;      
+      break;
    default:
       break;
-      
+
    }
 }
 
@@ -388,10 +388,9 @@ shCurrentMatrix(VGContext * c)
 VG_API_CALL void
 vgLoadIdentity(void)
 {
-   SHMatrix3x3 *m;
    VG_GETCONTEXT(VG_NO_RETVAL);
 
-   m = shCurrentMatrix(context);
+   SHMatrix3x3 *m = shCurrentMatrix(context);
    IDMAT((*m));
 
    VG_RETURN(VG_NO_RETVAL);
@@ -439,9 +438,9 @@ vgGetMatrix(VGfloat * mm)
 
    SHMatrix3x3 *m = shCurrentMatrix(context);
 
-   int k = 0;
-   for (int i = 0; i < 3; ++i)
-      for (int j = 0; j < 3; ++j)
+   SHint k = 0;
+   for (SHint i = 0; i < 3; ++i)
+      for (SHint j = 0; j < 3; ++j)
          mm[k++] = m->m[j][i];
 
    VG_RETURN(VG_NO_RETVAL);
@@ -456,21 +455,20 @@ vgGetMatrix(VGfloat * mm)
 VG_API_CALL void
 vgMultMatrix(const VGfloat * mm)
 {
-   SHMatrix3x3 *m, mul, temp;
-
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    VG_RETURN_ERR_IF(!mm, VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
-   /* TODO: check matrix array alignment */
+   VG_RETURN_ERR_IF(SH_IS_NOT_ALIGNED(mm), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
-   m = shCurrentMatrix(context);
-
+   SHMatrix3x3 *m = shCurrentMatrix(context);
+   SHMatrix3x3 mul;
    if (context->matrixMode == VG_MATRIX_IMAGE_USER_TO_SURFACE) {
       SETMAT(mul, mm[0], mm[3], mm[6], mm[1], mm[4], mm[7], mm[2], mm[5], mm[8]);
    } else {
       SETMAT(mul, mm[0], mm[3], mm[6], mm[1], mm[4], mm[7], 0.0f, 0.0f, 1.0f);
    }
 
+   SHMatrix3x3 temp;
    MULMATMAT((*m), mul, temp);
    SETMATMAT((*m), temp);
 
@@ -480,10 +478,9 @@ vgMultMatrix(const VGfloat * mm)
 VG_API_CALL void
 vgTranslate(VGfloat tx, VGfloat ty)
 {
-   SHMatrix3x3 *m;
    VG_GETCONTEXT(VG_NO_RETVAL);
 
-   m = shCurrentMatrix(context);
+   SHMatrix3x3 *m = shCurrentMatrix(context);
    TRANSLATEMATR((*m), tx, ty);
 
    VG_RETURN(VG_NO_RETVAL);
@@ -492,10 +489,9 @@ vgTranslate(VGfloat tx, VGfloat ty)
 VG_API_CALL void
 vgScale(VGfloat sx, VGfloat sy)
 {
-   SHMatrix3x3 *m;
    VG_GETCONTEXT(VG_NO_RETVAL);
 
-   m = shCurrentMatrix(context);
+   SHMatrix3x3 *m = shCurrentMatrix(context);
    SCALEMATR((*m), sx, sy);
 
    VG_RETURN(VG_NO_RETVAL);
@@ -504,10 +500,9 @@ vgScale(VGfloat sx, VGfloat sy)
 VG_API_CALL void
 vgShear(VGfloat shx, VGfloat shy)
 {
-   SHMatrix3x3 *m;
    VG_GETCONTEXT(VG_NO_RETVAL);
 
-   m = shCurrentMatrix(context);
+   SHMatrix3x3 *m = shCurrentMatrix(context);
    SHEARMATR((*m), shx, shy);
 
    VG_RETURN(VG_NO_RETVAL);
@@ -516,12 +511,10 @@ vgShear(VGfloat shx, VGfloat shy)
 VG_API_CALL void
 vgRotate(VGfloat angle)
 {
-   SHfloat a;
-   SHMatrix3x3 *m;
    VG_GETCONTEXT(VG_NO_RETVAL);
 
-   a = SH_DEG2RAD(angle);
-   m = shCurrentMatrix(context);
+   SHfloat a = SH_DEG2RAD(angle);
+   SHMatrix3x3 *m = shCurrentMatrix(context);
    ROTATEMATR((*m), a);
 
    VG_RETURN(VG_NO_RETVAL);
