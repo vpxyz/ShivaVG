@@ -660,7 +660,7 @@ shUpdateImageTexture(SHImage * restrict i, VGContext * restrict context)
 
       SH_DEBUG("shUpdateImageTexture: scale texture as power-of-two for OpenGL\n");
       glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-      glPixelStorei(GL_PACK_ALIGNMENT, 1); // <--- TODO: why this?
+      glPixelStorei(GL_PACK_ALIGNMENT, 1);
       glBindTexture(GL_TEXTURE_2D, i->texture);
 
       gluScaleImage(i->fd.glformat, i->width, i->height, i->fd.gltype,
@@ -978,7 +978,7 @@ vgImageSubData(VGImage image,
    VG_RETURN_ERR_IF(width <= 0 || height <= 0 || !data,
                     VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
-   /* TODO: check data array alignment */
+   VG_RETURN_ERR_IF(SH_IS_NOT_ALIGNED(data), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
    shCopyPixels(i->data, i->fd.vgformat, i->stride,
                 data, dataFormat, dataStride,
@@ -1017,10 +1017,10 @@ vgGetImageSubData(VGImage image,
    VG_RETURN_ERR_IF(width <= 0 || height <= 0 || !data,
                     VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
+   VG_RETURN_ERR_IF(SH_IS_NOT_ALIGNED(data), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
+
    /* TODO: check if image current render target */
    SHImage *img = (SHImage *) image;
-
-   /* TODO: check data array alignment */
 
    shCopyPixels(data, dataFormat, dataStride,
                 img->data, img->fd.vgformat, img->stride,
@@ -1098,10 +1098,6 @@ VG_API_CALL void
 vgSetPixels(VGint dx, VGint dy,
             VGImage src, VGint sx, VGint sy, VGint width, VGint height)
 {
-   SHImage *i;
-   SHuint8 *pixels;
-   SHImageFormatDesc winfd;
-
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    VG_RETURN_ERR_IF(!shIsValidImage(context, src),
@@ -1109,20 +1105,21 @@ vgSetPixels(VGint dx, VGint dy,
 
    /* TODO: check if image current render target (requires EGL) */
 
-   i = (SHImage *) src;
+   SHImage *i = (SHImage *) src;
    VG_RETURN_ERR_IF(width <= 0 || height <= 0,
                     VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
    /* Setup window image format descriptor */
    /* TODO: this actually depends on the target framebuffer type
       if we really want the copy to be optimized */
+   SHImageFormatDesc winfd;
    shSetupImageFormat(VG_sRGBA_8888, &winfd);
 
    /* OpenGL doesn't allow us to use random stride. We have to
       manually copy the image data and write from a copy with
       normal row length (without power-of-two roundup pixels) */
 
-   pixels = (SHuint8 *) malloc(width * height * winfd.bytes);
+   SHuint8 *pixels = (SHuint8 *) malloc(width * height * winfd.bytes);
    SH_RETURN_ERR_IF(!pixels, VG_OUT_OF_MEMORY_ERROR, SH_NO_RETVAL);
 
    shCopyPixels(pixels, winfd.vgformat, -1,
@@ -1169,10 +1166,10 @@ vgWritePixels(const void *data, VGint dataStride,
    VG_RETURN_ERR_IF(!shIsSupportedImageFormat(dataFormat),
                     VG_UNSUPPORTED_IMAGE_FORMAT_ERROR, VG_NO_RETVAL);
 
-   /* TODO: check output data array alignment */
-
    VG_RETURN_ERR_IF(width <= 0 || height <= 0 || !data,
                     VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
+
+   VG_RETURN_ERR_IF(SH_IS_NOT_ALIGNED(data), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
    /* Setup window image format descriptor */
    /* TODO: this actually depends on the target framebuffer type
@@ -1211,9 +1208,6 @@ VG_API_CALL void
 vgGetPixels(VGImage dst, VGint dx, VGint dy,
             VGint sx, VGint sy, VGint width, VGint height)
 {
-   SHImage *i;
-   SHuint8 *pixels;
-   SHImageFormatDesc winfd;
 
    VG_GETCONTEXT(VG_NO_RETVAL);
 
@@ -1222,27 +1216,28 @@ vgGetPixels(VGImage dst, VGint dx, VGint dy,
 
    /* TODO: check if image current render target */
 
-   i = (SHImage *) dst;
+   SHImage *i = (SHImage *) dst;
    VG_RETURN_ERR_IF(width <= 0 || height <= 0,
                     VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
    /* Setup window image format descriptor */
    /* TODO: this actually depends on the target framebuffer type
       if we really want the copy to be optimized */
+   SHImageFormatDesc winfd;
    shSetupImageFormat(VG_sRGBA_8888, &winfd);
 
    /* OpenGL doesn't allow us to read to random destination
       coordinates nor using random stride. We have to
       read first and then manually copy to the image data */
 
-   pixels = (SHuint8 *) malloc(width * height * winfd.bytes);
+   SHuint8 *pixels = (SHuint8 *) malloc(width * height * winfd.bytes);
    SH_RETURN_ERR_IF(!pixels, VG_OUT_OF_MEMORY_ERROR, SH_NO_RETVAL);
 
    glPixelStorei(GL_PACK_ALIGNMENT, 1);
    glReadPixels(sx, sy, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
    /* FIXME: we shouldnt be reading alpha */
-   for (int k = 3; k < i->width * i->height * 4; k += 4)
+   for (SHint k = 3; k < i->width * i->height * 4; k += 4)
       pixels[k] = 255;
 
    shCopyPixels(i->data, i->fd.vgformat, i->stride,
@@ -1277,10 +1272,10 @@ vgReadPixels(void *data, VGint dataStride,
    VG_RETURN_ERR_IF(!shIsSupportedImageFormat(dataFormat),
                     VG_UNSUPPORTED_IMAGE_FORMAT_ERROR, VG_NO_RETVAL);
 
-   /* TODO: check output data array alignment */
-
    VG_RETURN_ERR_IF(width <= 0 || height <= 0 || !data,
                     VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
+
+   VG_RETURN_ERR_IF(SH_IS_NOT_ALIGNED(data), VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
    /* Setup window image format descriptor */
    /* TODO: this actually depends on the target framebuffer type
@@ -1517,8 +1512,8 @@ vgConvolve(VGImage dst, VGImage src,
 
    // copy source image region to tmp buffer
    SHColor c;
-   for(int y = 0; y < h; y++) {
-      for(int x = 0; x < w; x++) {
+   for(SHint y = 0; y < h; y++) {
+      for(SHint x = 0; x < w; x++) {
          shLoadPixelColor(&c, s->data, &(s->fd), x, y, s->stride);
          tmpColors[y * w + x] = c;
       }
