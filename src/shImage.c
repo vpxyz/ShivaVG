@@ -1694,7 +1694,7 @@ vgSeparableConvolve(VGImage dst, VGImage src,
 }
 
 static inline SHfloat *
-makeGaussianBlurKernel(int kernelElement, SHfloat expScale, SHfloat * restrict scale, int * restrict kernelSize)
+shMakeGaussianBlurKernel(int kernelElement, SHfloat expScale, SHfloat * restrict scale, int * restrict kernelSize)
 {
    *kernelSize = kernelElement * 2 + 1;
    SHfloat *kernel = (SHfloat *) malloc((*kernelSize) * sizeof(SHfloat));
@@ -1745,8 +1745,8 @@ vgGaussianBlur(VGImage dst, VGImage src,
    SHfloat *kernelX, *kernelY;
    SHint kernelXSize, kernelYSize;
 
-   kernelX = makeGaussianBlurKernel(kernelWidth, expScaleX, &scaleX, &kernelXSize);
-   kernelY = makeGaussianBlurKernel(kernelHeight, expScaleY, &scaleY, &kernelYSize);
+   kernelX = shMakeGaussianBlurKernel(kernelWidth, expScaleX, &scaleX, &kernelXSize);
+   kernelY = shMakeGaussianBlurKernel(kernelHeight, expScaleY, &scaleY, &kernelYSize);
 
    SHColor edge = context->tileFillColor;
    SHColor *tmpColors = (SHColor *) malloc(w * h * sizeof(SHColor));

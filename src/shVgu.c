@@ -88,12 +88,7 @@ vguLine(VGPath path, VGfloat x0, VGfloat y0, VGfloat x1, VGfloat y1)
 {
    VGUErrorCode err = VGU_NO_ERROR;
    const VGubyte comm[] = { VG_MOVE_TO_ABS, VG_LINE_TO_ABS };
-
-   VGfloat data[4];
-   data[0] = x0;
-   data[1] = y0;
-   data[2] = x1;
-   data[3] = y1;
+   VGfloat data[4] = {x0, y0, x1, y1};
 
    err = shAppend(path, 2, comm, 4, data);
    return err;
@@ -102,19 +97,17 @@ vguLine(VGPath path, VGfloat x0, VGfloat y0, VGfloat x1, VGfloat y1)
 VGU_API_CALL VGUErrorCode
 vguPolygon(VGPath path, const VGfloat * points, VGint count, VGboolean closed)
 {
-   VGint i;
-   VGubyte *comm = NULL;
-   VGUErrorCode err = VGU_NO_ERROR;
-
    if (points == NULL || count <= 0 || SH_IS_NOT_ALIGNED(points))
       return VGU_ILLEGAL_ARGUMENT_ERROR;
 
-   comm = (VGubyte *) malloc((count + 1) * sizeof(VGubyte));
+   VGUErrorCode err = VGU_NO_ERROR;
+
+   VGubyte *comm = (VGubyte *) malloc((count + 1) * sizeof(VGubyte));
    if (comm == NULL)
       return VGU_OUT_OF_MEMORY_ERROR;
 
    comm[0] = VG_MOVE_TO_ABS;
-   for (i = 1; i < count; ++i)
+   for (VGint i = 1; i < count; ++i)
       comm[i] = VG_LINE_TO_ABS;
    comm[count] = VG_CLOSE_PATH;
 
@@ -130,6 +123,9 @@ vguPolygon(VGPath path, const VGfloat * points, VGint count, VGboolean closed)
 VGU_API_CALL VGUErrorCode
 vguRect(VGPath path, VGfloat x, VGfloat y, VGfloat width, VGfloat height)
 {
+   if (width <= 0 || height <= 0)
+      return VGU_ILLEGAL_ARGUMENT_ERROR;
+
    VGUErrorCode err = VGU_NO_ERROR;
 
    VGubyte comm[5] = {
@@ -137,17 +133,7 @@ vguRect(VGPath path, VGfloat x, VGfloat y, VGfloat width, VGfloat height)
       VG_VLINE_TO_REL, VG_HLINE_TO_REL,
       VG_CLOSE_PATH
    };
-
-   VGfloat data[5];
-
-   if (width <= 0 || height <= 0)
-      return VGU_ILLEGAL_ARGUMENT_ERROR;
-
-   data[0] = x;
-   data[1] = y;
-   data[2] = width;
-   data[3] = height;
-   data[4] = -width;
+   VGfloat data[5] = {x, y, width, height, -width};
 
    err = shAppend(path, 5, comm, 5, data);
    return err;
@@ -159,6 +145,9 @@ vguRoundRect(VGPath path,
              VGfloat width, VGfloat height,
              VGfloat arcWidth, VGfloat arcHeight)
 {
+   if (width <= 0 || height <= 0)
+      return VGU_ILLEGAL_ARGUMENT_ERROR;
+
    VGUErrorCode err = VGU_NO_ERROR;
 
    VGubyte comm[10] = {
@@ -172,9 +161,6 @@ vguRoundRect(VGPath path,
 
    VGfloat data[26];
    VGfloat rx, ry;
-
-   if (width <= 0 || height <= 0)
-      return VGU_ILLEGAL_ARGUMENT_ERROR;
 
    SH_CLAMP(arcWidth, 0.0f, width);
    SH_CLAMP(arcHeight, 0.0f, height);
@@ -219,6 +205,9 @@ vguRoundRect(VGPath path,
 VGU_API_CALL VGUErrorCode
 vguEllipse(VGPath path, VGfloat cx, VGfloat cy, VGfloat width, VGfloat height)
 {
+   if (width <= 0 || height <= 0)
+      return VGU_ILLEGAL_ARGUMENT_ERROR;
+
    VGUErrorCode err = VGU_NO_ERROR;
 
    const VGubyte comm[] = {
@@ -227,9 +216,6 @@ vguEllipse(VGPath path, VGfloat cx, VGfloat cy, VGfloat width, VGfloat height)
    };
 
    VGfloat data[12];
-
-   if (width <= 0 || height <= 0)
-      return VGU_ILLEGAL_ARGUMENT_ERROR;
 
    data[0] = cx + width / 2;
    data[1] = cy;
@@ -258,6 +244,15 @@ vguArc(VGPath path,
        VGfloat width, VGfloat height,
        VGfloat startAngle, VGfloat angleExtent, VGUArcType arcType)
 {
+   if (width <= 0 || height <= 0) {
+      return VGU_ILLEGAL_ARGUMENT_ERROR;
+   }
+
+   if (arcType != VGU_ARC_OPEN &&
+       arcType != VGU_ARC_CHORD && arcType != VGU_ARC_PIE) {
+      return VGU_ILLEGAL_ARGUMENT_ERROR;
+   }
+
    VGUErrorCode err = VGU_NO_ERROR;
 
    VGubyte commStart[1] = { VG_MOVE_TO_ABS };
@@ -276,13 +271,6 @@ vguArc(VGPath path,
    VGfloat alast, a = 0.0f;
    VGfloat rx = width / 2, ry = height / 2;
 
-   if (width <= 0 || height <= 0)
-      return VGU_ILLEGAL_ARGUMENT_ERROR;
-
-   if (arcType != VGU_ARC_OPEN &&
-       arcType != VGU_ARC_CHORD && arcType != VGU_ARC_PIE)
-      return VGU_ILLEGAL_ARGUMENT_ERROR;
-
    startAngle = SH_DEG2RAD(startAngle);
    angleExtent = SH_DEG2RAD(angleExtent);
    alast = startAngle + angleExtent;
@@ -290,6 +278,7 @@ vguArc(VGPath path,
    dataStart[0] = x + SH_COS(startAngle) * rx;
    dataStart[1] = y + SH_SIN(startAngle) * ry;
    err = shAppend(path, 1, commStart, 2, dataStart);
+
    if (err != VGU_NO_ERROR)
       return err;
 
