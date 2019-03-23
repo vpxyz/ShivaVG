@@ -839,7 +839,7 @@ shProcessPathData(SHPath * p, int flags, SegmentFunc callback, void *userData)
       /* Simplify complex segments */
       switch (segment) {
       case VG_CLOSE_PATH:
-         assert(numcoords == 0);
+         SH_ASSERT(numcoords == 0);
 
          data[2] = start.x;
          data[3] = start.y;
@@ -852,7 +852,7 @@ shProcessPathData(SHPath * p, int flags, SegmentFunc callback, void *userData)
 
          break;
       case VG_MOVE_TO:
-         assert(numcoords == 2);
+         SH_ASSERT(numcoords == 2);
 
          if (absrel == VG_RELATIVE) {
             data[2] += pen.x;
@@ -868,7 +868,7 @@ shProcessPathData(SHPath * p, int flags, SegmentFunc callback, void *userData)
 
          break;
       case VG_LINE_TO:
-         assert(numcoords == 2);
+         SH_ASSERT(numcoords == 2);
 
          if (absrel == VG_RELATIVE) {
             data[2] += pen.x;
@@ -882,7 +882,7 @@ shProcessPathData(SHPath * p, int flags, SegmentFunc callback, void *userData)
 
          break;
       case VG_HLINE_TO:
-         assert(numcoords == 1);
+         SH_ASSERT(numcoords == 1);
 
          if (absrel == VG_RELATIVE)
             data[2] += pen.x;
@@ -900,7 +900,7 @@ shProcessPathData(SHPath * p, int flags, SegmentFunc callback, void *userData)
 
          break;
       case VG_VLINE_TO:
-         assert(numcoords == 1);
+         SH_ASSERT(numcoords == 1);
 
          if (absrel == VG_RELATIVE)
             data[2] += pen.y;
@@ -919,7 +919,7 @@ shProcessPathData(SHPath * p, int flags, SegmentFunc callback, void *userData)
 
          break;
       case VG_QUAD_TO:
-         assert(numcoords == 4);
+         SH_ASSERT(numcoords == 4);
 
          if (absrel == VG_RELATIVE) {
             data[2] += pen.x;
@@ -935,7 +935,7 @@ shProcessPathData(SHPath * p, int flags, SegmentFunc callback, void *userData)
 
          break;
       case VG_CUBIC_TO:
-         assert(numcoords == 6);
+         SH_ASSERT(numcoords == 6);
 
          if (absrel == VG_RELATIVE) {
             data[2] += pen.x;
@@ -953,7 +953,7 @@ shProcessPathData(SHPath * p, int flags, SegmentFunc callback, void *userData)
 
          break;
       case VG_SQUAD_TO:
-         assert(numcoords == 2);
+         SH_ASSERT(numcoords == 2);
 
          if (absrel == VG_RELATIVE) {
             data[2] += pen.x;
@@ -976,7 +976,7 @@ shProcessPathData(SHPath * p, int flags, SegmentFunc callback, void *userData)
 
          break;
       case VG_SCUBIC_TO:
-         assert(numcoords == 4);
+         SH_ASSERT(numcoords == 4);
 
          if (absrel == VG_RELATIVE) {
             data[2] += pen.x;
@@ -1006,7 +1006,7 @@ shProcessPathData(SHPath * p, int flags, SegmentFunc callback, void *userData)
       case VG_SCCWARC_TO:
       case VG_LCWARC_TO:
       case VG_LCCWARC_TO:
-         assert(numcoords == 5);
+         SH_ASSERT(numcoords == 5);
 
          if (absrel == VG_RELATIVE) {
             data[5] += pen.x;
@@ -1031,8 +1031,8 @@ shProcessPathData(SHPath * p, int flags, SegmentFunc callback, void *userData)
          break;
 
       }                         /* switch (command) */
-      }                            /* for each segment */
-   }
+   }                            /* for each segment */
+}
 
 /*-------------------------------------------------------
  * Walks raw path data and counts the resulting number

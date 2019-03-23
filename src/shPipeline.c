@@ -397,9 +397,9 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
       if (shInvertMatrix(&context->pathTransform, &mi)) {
          shFlattenPath(p, 1);
          shTransformVertices(&mi, p);
-      }
-      else
+      } else {
          shFlattenPath(p, 0);
+      }
       shFindBoundbox(p);
    }
 

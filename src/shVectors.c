@@ -108,7 +108,7 @@ SHMatrix3x3_dtor(SHMatrix3x3 * mt)
 }
 
 void
-shMatrixToGL(SHMatrix3x3 * m, SHfloat mgl[16])
+shMatrixToGL(SHMatrix3x3 * restrict m, SHfloat mgl[16])
 {
    SH_ASSERT(m != NULL);
    /* When 2D vectors are specified OpenGL defaults Z to 0.0f so we
@@ -132,7 +132,7 @@ shMatrixToGL(SHMatrix3x3 * m, SHfloat mgl[16])
 }
 
 int
-shInvertMatrix(SHMatrix3x3 * m, SHMatrix3x3 * mout)
+shInvertMatrix(SHMatrix3x3 * restrict m, SHMatrix3x3 * restrict mout)
 {
    SH_ASSERT(m != NULL && mout != NULL);
    /* Calculate determinant */
