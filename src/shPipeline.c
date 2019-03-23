@@ -328,10 +328,9 @@ shIsTessCacheValid(VGContext * restrict c, SHPath * restrict p)
 VGboolean
 shIsStrokeCacheValid(VGContext * restrict c, SHPath * restrict p)
 {
-   VGboolean valid = VG_TRUE;
-
    SH_ASSERT(c != NULL && p != NULL);
 
+   VGboolean valid = VG_TRUE;
    if (p->cacheStrokeInit == VG_FALSE) {
       valid = VG_FALSE;
    } else if (p->cacheStrokeTessValid == VG_FALSE) {
@@ -367,11 +366,6 @@ shIsStrokeCacheValid(VGContext * restrict c, SHPath * restrict p)
 VG_API_CALL void
 vgDrawPath(VGPath path, VGbitfield paintModes)
 {
-   SHMatrix3x3 mi;
-   SHfloat mgl[16];
-   SHPaint *fill, *stroke;
-   SHRectangle *rect;
-
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    VG_RETURN_ERR_IF(!shIsValidPath(context, path),
@@ -382,6 +376,7 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
 
    /* Check whether scissoring is enabled and scissor
       rectangle is valid */
+   SHRectangle *rect;
    if (context->scissoring == VG_TRUE) {
       rect = &context->scissor.items[0];
       if (context->scissor.size == 0)
@@ -397,6 +392,7 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
 
    /* If user-to-surface matrix invertible tessellate in
       surface space for better path resolution */
+   SHMatrix3x3 mi;
    if (shIsTessCacheValid(context, p) == VG_FALSE) {
       if (shInvertMatrix(&context->pathTransform, &mi)) {
          shFlattenPath(p, 1);
@@ -412,18 +408,18 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
    setRenderQualityGL(context->renderingQuality);
 
    /* Pick paint if available or default */
-   fill = (context->fillPaint ? context->fillPaint : &context->defaultPaint);
-   stroke =
+   SHPaint *fill = (context->fillPaint ? context->fillPaint : &context->defaultPaint);
+   SHPaint *stroke =
       (context->strokePaint ? context->strokePaint : &context->defaultPaint);
 
    /* Apply transformation */
+   SHfloat mgl[16];
    shMatrixToGL(&context->pathTransform, mgl);
    glMatrixMode(GL_MODELVIEW);
    glPushMatrix();
    glMultMatrixf(mgl);
 
    if (paintModes & VG_FILL_PATH) {
-      SH_DEBUG("vgDrawPath(): paintModes & VG_FILL_PATH == true");
       /* Tesselate into stencil */
       glEnable(GL_STENCIL_TEST);
       glStencilFunc(GL_ALWAYS, 0, 0);
@@ -534,13 +530,10 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
 VG_API_CALL void
 vgDrawImage(VGImage image)
 {
-   SHImage *i;
    SHfloat mgl[16];
    SHfloat texGenS[4] = { 0, 0, 0, 0 };
    SHfloat texGenT[4] = { 0, 0, 0, 0 };
-   SHPaint *fill;
    SHVector2 min, max;
-   SHRectangle *rect;
 
    VG_GETCONTEXT(VG_NO_RETVAL);
 
@@ -552,18 +545,17 @@ vgDrawImage(VGImage image)
    /* Check whether scissoring is enabled and scissor
       rectangle is valid */
    if (context->scissoring == VG_TRUE) {
-      rect = &context->scissor.items[0];
+      SHRectangle *rect = &context->scissor.items[0];
       if (context->scissor.size == 0)
          VG_RETURN(VG_NO_RETVAL);
       if (rect->w <= 0.0f || rect->h <= 0.0f)
          VG_RETURN(VG_NO_RETVAL);
-      glScissor((GLint) rect->x, (GLint) rect->y, (GLint) rect->w,
-                (GLint) rect->h);
+      glScissor((GLint) rect->x, (GLint) rect->y, (GLint) rect->w, (GLint) rect->h);
       glEnable(GL_SCISSOR_TEST);
    }
 
    /* Apply image-user-to-surface transformation */
-   i = (SHImage *) image;
+   SHImage *i = (SHImage *) image;
    shMatrixToGL(&context->imageTransform, mgl);
    glMatrixMode(GL_MODELVIEW);
    glPushMatrix();
@@ -577,15 +569,21 @@ vgDrawImage(VGImage image)
    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
    /* Adjust antialiasing to settings */
-   if (context->imageQuality == VG_IMAGE_QUALITY_NONANTIALIASED) {
+   switch (context->imageQuality) {
+   case VG_IMAGE_QUALITY_NONANTIALIASED:
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
       glDisable(GL_MULTISAMPLE);
-   }
-   else {
+      break;
+      // TODO: How to make FASTER != BETTER ?
+   case VG_IMAGE_QUALITY_FASTER:
+   case VG_IMAGE_QUALITY_BETTER:
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       glEnable(GL_MULTISAMPLE);
+      break;
+   default:
+      break;
    }
 
    /* Generate image texture coords automatically */
@@ -599,15 +597,14 @@ vgDrawImage(VGImage image)
    glEnable(GL_TEXTURE_GEN_T);
 
    /* Pick fill paint */
-   fill = (context->fillPaint ? context->fillPaint : &context->defaultPaint);
+   SHPaint *fill = (context->fillPaint ? context->fillPaint : &context->defaultPaint);
 
    /* Use paint color when multiplying with a color-paint */
    if (context->imageMode == VG_DRAW_IMAGE_MULTIPLY &&
        fill->type == VG_PAINT_TYPE_COLOR)
       glColor4fv((GLfloat *) & fill->color);
    else
-      glColor4f(1, 1, 1, 1);
-
+      glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
    /* Check image drawing mode */
    if (context->imageMode == VG_DRAW_IMAGE_MULTIPLY &&
@@ -639,16 +636,19 @@ vgDrawImage(VGImage image)
 
       SET2(min, 0, 0);
       SET2(max, (SHfloat) i->width, (SHfloat) i->height);
-      if (fill->type == VG_PAINT_TYPE_RADIAL_GRADIENT) {
-         shDrawRadialGradientMesh(fill, &min, &max, VG_FILL_PATH,
-                                  GL_TEXTURE1);
-      }
-      else if (fill->type == VG_PAINT_TYPE_LINEAR_GRADIENT) {
-         shDrawLinearGradientMesh(fill, &min, &max, VG_FILL_PATH,
-                                  GL_TEXTURE1);
-      }
-      else if (fill->type == VG_PAINT_TYPE_PATTERN) {
+
+      switch (fill->type) {
+      case VG_PAINT_TYPE_RADIAL_GRADIENT:
+         shDrawRadialGradientMesh(fill, &min, &max, VG_FILL_PATH, GL_TEXTURE1);
+         break;
+      case VG_PAINT_TYPE_LINEAR_GRADIENT:
+         shDrawLinearGradientMesh(fill, &min, &max, VG_FILL_PATH, GL_TEXTURE1);
+         break;
+      case VG_PAINT_TYPE_PATTERN:
          shDrawPatternMesh(fill, &min, &max, VG_FILL_PATH, GL_TEXTURE1);
+         break;
+      default:
+         break;
       }
 
       glActiveTexture(GL_TEXTURE0);
@@ -675,7 +675,6 @@ vgDrawImage(VGImage image)
 
       glDisable(GL_TEXTURE_2D);
    }
-
 
    glDisable(GL_TEXTURE_GEN_S);
    glDisable(GL_TEXTURE_GEN_T);
