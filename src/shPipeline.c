@@ -46,7 +46,7 @@ shUnpremultiplyFramebuffer(void)
  * Set the render quality.
  *-----------------------------------------------------------*/
 static void
-setRenderQualityGL(VGRenderingQuality quality)
+shSetRenderQualityGL(VGRenderingQuality quality)
 {
    switch (quality) {
    case VG_RENDERING_QUALITY_NONANTIALIASED:
@@ -58,12 +58,14 @@ setRenderQualityGL(VGRenderingQuality quality)
       glEnable(GL_LINE_SMOOTH);
       glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
       glEnable(GL_POLYGON_SMOOTH);
+      glHint(GL_POLYGON_SMOOTH_HINT, GL_FASTEST);
       glDisable(GL_MULTISAMPLE);
       break;
    case VG_RENDERING_QUALITY_BETTER:
       glEnable(GL_LINE_SMOOTH);
       glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
       glEnable(GL_POLYGON_SMOOTH);
+      glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
       glEnable(GL_MULTISAMPLE);
       break;
    default:
@@ -166,7 +168,7 @@ updateBlendingStateGL(VGContext * restrict c, int alphaIsOne)
  * Draws the triangles representing the stroke of a path.
  *-----------------------------------------------------------*/
 
-static void
+inline static void
 shDrawStroke(SHPath * restrict p)
 {
 
@@ -185,15 +187,14 @@ shDrawStroke(SHPath * restrict p)
 static void
 shDrawVertices(SHPath * restrict p, GLenum mode)
 {
-   int start = 0;
-   int size = 0;
-
    SH_ASSERT(p != NULL);
    /* We separate vertex arrays by contours to properly
       handle the fill modes */
    glEnableClientState(GL_VERTEX_ARRAY);
    glVertexPointer(2, GL_FLOAT, sizeof(SHVertex), p->vertices.items);
 
+   SHint start = 0;
+   SHint size = 0;
    while (start < p->vertices.size) {
       size = p->vertices.items[start].flags;
       glDrawArrays(mode, start, size);
@@ -210,9 +211,8 @@ shDrawVertices(SHPath * restrict p, GLenum mode)
 static void
 shDrawBoundBox(VGContext * restrict c, SHPath * restrict p, VGPaintMode mode)
 {
-   SHfloat K = 1.0f;
-
    SH_ASSERT(c != NULL && p != NULL);
+   SHfloat K = 1.0f;
    if (mode == VG_STROKE_PATH)
       K = SH_CEIL(c->strokeMiterLimit * c->strokeLineWidth) + 1.0f;
 
@@ -234,12 +234,11 @@ static void
 shDrawPaintMesh(VGContext * c, SHVector2 * min, SHVector2 * max,
                 VGPaintMode mode, GLenum texUnit)
 {
-   SHPaint *p = NULL;
-   SHVector2 pmin, pmax;
-   SHfloat K = 1.0f;
-
    SH_ASSERT(c != NULL && min != NULL && max != NULL);
+
    /* Pick the right paint */
+   SHPaint *p = NULL;
+   SHfloat K = 1.0f;
    switch (mode) {
    case VG_FILL_PATH:
       p = (c->fillPaint ? c->fillPaint : &c->defaultPaint);
@@ -252,6 +251,7 @@ shDrawPaintMesh(VGContext * c, SHVector2 * min, SHVector2 * max,
 
    /* We want to be sure to cover every pixel of this path so better
       take a pixel more than leave some out (multisampling is tricky). */
+   SHVector2 pmin, pmax;
    SET2V(pmin, (*min));
    SUB2(pmin, K, K);
    SET2V(pmax, (*max));
@@ -287,15 +287,15 @@ shDrawPaintMesh(VGContext * c, SHVector2 * min, SHVector2 * max,
    }
 }
 
-VGboolean
+static VGboolean
 shIsTessCacheValid(VGContext * restrict c, SHPath * restrict p)
 {
+   SH_ASSERT(c != NULL && p != NULL);
+
    SHfloat nX, nY;
    SHVector2 X, Y;
    SHMatrix3x3 mi, mchange;
    VGboolean valid = VG_TRUE;
-
-   SH_ASSERT(c != NULL && p != NULL);
 
    if (p->cacheDataValid == VG_FALSE) {
       valid = VG_FALSE;
@@ -325,7 +325,7 @@ shIsTessCacheValid(VGContext * restrict c, SHPath * restrict p)
    return valid;
 }
 
-VGboolean
+static VGboolean
 shIsStrokeCacheValid(VGContext * restrict c, SHPath * restrict p)
 {
    SH_ASSERT(c != NULL && p != NULL);
@@ -405,7 +405,7 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
 
    /* Change render quality according to the context */
    /* TODO: Turn antialiasing on/off */
-   setRenderQualityGL(context->renderingQuality);
+   shSetRenderQualityGL(context->renderingQuality);
 
    /* Pick paint if available or default */
    SHPaint *fill = (context->fillPaint ? context->fillPaint : &context->defaultPaint);
@@ -453,7 +453,7 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
    }
 
    /* TODO: Turn antialiasing on/off */
-   setRenderQualityGL(context->renderingQuality);
+   shSetRenderQualityGL(context->renderingQuality);
 
    if ((paintModes & VG_STROKE_PATH) && context->strokeLineWidth > 0.0f) {
 
