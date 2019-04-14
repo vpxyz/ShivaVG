@@ -43,11 +43,12 @@ VGfloat black[] = { 1, 1, 1, 1 };
 const char commands[] =
    "Click & drag mouse to change\n"
    "value for current mode\n\n"
-   "H - this help\n"
-   "TAB - gradient spread mode\n"
-   "S - grandient start-point mode\n"
-   "E - gradient end-point mode\n"
-   "X - scale X mode\n" "Y - scale Y mode\n" "BACKSPACE - reset value\n";
+   "h - this help\n"
+   "tab - gradient spread mode\n"
+   "s - grandient start-point mode\n"
+   "e - gradient end-point mode\n"
+   "x - scale X mode\n" "Y - scale Y mode\n" "BACKSPACE - reset value\n"
+   "q - quit";
 
 #if defined(__APPLE__)
 #define BACKSPACE 127
@@ -291,6 +292,10 @@ key(unsigned char key, int x, int y)
          break;
       }
       return;
+
+   case 'q':
+      exit(EXIT_SUCCESS);
+      break;
 
    case 'h':
       /* Show help */

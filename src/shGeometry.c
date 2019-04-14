@@ -294,7 +294,7 @@ shSubdivideSegment(SHPath * p, VGPathSegment segment,
                    SHfloat * data, void *userData)
 {
    SH_ASSERT(p != NULL && data != NULL && userData != NULL);
-   
+
    SHVertex v;
    SHint *contourStart = ((SHint **) userData)[0];
    SHint *surfaceSpace = ((SHint **) userData)[1];
@@ -616,7 +616,7 @@ void
 shStrokePath(VGContext * c, SHPath * p)
 {
    SH_ASSERT(c != NULL && p != NULL);
-   
+
    /* Line width and vertex count */
    SHfloat w = c->strokeLineWidth / 2;
    SHfloat mlimit = c->strokeMiterLimit;
@@ -932,12 +932,12 @@ shStrokePath(VGContext * c, SHPath * p)
  *-------------------------------------------------------------*/
 
 void
-shTransformVertices(SHMatrix3x3 * m, SHPath * p)
+shTransformVertices(SHMatrix3x3 * restrict m, SHPath * restrict p)
 {
-   SHVector2 *v;
    SH_ASSERT(m != NULL && p != NULL);
-   
-   for (int i = p->vertices.size - 1; i >= 0; --i) {
+
+   SHVector2 *v;
+   for (SHint i = p->vertices.size - 1; i >= 0; --i) {
       v = (&p->vertices.items[i].point);
       TRANSFORM2((*v), (*m));
    }
@@ -950,20 +950,20 @@ shTransformVertices(SHMatrix3x3 * m, SHPath * p)
  *--------------------------------------------------------*/
 
 void
-shFindBoundbox(SHPath * p)
+shFindBoundbox(SHPath * restrict p)
 {
    SH_ASSERT(p != NULL);
 
    if (p->vertices.size == 0) {
-      SET2(p->min, 0, 0);
-      SET2(p->max, 0, 0);
+      SET2(p->min, 0.0f, 0.0f);
+      SET2(p->max, 0.0f, 0.0f);
       return;
    }
 
    p->min.x = p->max.x = p->vertices.items[0].point.x;
    p->min.y = p->max.y = p->vertices.items[0].point.y;
 
-   for (int i = 0; i < p->vertices.size; ++i) {
+   for (SHint i = 0; i < p->vertices.size; ++i) {
 
       SHVector2 *v = &p->vertices.items[i].point;
       if (v->x < p->min.x)

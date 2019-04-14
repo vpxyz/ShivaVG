@@ -33,10 +33,11 @@ char mode = 'd';
 const char commands[] =
    "Click & drag mouse to change\n"
    "value for current mode\n\n"
-   "H - this help\n"
-   "D - dash phase mode\n"
-   "C - dash caps cycle\n"
-   "J - dash joins cycle\n" "X - scale X mode\n" "Y - scale Y mode\n";
+   "h - this help\n"
+   "d - dash phase mode\n"
+   "c - dash caps cycle\n"
+   "j - dash joins cycle\n" "X - scale X mode\n" "Y - scale Y mode\n"
+   "q - quit";
 
 void
 display(float interval)
@@ -190,6 +191,10 @@ key(unsigned char code, int x, int y)
          break;
       }
       return;
+
+   case 'q':
+      exit(EXIT_SUCCESS);
+      break;
 
    case 'h':
       /* Show help */

@@ -1,4 +1,5 @@
 #include "test.h"
+#include <ctype.h>
 
 VGPath line;
 VGPath polyOpen;
@@ -78,11 +79,21 @@ createPrimitives(void)
    primitives[8] = arcPie;
 }
 
+void
+key(unsigned char code, int x, int y)
+{
+   if (tolower(code) == 'q') {
+      exit(EXIT_SUCCESS);
+   }
+
+}
+
 int
 main(int argc, char **argv)
 {
    testInit(argc, argv, 500, 500, "ShivaVG: VGU Primitives Test");
    testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
+   testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
 
    createPrimitives();
    testRun();

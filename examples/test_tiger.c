@@ -25,8 +25,9 @@ VGfloat clickY = 0.0f;
 const char commands[] =
    "Click & drag mouse to change\n"
    "value for current mode\n\n"
-   "H - this help\n"
-   "Z - zoom mode\n" "P - pan mode\n" "SPACE - animation pause\\play\n";
+   "h - this help\n"
+   "z - zoom mode\n" "P - pan mode\n" "SPACE - animation pause\\play\n"
+   "q - quit";
 
 void
 display(float interval)
@@ -126,6 +127,10 @@ key(unsigned char code, int x, int y)
       animate = !animate;
       testOverlayString("%s\n", animate ? "Play" : "Pause");
       return;
+
+   case 'q':
+      exit(EXIT_SUCCESS);
+      break;
 
    case 'h':
       /* Show help */

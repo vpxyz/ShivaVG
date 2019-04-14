@@ -38,12 +38,13 @@ VGfloat black[] = { 1, 1, 1, 1 };
 const char commands[] =
    "Click & drag mouse to change\n"
    "value for current mode\n\n"
-   "H - this help\n"
+   "h - this help\n"
    "TAB - gradient spread mode\n"
-   "C - gradient center mode\n"
-   "F - gradient focus mode\n"
-   "R - gradient radius mode\n"
-   "X - scale X mode\n" "Y - scale Y mode\n" "BACKSPACE - reset value\n";
+   "c - gradient center mode\n"
+   "f - gradient focus mode\n"
+   "r - gradient radius mode\n"
+   "x - scale X mode\n" "Y - scale Y mode\n" "BACKSPACE - reset value\n"
+   "q - quit";
 
 #if defined(__APPLE__)
 #define BACKSPACE 127
@@ -302,6 +303,9 @@ key(unsigned char key, int x, int y)
       }
       return;
 
+   case 'q':
+      exit(EXIT_SUCCESS);
+      break;
    case 'h':
       /* Show help */
       testOverlayString(commands);

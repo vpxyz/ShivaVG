@@ -261,8 +261,8 @@ void SHMatrix3x3_dtor(SHMatrix3x3 * m);
   SETMATMAT(mat, temp); }
 
 #define TRANSFORM2TO(v, mat, vout) { \
-      (vout).x = (v).x * (mat).m[0][0] + (v).y * (mat).m[0][1] + 1 * (mat).m[0][2]; \
-      (vout).y = (v).x * (mat).m[1][0] + (v).y * (mat).m[1][1] + 1 * (mat).m[1][2]; }
+      (vout).x = (v).x * (mat).m[0][0] + (v).y * (mat).m[0][1] + 1.0 * (mat).m[0][2]; \
+      (vout).y = (v).x * (mat).m[1][0] + (v).y * (mat).m[1][1] + 1.0 * (mat).m[1][2]; }
 
 #define TRANSFORM2(v, mat) { \
       SHVector2 temp; TRANSFORM2TO(v, mat, temp); (v) = temp; }

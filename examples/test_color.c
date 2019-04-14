@@ -84,7 +84,8 @@ const char commands[] =
    "r - only red\n"
    "g - only green\n"
    "b - only blue\n"
-   "n - none \n" ;
+   "n - none \n"
+   "q - quit";
 
 const char help[] = "Press H for a list of commands";
 void key(unsigned char code, int x, int y)

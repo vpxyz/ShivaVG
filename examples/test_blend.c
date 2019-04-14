@@ -1,5 +1,6 @@
 #include "test.h"
 #include "lodepng.h"
+#include <ctype.h>
 
 VGPath src;
 VGPath dst;
@@ -91,11 +92,22 @@ display(float interval)
 
 }
 
+void
+key(unsigned char code, int x, int y)
+{
+   if (tolower(code) == 'q') {
+      exit(EXIT_SUCCESS);
+   }
+
+}
+
 int
 main(int argc, char *argv[])
 {
    testInit(argc, argv, 400, 400, "ShivaVG: Blending Test");
    testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
+   testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
+   
    testOverlayColor(1, 1, 1, 1);
    /*
     * testOverlayString("Not implemented yet");

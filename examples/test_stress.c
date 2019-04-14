@@ -218,8 +218,9 @@ void display(void)
 
 const char commands[] =
    "Commands\n"
-   "H - this help\n"
-   "Q - change display render quality\n";
+   "h - this help\n"
+   "q - change display render quality\n"
+   "x - quit";
 
 const char help[] = "Press H for a list of commands";
 
@@ -232,6 +233,9 @@ void key(unsigned char code, int x, int y)
          quality = VG_RENDERING_QUALITY_BETTER;
       else
          quality = VG_RENDERING_QUALITY_FASTER;
+      break;
+   case 'x':
+      exit(EXIT_SUCCESS);
       break;
    case 'h':
       /* Show help */

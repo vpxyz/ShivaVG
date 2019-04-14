@@ -1,5 +1,6 @@
 #include "test.h"
 #include <stdbool.h>
+#include <ctype.h>
 
 #ifndef IMAGE_DIR
 #define IMAGE_DIR "./"
@@ -88,12 +89,21 @@ display(float interval)
    }
 }
 
+void key(unsigned char code, int x, int y)
+{
+   if (tolower(code) == 'q') {
+      exit(EXIT_SUCCESS);
+   }
+
+}
+
 int
 main(int argc, char **argv)
 {
    testInit(argc, argv, 1000, 800, "ShivaVG: Warp Test");
    // Tell testRun() to run display function
    testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
+   testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
    testOverlayColor(1, 1, 1, 1);
    cover = testCreateImageFromJpeg(IMAGE_DIR "test_img_guitar.jpg");
 

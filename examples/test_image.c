@@ -396,6 +396,15 @@ createButtons(void)
    vgTransformPath(btnNextArrow, btnPrevArrow);
 }
 
+void
+key(unsigned char code, int x, int y)
+{
+   if (tolower(code) == 'q') {
+      exit(EXIT_SUCCESS);
+   }
+
+}
+
 int
 main(int argc, char **argv)
 {
@@ -404,6 +413,8 @@ main(int argc, char **argv)
    testCallback(TEST_CALLBACK_SPECIALKEY, (CallbackFunc) specialKey);
    testCallback(TEST_CALLBACK_BUTTON, (CallbackFunc) click);
    testCallback(TEST_CALLBACK_MOVE, (CallbackFunc) move);
+   testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
+
    testOverlayColor(1, 1, 1, 1);
 
    covers[0] = (testCreateImageFromJpeg(IMAGE_DIR "test_img_guitar.jpg")).img;

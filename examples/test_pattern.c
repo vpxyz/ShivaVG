@@ -41,10 +41,11 @@ VGfloat black[] = { 1, 1, 1, 1 };
 const char commands[] =
    "Click & drag mouse to change\n"
    "value for current mode\n\n"
-   "H - this help\n"
-   "TAB - pattern tiling mode\n"
-   "T - translate mode\n"
-   "X - scale X mode\n" "Y - scale Y mode\n" "BACKSPACE - reset value\n";
+   "h - this help\n"
+   "tab - pattern tiling mode\n"
+   "t - translate mode\n"
+   "x - scale X mode\n" "Y - scale Y mode\n" "BACKSPACE - reset value\n"
+   "q - quit";
 
 #if defined(__APPLE__)
 #define BACKSPACE 127
@@ -215,6 +216,9 @@ key(unsigned char key, int x, int y)
       }
       return;
 
+   case 'q':
+      exit(EXIT_SUCCESS);
+      break;
    case 'h':
       /* Show help */
       testOverlayString(commands);

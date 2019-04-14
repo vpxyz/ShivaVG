@@ -1,5 +1,7 @@
 #include "test.h"
 #include <math.h>
+#include <ctype.h>
+
 #define PI 3.141592654f
 
 VGPath iApple;
@@ -116,12 +118,22 @@ createPear(VGPath p)
    vgDestroyPath(temp);
 }
 
+void
+key(unsigned char code, int x, int y)
+{
+   if (tolower(code) == 'q') {
+      exit(EXIT_SUCCESS);
+   }
+
+}
+
 int
 main(int argc, char **argv)
 {
    testInit(argc, argv, 400, 400, "ShivaVG: Path Interpolation Test");
    testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
-
+   testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
+   
    iApple = testCreatePath();
    createApple(iApple);
    iPear = testCreatePath();

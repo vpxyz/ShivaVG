@@ -125,7 +125,8 @@ const char commands[] =
    "g - green \n"
    "b - blue \n"
    "t - transparency \n"
-   "n - none \n" ;
+   "n - none \n"
+   "q - quit";
 
 const char help[] = "Press H for a list of commands";
 void key(unsigned char code, int x, int y)

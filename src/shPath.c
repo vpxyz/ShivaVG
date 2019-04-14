@@ -785,8 +785,7 @@ shProcessPathData(SHPath * p, int flags, SegmentFunc callback, void *userData)
    SET2(pen, 0, 0);
    SET2(tan, 0, 0);
 
-   SHint d = 0;
-   for (SHint s = 0; s < p->segCount; ++s, d += numcoords) {
+   for (SHint s = 0, d = 0; s < p->segCount; ++s, d += numcoords) {
 
       /* Extract command */
       command = (p->segs[s]);

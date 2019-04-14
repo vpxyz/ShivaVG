@@ -1,5 +1,6 @@
 #include "test.h"
 #include <VG/openvg.h>
+#include <ctype.h>
 
 // FIXME unsafe
 #define min(x,y) ((x<y)?(x):(y))
@@ -506,12 +507,23 @@ createTextures()
    vgPaintPattern(wall_p, walls);
 }
 
+void
+key(unsigned char code, int x, int y)
+{
+   if (tolower(code) == 'q') {
+      exit(EXIT_SUCCESS);
+   }
+
+}
+
 int
 main(int argc, char **argv)
 {
    testInit(argc, argv, 832, 512, "ShivaVG: Electro Body scene test");
    testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
    testCallback(TEST_CALLBACK_RESHAPE, (CallbackFunc) reshapeFunc);
+   testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
+
    testOverlayColor(1, 1, 1, 1);
    testRun();
    return EXIT_SUCCESS;

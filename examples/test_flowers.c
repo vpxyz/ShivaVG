@@ -114,7 +114,8 @@ const char commands[] =
    "Click & drag mouse to change\n"
    "value for current mode\n\n"
    "h - this help\n"
-   "q - change display rendere quality\n";
+   "q - change display rendere quality\n"
+   "x - quit";
 
 
 void key(unsigned char code, int x, int y)
@@ -125,6 +126,9 @@ void key(unsigned char code, int x, int y)
          quality = VG_RENDERING_QUALITY_BETTER;
       else
          quality = VG_RENDERING_QUALITY_FASTER;
+      break;
+   case 'x':
+      exit(EXIT_SUCCESS);
       break;
    case 'h':
       testOverlayString(commands);

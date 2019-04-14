@@ -91,7 +91,8 @@ const char commands[] =
    "s - rgb swap\n"
    "g - grey scale\n"
    "b - bias \n"
-   "n - none \n" ;
+   "n - none \n"
+   "q - quit";
 
 const char help[] = "Press H for a list of commands";
 void key(unsigned char code, int x, int y)
