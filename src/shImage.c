@@ -418,7 +418,7 @@ shIsValidImageFormat(VGImageFormat format)
  * implementation
  *-----------------------------------------------------*/
 
-static inline int
+static inline SHint
 shIsSupportedImageFormat(VGImageFormat format)
 {
    SHuint32 baseFormat = SH_BASE_IMAGE_FORMAT(format);
@@ -549,13 +549,15 @@ shLoadColor(SHColor * restrict c, const void * restrict data, const SHImageForma
  * given coordinates
  *---------------------------------------------------------*/
 
-inline void shLoadPixelColor(SHColor * restrict c, const void * restrict data, const SHImageFormatDesc * restrict f, SHint x, SHint y, SHint32 stride)
+inline void
+shLoadPixelColor(SHColor * restrict c, const void * restrict data, const SHImageFormatDesc * restrict f, SHint x, SHint y, SHint32 stride)
 {
    SHuint8 *px = (SHuint8 *) data + y * stride + x * f->bytes;
    shLoadColor(c,  px, f);
 }
 
-inline void shStorePixelColor(SHColor * restrict c, const void * restrict data, const SHImageFormatDesc * restrict f, SHint x, SHint y, SHint32 stride)
+inline void
+shStorePixelColor(SHColor * restrict c, const void * restrict data, const SHImageFormatDesc * restrict f, SHint x, SHint y, SHint32 stride)
 {
    SHuint8 *px = (SHuint8 *) data + y * stride + x * f->bytes;
    shStoreColor(c,  px, f);

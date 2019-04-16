@@ -48,6 +48,8 @@ option(BUILD_LOOKUP            "Build Color lookup example (default=yes)]"      
 option(BUILD_LOOKUP2           "Build Color lookup2 example (default=yes)]"                OFF)
 option(BUILD_LOOKUP_SINGLE     "Build Color lookup single example (default=yes)]"          OFF)
 option(BUILD_COLOR             "Build Simple color matrix example (default=yes)]"          OFF)
+option(BUILD_IMAGE_MODE        "Build Image mode example (default=yes)]"                   OFF)
+option(BUILD_TILING_MODE       "Build Tiling mode example (default=yes)]"                  OFF)
 
 if (BUILD_DEBUG)
   set(DEBUG ON CACHE BOOL "Compile with debug code")
@@ -81,11 +83,14 @@ if(BUILD_ALL_EXAMPLES)
     set(BUILD_LOOKUP2 ON)
     set(BUILD_LOOKUP_SINGLE ON)
     set(BUILD_COLOR ON)
+    set(BUILD_IMAGE_MODE ON)
+    set(BUILD_TILING_MODE ON)
 endif()
 set(BUILD_EXAMPLES BUILD_VGU OR BUILD_DASH OR BUILD_LINEAR OR BUILD_RADIAL OR BUILD_INTERPOLATE OR BUILD_TIGER
   OR BUILD_IMAGE OR BUILD_PATTERN OR BUILD_BLEND OR BUILD_EB OR BUILD_WARP OR BUILD_PATH OR BUILD_FLOWERS
   OR BUILD_STRESS OR BUILD_CLOCK OR BUILD_SUBWAYMAP OR BUILD_COMPOSITING OR BUILD_COLORMATRIX OR BUILD_CONVOLVE OR BUILD_SEPARABLECONVOLVE
-  OR BUILD_GAUSSIANBLUR OR BUILD_GAUSSIANBLUR2 OR BUILD_LOOKUP OR BUILD_LOOKUP2 OR BUID_LOOKUP_SINGLE OR BUILD_COLOR)
+  OR BUILD_GAUSSIANBLUR OR BUILD_GAUSSIANBLUR2 OR BUILD_LOOKUP OR BUILD_LOOKUP2 OR BUID_LOOKUP_SINGLE
+  OR BUILD_COLOR OR BUILD_IMAGE_MODE OR BUILD_TILING_MODE)
 
 # Finding packages
 # TODO: EGL/OpenGLES and friends?
@@ -182,6 +187,8 @@ message("ShivaVG will be compiled with the following example programs\n"
         "  Color lookup2             ${BUILD_LOOKUP2}\n"
         "  Color lookup single       ${BUILD_LOOKUP_SINGLE}\n"
         "  Simple color matrix       ${BUILD_COLOR}\n"
+        "  Image mode                ${BUILD_IMAGE_MODE}\n"
+        "  Tiling mode               ${BUILD_TILING_MODE}\n"
         )
 
 # Pick up subdirectories

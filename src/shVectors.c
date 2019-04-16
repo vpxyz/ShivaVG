@@ -131,7 +131,7 @@ shMatrixToGL(SHMatrix3x3 * restrict m, SHfloat mgl[16])
    mgl[15] = 1.0f;
 }
 
-int
+SHint
 shInvertMatrix(SHMatrix3x3 * restrict m, SHMatrix3x3 * restrict mout)
 {
    SH_ASSERT(m != NULL && mout != NULL);
@@ -167,10 +167,10 @@ shVectorOrientation(SHVector2 * v)
    SHfloat norm = (SHfloat) NORM2((*v));
    SHfloat cosa = v->x / norm;
    SHfloat sina = v->y / norm;
-   return (SHfloat) (sina >= 0 ? SH_ACOS(cosa) : 2 * PI - SH_ACOS(cosa));
+   return (SHfloat) (sina >= 0 ? SH_ACOS(cosa) : 2.0f * PI - SH_ACOS(cosa));
 }
 
-int
+SHint
 shLineLineXsection(SHVector2 * o1, SHVector2 * v1,
                    SHVector2 * o2, SHVector2 * v2, SHVector2 * xsection)
 {
