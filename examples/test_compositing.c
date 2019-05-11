@@ -24,7 +24,7 @@ bool openVGInitialized = false;
 bool imageGrabbed = false;
 VGint windowWidth = 512;
 VGint windowHeight = 512;
-VGRenderingQuality quality = VG_RENDERING_QUALITY_BETTER;
+VGRenderingQuality quality = VG_RENDERING_QUALITY_FASTER;
 
 VGPath flower, circle, square;
 VGPaint paintSrc, paintDst, solidColor;
@@ -83,8 +83,8 @@ void genPaints(void)
 void genImages(void)
 {
    VGfloat black[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-   srcImage = vgCreateImage(VG_sRGBA_8888, imageSize, imageSize, VG_IMAGE_QUALITY_FASTER);
-   dstImage = vgCreateImage(VG_sRGBA_8888, imageSize, imageSize, VG_IMAGE_QUALITY_FASTER);
+   srcImage = vgCreateImage(VG_sRGBA_8888, imageSize, imageSize, VG_IMAGE_QUALITY_BETTER);
+   dstImage = vgCreateImage(VG_sRGBA_8888, imageSize, imageSize, VG_IMAGE_QUALITY_BETTER);
    // clear surface with a transparent black
    vgSetfv(VG_CLEAR_COLOR, 4, black);
    vgSeti(VG_BLEND_MODE, VG_BLEND_SRC);
@@ -142,12 +142,12 @@ void genPaths(void)
 
 void display(void)
 {
-   VGfloat clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+   VGfloat clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
    VGfloat dashPattern[4] = { 5.0f, 5.0f };
 
    vgSetfv(VG_STROKE_DASH_PATTERN, 0, NULL);
-   vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
    vgSeti(VG_RENDERING_QUALITY, quality);
+   vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
    vgClear(0, 0, windowWidth, windowHeight);
 
    // draw destination image
@@ -323,7 +323,7 @@ void drag(int x, int y)
 const char commands[] =
    "Click & drag mouse to change\n"
    "value for current mode\n\n"
-   "a - this help\n"
+   "h - this help\n"
    "a - change blend mode\n"
    "r - change display render quality\n"
    "q - quit";
@@ -344,9 +344,10 @@ void key(unsigned char code, int x, int y)
    {
       VGuint i = (VGuint) blendMode;
       i++;
-      blendMode = (VGBlendMode) i;
-      if (blendMode > VG_BLEND_ADDITIVE)
+      if (i > VG_BLEND_ADDITIVE)
          blendMode = VG_BLEND_SRC;
+      else
+         blendMode = (VGBlendMode) i;
    }
    break;
    case 'q':

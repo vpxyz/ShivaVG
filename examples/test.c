@@ -151,30 +151,33 @@ testOverlayColor(float r, float g, float b, float a)
 void
 testOverlayString(const char *format, ...)
 {
-   int len;
-   va_list ap;
-
-   if (overtext) {
+   if (overtext != NULL) {
       free(overtext);
       overtext = NULL;
    }
 
+   va_list ap;
+   va_list apCopy;
    va_start(ap, format);
-   len = vsnprintf(NULL, 0, format, ap);
-   overtext = (char *) malloc(len + 1);
-   if (!overtext) {
+   va_copy(apCopy, ap);
+
+   // calc the size of the overtext string
+   int len = vsnprintf(NULL, 0, format, ap);
+   overtext = (char *) malloc((len + 1) * sizeof(char));
+   if (overtext == NULL) {
       va_end(ap);
+      va_end(apCopy);
       return;
    }
-   vsnprintf(overtext, len + 1, format, ap);
+   vsnprintf(overtext, len + 1, format, apCopy);
    va_end(ap);
+   va_end(apCopy);
 }
 
 void
 testDrawString(float x, float y, const char *format, ...)
 {
-   int i, len;
-   va_list ap;
+   va_list ap, apCopy;
    char *text;
    float k = 0.15;
 
@@ -182,23 +185,27 @@ testDrawString(float x, float y, const char *format, ...)
    y += 0.5f;
 
    va_start(ap, format);
-   len = vsnprintf(NULL, 0, format, ap);
+   va_copy(apCopy, ap);
+
+   int len = vsnprintf(NULL, 0, format, ap);
    va_end(ap);
 
-   if (len < 0)
+   if (len < 0) {
+      va_end(apCopy);
       return;
+   }
    len++;                       // for \0
-   text = (char *) alloca(len);
+   text = (char *) alloca(len * sizeof(char));
 
    if (!text)
       return;
 
-   va_start(ap, format);
-   if (vsnprintf(text, len, format, ap) < 0) {
-      va_end(ap);
+   va_start(apCopy, format);
+   if (vsnprintf(text, len, format, apCopy) < 0) {
+      va_end(apCopy);
       return;
    }
-   va_end(ap);
+   va_end(apCopy);
 
    glEnable(GL_BLEND);
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -213,7 +220,7 @@ testDrawString(float x, float y, const char *format, ...)
    glLineWidth(1.0f);
 
 
-   for (i = 0; i < len; ++i) {
+   for (int i = 0; i < len; ++i) {
       if (text[i] == '\n') {
          y -= 20;
          glLoadIdentity();
@@ -237,18 +244,14 @@ testAnimate(void)
 void
 testDisplay(void)
 {
-   int now;
-   unsigned int msinterval;
-   float interval;
-
    DisplayFunc callback = (DisplayFunc) callbacks[TEST_CALLBACK_DISPLAY];
 
    /* Get interval from last redraw */
-   now = glutGet(GLUT_ELAPSED_TIME);
+   int now = glutGet(GLUT_ELAPSED_TIME);
    if (!timeinit)
       lastdraw = now;
-   msinterval = (unsigned int) (now - lastdraw);
-   interval = (float) msinterval / 1000;
+   unsigned int msinterval = (unsigned int) (now - lastdraw);
+   float interval = (float) msinterval / 1000;
    lastdraw = now;
 
    /* Draw scene */
@@ -277,8 +280,7 @@ testDisplay(void)
          fpsdraw = fps;
          fps = 0;
       }
-   }
-   else {
+   } else {
       lastfps = now;
       timeinit = 1;
    }

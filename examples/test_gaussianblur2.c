@@ -43,6 +43,12 @@ void display(void)
    vgSetfv(VG_CLEAR_COLOR, 4, white);
    vgClear(0, 0, img.width,img.height);
 
+   // nothing to do
+   if (deviationType == NONE) {
+      vgDrawImage(img.img);
+      return;
+   }
+
    dstImage = vgCreateImage(VG_lABGR_8888, img.width, img.height, VG_IMAGE_QUALITY_BETTER);
 
    switch (deviationType) {
@@ -67,7 +73,6 @@ void display(void)
       vgDrawImage(dstImage);
       break;
    default:
-      vgDrawImage(img.img);
       break;
 
    }

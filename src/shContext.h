@@ -144,7 +144,7 @@ VGContext *shGetContext(void);
   { shSetError(context,ERRORCODE); return RETVAL; }
 
 #define VG_RETURN_ERR_IF(COND, ERRORCODE, RETVAL) \
-  { if (COND) {shSetError(context,ERRORCODE); return RETVAL;} }
+   { if ((COND)) {shSetError(context,ERRORCODE); return RETVAL;} }
 
 /*-----------------------------------------------------------
  * Same macros but no mutex handling - used by sub-functions
@@ -163,7 +163,7 @@ VGContext *shGetContext(void);
   { shSetError(context,ERRORCODE); return RETVAL; }
 
 #define SH_RETURN_ERR_IF(COND, ERRORCODE, RETVAL) \
-  { if (COND) {shSetError(context,ERRORCODE); return RETVAL;} }
+   { if ((COND)) {shSetError(context,ERRORCODE); return RETVAL;} }
 
 
 #endif /* __SHCONTEXT_H */

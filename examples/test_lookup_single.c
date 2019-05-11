@@ -21,10 +21,17 @@ enum lookupChannel {
 } lookupChannel;
 
 
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+VGImageFormat imgFormat = VG_sABGR_8888;
+#else
+VGImageFormat imgFormat = VG_sRGBA_8888;
+#endif
+
+VGImage srcImage;
 
 void display(void)
 {
-   VGImage srcImage, dstImage;
+   VGImage dstImage;
    VGuint lookupTable[256];
    VGfloat white[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
@@ -50,15 +57,11 @@ void display(void)
 
    vgSetfv(VG_CLEAR_COLOR, 4, white);
    vgClear(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-   VGImageFormat imgFormat;
-   #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-   imgFormat = VG_sABGR_8888;
-   #else
-   imgFormat = VG_sRGBA_8888;
-   #endif
 
-   srcImage = vgCreateImage(imgFormat, SCREEN_WIDTH, SCREEN_HEIGHT, VG_IMAGE_QUALITY_BETTER );
-   vgImageSubData(srcImage, cimg, SCREEN_WIDTH * 4, VG_sRGBA_8888, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT );
+   if (lookupChannel == NONE) {
+      vgDrawImage(srcImage);
+      return;
+   }
 
    dstImage = vgCreateImage(imgFormat, SCREEN_WIDTH, SCREEN_HEIGHT, VG_IMAGE_QUALITY_BETTER );
 
@@ -76,12 +79,9 @@ void display(void)
       vgDrawImage(dstImage);
       break;
    default:
-      vgDrawImage(srcImage);
+      break;
    }
-
-   vgDestroyImage(srcImage);
    vgDestroyImage(dstImage);
-
 }
 
 const char commands[] =
@@ -124,7 +124,6 @@ void key(unsigned char code, int x, int y)
       }
       break;
    }
-
 }
 
 
@@ -137,6 +136,11 @@ int main(int argc, char *argv[])
    testOverlayString(help);
    testOverlayColor(1, 1, 1, 1);
    lookupChannel = NONE;
+
+   // init source image
+   srcImage = vgCreateImage(imgFormat, SCREEN_WIDTH, SCREEN_HEIGHT, VG_IMAGE_QUALITY_BETTER );
+   vgImageSubData(srcImage, cimg, SCREEN_WIDTH * 4, VG_sRGBA_8888, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT );
+
    testRun();
    return EXIT_SUCCESS;
 

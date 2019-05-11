@@ -44,7 +44,7 @@ void display(void)
 
    VGubyte redLUT[256], greenLUT[256], blueLUT[256], alphaLUT[256];
    VGfloat variation = 4;
-   for(VGint index = 0; index < 256; index++ ) {
+   for (VGint index = 0; index < 256; index++ ) {
       switch (lookupType) {
       case INVERT:
          redLUT[index]   = (VGubyte)( 255 - index );

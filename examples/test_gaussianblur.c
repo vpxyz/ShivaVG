@@ -22,16 +22,21 @@ enum deviationType {
 } deviationType;
 
 
+VGImage srcImage;
+
 void display(void)
 {
-   VGImage srcImage, dstImage;
+   VGImage dstImage;
    VGfloat white[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
    vgSetfv(VG_CLEAR_COLOR, 4, white);
    vgClear(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-   srcImage = vgCreateImage(VG_sRGBA_8888, SCREEN_WIDTH, SCREEN_HEIGHT, VG_IMAGE_QUALITY_BETTER);
-   vgImageSubData( srcImage, cimg, SCREEN_WIDTH*4, VG_sABGR_8888, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+   // nothing to do
+   if (deviationType == NONE) {
+      vgDrawImage(srcImage);
+      return;
+   }
 
    dstImage = vgCreateImage(VG_sRGBA_8888, SCREEN_WIDTH, SCREEN_HEIGHT, VG_IMAGE_QUALITY_BETTER);
 
@@ -57,11 +62,9 @@ void display(void)
       vgDrawImage(dstImage);
       break;
    default:
-      vgDrawImage(srcImage);
       break;
 
    }
-   vgDestroyImage( srcImage );
    vgDestroyImage( dstImage );
 }
 
@@ -118,6 +121,11 @@ void key(unsigned char code, int x, int y)
 int main(int argc, char *argv[])
 {
    testInit(argc, argv, SCREEN_WIDTH, SCREEN_HEIGHT , "ShivaVG: gaussian blur example");
+
+   // init source image
+   srcImage = vgCreateImage(VG_sRGBA_8888, SCREEN_WIDTH, SCREEN_HEIGHT, VG_IMAGE_QUALITY_BETTER);
+   vgImageSubData( srcImage, cimg, SCREEN_WIDTH*4, VG_sABGR_8888, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
    testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
    testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
    testOverlayColor(1, 1, 1, 1);
