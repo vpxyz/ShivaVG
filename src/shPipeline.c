@@ -406,7 +406,7 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
    /* Change render quality according to the context */
    /* TODO: Turn antialiasing on/off */
    shSetRenderQualityGL(context->renderingQuality);
-
+   
    /* Pick paint if available or default */
    SHPaint *fill = (context->fillPaint ? context->fillPaint : &context->defaultPaint);
    SHPaint *stroke =
@@ -575,7 +575,7 @@ vgDrawImage(VGImage image)
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
       glDisable(GL_MULTISAMPLE);
       break;
-      // TODO: How to make FASTER != BETTER ?
+   // TODO: How to make FASTER != BETTER ?
    case VG_IMAGE_QUALITY_FASTER:
    case VG_IMAGE_QUALITY_BETTER:
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -656,7 +656,42 @@ vgDrawImage(VGImage image)
       glDisable(GL_STENCIL_TEST);
 
    } else if (context->imageMode == VG_DRAW_IMAGE_STENCIL) {
+      if (0) {
       SH_LOG_INFO("vgDrawImage(): VG_DRAW_IMAGE_STENCIL not implemented yet\n");
+      } else  {
+         /* Draw image quad into stencil */
+         glDisable(GL_BLEND);
+         glDisable(GL_TEXTURE_2D);
+         glEnable(GL_STENCIL_TEST);
+         glStencilFunc(GL_ALWAYS, 1, 1);
+         glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+
+         glBegin(GL_QUADS);
+         glVertex2i(0, 0);
+         glVertex2i(i->width, 0);
+         glVertex2i(i->width, i->height);
+         glVertex2i(0, i->height);
+         glEnd();
+
+         /* Setup blending */
+         updateBlendingStateGL(context, 0);
+
+         /* Draw image where stencil 1 */
+         glEnable(GL_TEXTURE_2D);
+         glStencilFunc(GL_ALWAYS, 1, 1);
+         glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
+         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+         // 
+         // epilogue
+         /*
+          * glActiveTexture(GL_TEXTURE0);
+          */
+         glDisable(GL_TEXTURE_2D);
+         glDisable(GL_STENCIL_TEST);
+      }
+
    } else {
       /* Either normal mode or multiplying with a color-paint */
 

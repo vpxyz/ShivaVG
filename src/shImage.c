@@ -734,7 +734,6 @@ vgCreateImage(VGImageFormat format,
    i->width = width;
    i->height = height;
    i->fd = fd;
-   i->stride = i->texwidth * fd.bytes;
 
    /* Allocate data memory */
    shUpdateImageTextureSize(i);
@@ -758,11 +757,10 @@ vgCreateImage(VGImageFormat format,
 VG_API_CALL void
 vgDestroyImage(VGImage image)
 {
-   SHint index;
    VG_GETCONTEXT(VG_NO_RETVAL);
 
    /* Check if valid resource */
-   index = shImageArrayFind(&context->images, (SHImage *) image);
+   SHint index = shImageArrayFind(&context->images, (SHImage *) image);
    VG_RETURN_ERR_IF(index == -1, VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
    /* Delete object and remove resource */
