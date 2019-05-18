@@ -95,10 +95,10 @@ VGErrorCode JN(_ARRAY_T, _dtor) (_ARRAY_T * restrict a)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL);
-   if (a->items != NULL) {
-      free(a->items);
-      a->items = NULL;
-   }
+
+   free(a->items);
+   a->items = NULL;
+
    return VG_NO_ERROR;
 }
 #else
@@ -136,8 +136,7 @@ _INLINE VGErrorCode JN(_FUNC_T, Realloc) (_ARRAY_T * restrict a, SHint newsize)
       return VG_OUT_OF_MEMORY_ERROR;
    }
 
-   if (a->items != NULL)
-      free(a->items);
+   free(a->items);
 
    a->items = newitems;
    a->capacity = newsize;
@@ -331,16 +330,34 @@ _INLINE SHint JN(_FUNC_T, Find) (_ARRAY_T * restrict a, _ITEM_T item)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL);
-   for (SHint32 i = 0; i < a->size; i++) {
+   static SHint32 lastPos = 0;
+   for (SHint32 i = lastPos; i < a->size; i++) {
 #ifdef _COMPARE_T
-      if (_COMPARE_T(a->items[i], item))
+      if (_COMPARE_T(a->items[i], item)) {
+         lastPos = i;
          return i;
+      }
 #else
-      if (a->items[i] == item)
+      if (a->items[i] == item) {
+         lastPos = i;
          return i;
+      }
 #endif
    }
 
+   for (SHint32 i = 0; i < lastPos; i++) {
+#ifdef _COMPARE_T
+      if (_COMPARE_T(a->items[i], item)) {
+         lastPos = i;
+         return i;
+      }
+#else
+      if (a->items[i] == item) {
+         lastPos = i;
+         return i;
+      }
+#endif
+   }
    return -1;
 }
 #else
