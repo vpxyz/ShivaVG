@@ -368,9 +368,7 @@ void JN(_FUNC_T, RemoveAt) (_ARRAY_T * restrict a, SHint index)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL && index >= 0 && index < a->size);
-   for (SHint32 i = index; i < a->size - 1; i++) {
-      a->items[i] = a->items[i + 1];
-   }
+   memmove(a->items + index, a->items + index + 1, (a->size - 1 - index) * sizeof(_ITEM_T));
    a->size--;
 }
 #else
