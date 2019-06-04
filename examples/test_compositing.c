@@ -31,7 +31,7 @@ VGPaint paintSrc, paintDst, solidColor;
 VGImage srcImage, dstImage;
 VGfloat srcCenter[2];
 VGfloat dstCenter[2];
-VGBlendMode blendMode;
+VGBlendMode blendMode = VG_BLEND_SRC;
 VGint pickedPoint, lastPickedPoint;
 
 VGint imageSize = 384;
@@ -234,8 +234,7 @@ void mouseLeftButtonDown(const VGint x,
    // check if we have picked a control point
    if (distSrc < distDst) {
       pickedControlPoint = (distSrc < controlPointsRadius * 1.1f) ? CONTROL_POINT_SRC_IMAGE : CONTROL_POINT_NONE;
-   }
-   else {
+   } else {
       pickedControlPoint = (distDst < controlPointsRadius * 1.1f) ? CONTROL_POINT_DST_IMAGE : CONTROL_POINT_NONE;
    }
    // keep track of current mouse position
@@ -247,8 +246,8 @@ void mouseLeftButtonDown(const VGint x,
 void mouseLeftButtonUp(const VGint x,
                        const VGint y) {
 
-   (void)x;
-   (void)y;
+   oldMouseX = x;
+   oldMouseY = y;
    mouseButton = MOUSE_BUTTON_NONE;
    pickedControlPoint = CONTROL_POINT_NONE;
 }
@@ -265,8 +264,8 @@ void mouseRightButtonDown(const VGint x,
 void mouseRightButtonUp(const VGint x,
                         const VGint y) {
 
-   (void)x;
-   (void)y;
+   oldMouseX = x;
+   oldMouseY = y;
    mouseButton = MOUSE_BUTTON_NONE;
 }
 
@@ -288,34 +287,47 @@ void mouseMove(const VGint x,
 
 void click(int button, int state, int x, int y)
 {
+   // fix y coord according to axis direction
+   y = windowHeight - y;
    switch (button) {
    case GLUT_LEFT_BUTTON:
    {
+      printf("button left ");
       switch (state) {
       case GLUT_DOWN:
+         printf("down");
          mouseLeftButtonDown(x, y);
          break;
       case GLUT_UP:
+         printf("up");
          mouseLeftButtonUp(x, y);
          break;
       }
+      break;
    }
    case GLUT_RIGHT_BUTTON: {
+      printf("button right ");
       switch (state) {
       case GLUT_DOWN:
+         printf("down");
          mouseRightButtonDown(x, y);
          break;
       case GLUT_UP:
+         printf("up");
          mouseRightButtonUp(x, y);
          break;
       }
+      break;
    }
    }
+   printf("\n");
    glutPostRedisplay();
 }
 
 void drag(int x, int y)
 {
+   // fix y coord according to axis direction
+   y = windowHeight - y;
    mouseMove(x, y);
    glutPostRedisplay();
 }
@@ -348,6 +360,7 @@ void key(unsigned char code, int x, int y)
          blendMode = VG_BLEND_SRC;
       else
          blendMode = (VGBlendMode) i;
+      printf("new blend mode: %#x\n", blendMode);
    }
    break;
    case 'q':
@@ -392,7 +405,6 @@ static void initApp(void)
    /*
     * blendMode = VG_BLEND_SRC_OVER;
     */
-   blendMode = VG_BLEND_SRC;
    pickedPoint = 0;
    lastPickedPoint = 0;
 
