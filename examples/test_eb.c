@@ -492,7 +492,7 @@ createTextures()
    walls =
       vgCreateImage(VG_sRGBA_8888, ratio, ratio, VG_IMAGE_QUALITY_BETTER);
    /* Rendering takes place */
-   VGfloat cc[] = { 0, 0, 0, 1 };
+   VGfloat cc[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
    vgSetfv(VG_CLEAR_COLOR, 4, cc);
    vgClear(0, 0, testWidth(), testHeight());

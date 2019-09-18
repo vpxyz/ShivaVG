@@ -22,12 +22,6 @@ enum matrixType {
 
 struct Image cover;
 
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-VGImageFormat imgFormat = VG_sABGR_8888;
-#else
-VGImageFormat imgFormat = VG_sRGBA_8888;
-#endif
-
 VGImage srcImage;
 
 void display(void)
@@ -146,7 +140,7 @@ int main(int argc, char *argv[])
    // init image
    srcImage = vgCreateImage(imgFormat, SCREEN_WIDTH, SCREEN_HEIGHT, VG_IMAGE_QUALITY_BETTER );
    vgImageSubData(srcImage, cimg, SCREEN_WIDTH * 4, VG_sRGBA_8888, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT );
-   
+
    testRun();
    return EXIT_SUCCESS;
 }

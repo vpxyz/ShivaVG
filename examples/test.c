@@ -1,6 +1,11 @@
 #include "test.h"
 #include <jpeglib.h>
 #include <alloca.h>
+
+
+#ifndef __TEST_H
+#define __TEST_H
+
 static int testW = 0;
 static int testH = 0;
 
@@ -13,6 +18,90 @@ static char *overtext = NULL;
 static float overcolor[4] = { 0, 0, 0, 1 };
 
 static CallbackFunc callbacks[TEST_CALLBACK_COUNT];
+
+
+/*
+ * Cycle throw blend mode, from VG_BLEND_SRC to VG_BLEND_ADDITIVE
+ */
+VGuint nextBlendMode(VGuint blendMode)
+{
+   VGuint newBlendMode;
+   switch ((VGuint)blendMode) {
+   case VG_BLEND_SRC_OVER:
+      newBlendMode = VG_BLEND_DST_OVER;
+      break;
+   case VG_BLEND_DST_OVER:
+      newBlendMode = VG_BLEND_SRC_IN;
+      break;
+   case VG_BLEND_SRC_IN:
+      newBlendMode = VG_BLEND_DST_IN;
+      break;
+   case VG_BLEND_DST_IN:
+      newBlendMode = VG_BLEND_MULTIPLY;
+      break;
+   case VG_BLEND_MULTIPLY:
+      newBlendMode = VG_BLEND_SCREEN;
+      break;
+   case VG_BLEND_SCREEN:
+      newBlendMode = VG_BLEND_DARKEN;
+      break;
+   case VG_BLEND_DARKEN:
+      newBlendMode = VG_BLEND_LIGHTEN;
+      break;
+   case VG_BLEND_LIGHTEN:
+      newBlendMode = VG_BLEND_ADDITIVE;
+      break;
+   case VG_BLEND_ADDITIVE:
+      newBlendMode = VG_BLEND_SRC;
+      break;
+   case VG_BLEND_SRC:
+   default:
+      newBlendMode = VG_BLEND_SRC_OVER;
+      break;
+   }
+   return newBlendMode;
+}
+
+/*
+ * Return the blend mode name
+ */
+const char *
+blendModeStr(const VGint blendMode)
+{
+
+   static const char* blendModeStrMap[] = {
+      "SRC",
+      "SRC OVER",
+      "DST OVER",
+      "SRC IN",
+      "DST IN",
+      "MULTIPLY",
+      "SCREEN",
+      "DARKEN",
+      "LIGHTEN",
+      "ADDITIVE",
+      "CLEAR",
+      "DST",
+      "SRC OUT",
+      "DST OUT",
+      "SRC ATOP",
+      "DST ATOP",
+      "XOR",
+      "OVERLAY",
+      "COLOR DODGE",
+      "COLOR BURN",
+      "HARD LIGHT",
+      "SOFT LIGHT",
+      "DIFFERENCE",
+      "EXCLUSION",
+      "Unknown"
+   };
+
+   if ((blendMode >= VG_BLEND_SRC) && (blendMode <= VG_BLEND_ADDITIVE)) {
+      return blendModeStrMap[blendMode - VG_BLEND_SRC];
+   }
+   return blendModeStrMap[18];
+}
 
 VGPath
 testCreatePath()
@@ -208,6 +297,7 @@ testDrawString(float x, float y, const char *format, ...)
    va_end(apCopy);
 
    glEnable(GL_BLEND);
+   glBlendEquation(GL_FUNC_ADD);
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
    glEnable(GL_LINE_SMOOTH);
    glDisable(GL_MULTISAMPLE);
@@ -233,6 +323,7 @@ testDrawString(float x, float y, const char *format, ...)
 
    glPopMatrix();
    glDisable(GL_LINE_SMOOTH);
+   glDisable(GL_BLEND);
 }
 
 void
@@ -537,3 +628,5 @@ testCreateImageFromJpeg(const char *filename)
    image.height = height;
    return image;
 }
+
+#endif // end __TEST_H

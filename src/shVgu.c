@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2019 Vincenzo Pupillo
  * Copyright (c) 2007 Ivan Leben
  *
  * This library is free software; you can redistribute it and/or

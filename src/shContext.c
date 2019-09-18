@@ -352,7 +352,8 @@ vgClear(VGint x, VGint y, VGint width, VGint height)
       drawing where it takes places */
    glClearColor(context->clearColor.r,
                 context->clearColor.g,
-                context->clearColor.b, context->clearColor.a);
+                context->clearColor.b,
+                context->clearColor.a);
 
    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

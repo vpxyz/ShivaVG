@@ -24,7 +24,6 @@
 #include <VG/openvg.h>
 #include <VG/vgu.h>
 
-
 /*
  * #ifdef DEBUG
  * #define SH_DEBUG(M, ...) fprintf(stderr, "DEBUG %s:%d: " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
@@ -104,3 +103,5 @@ void testRun(void);
 VGint testWidth(void);
 VGint testHeight(void);
 
+VGuint nextBlendMode(VGuint blendMode);
+const char *blendModeStr(const VGint blendMode);

@@ -22,14 +22,6 @@ enum KernelType {
    EMBOSSING_KERNEL
 } kernelType;
 
-
-
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-VGImageFormat imgFormat = VG_sABGR_8888;
-#else
-VGImageFormat imgFormat = VG_sRGBA_8888;
-#endif
-
 VGImage srcImage;
 
 void display(void)

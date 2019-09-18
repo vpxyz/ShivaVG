@@ -5,12 +5,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library in the file COPYING;
  * if not, write to the Free Software Foundation, Inc.,
@@ -20,11 +20,12 @@
 
 #define VG_API_EXPORT
 #include <VG/openvg.h>
+#include <stdio.h>
+#include <string.h>
 #include "shDefs.h"
 #include "shExtensions.h"
 #include "shContext.h"
-#include <stdio.h>
-#include <string.h>
+
 
 /*-----------------------------------------------------
  * Extensions check
@@ -91,8 +92,48 @@ shGetProcAddress(const char *name)
 #endif
 }
 
+
+
+void shLoadExtensions(VGContext *c)
+{
+   SH_ASSERT(c != NULL);
+   glewInit();
+
+   if (!GL_VERSION_2_1) {
+      SH_LOG_ERR("ShivaVG require OpenGL 2.0");
+      exit(EXIT_FAILURE);
+   }
+
+   /* GL_TEXTURE_CLAMP_TO_EDGE */
+   if (glewIsSupported("GL_VERSION_2_0  GL_EXT_texture_edge_clamp")) 
+      c->isGLAvailable_ClampToEdge = 1;
+   else if (glewIsSupported("GL_VERSION_2_0  GL_SGIS_texture_edge_clamp"))
+      c->isGLAvailable_ClampToEdge = 1;
+   else                         /* Unavailable */
+      c->isGLAvailable_ClampToEdge = 0;
+
+     /* GL_TEXTURE_MIRRORED_REPEAT */
+   if (glewIsSupported("GL_VERSION_2_0 GL_ARB_texture_mirrored_repeat"))
+      c->isGLAvailable_MirroredRepeat = 1;
+   else if (glewIsSupported("GL_VERSION_2_0 GL_IBM_texture_mirrored_repeat"))
+      c->isGLAvailable_MirroredRepeat = 1;
+   else                         /* Unavailable */
+      c->isGLAvailable_MirroredRepeat = 0;
+
+   if (glewIsSupported("GL_VERSION_2_0 GL_ARB_multitexture"))
+      c->isGLAvailable_Multitexture = 1;
+   else
+      c->isGLAvailable_Multitexture = 0;
+
+   if (glewIsSupported("GL_VERSION_2_0 GL_ARB_texture_non_power_of_two"))
+      c->isGLAvailable_TextureNonPowerOfTwo = 1;
+   else
+      c->isGLAvailable_TextureNonPowerOfTwo = 0;
+
+}
+
 void
-shLoadExtensions(VGContext * c)
+shLoadExtensions_old(VGContext * c)
 {
    SH_ASSERT(c != NULL);
    const char *ext = (const char *) glGetString(GL_EXTENSIONS);

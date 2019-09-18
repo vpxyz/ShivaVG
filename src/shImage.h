@@ -22,6 +22,7 @@
 #define __SHIMAGE_H
 
 #include "shDefs.h"
+#include <stdbool.h>
 #include <VG/openvg.h>
 
 /*-----------------------------------------------------------
@@ -54,6 +55,10 @@ typedef struct
    GLenum glformat;
    GLenum gltype;
 
+   // linear color format
+   bool linear;
+   // premultiplied alpha
+   bool premultiplied;
 } SHImageFormatDesc;
 
 typedef struct
@@ -100,19 +105,19 @@ void SHImage_dtor(SHImage * i);
  * Color operators
  *-------------------------------------------------------*/
 
-#define CSET(c, rr,gg,bb,aa) { (c).r=rr; (c).g=gg; (c).b=bb; (c).a=aa; }
+#define CSET(c, rr, gg, bb, aa) { (c).r=(rr); (c).g=(gg); (c).b=(bb); (c).a=(aa); }
 #define CSETC(c1, c2) { (c1).r=(c2).r; (c1).g=(c2).g; (c1).b=(c2).b; (c1).a=(c2).a; }
 
-#define CSUB(c1, rr,gg,bb,aa) { (c).r-=rr; (c).g-=gg; (c).b-=bb; (c).a-=aa; }
+#define CSUB(c1, rr, gg, bb, aa) { (c).r-=(rr); (c).g-=(gg); (c).b-=(bb); (c).a-=(aa); }
 #define CSUBC(c1, c2) { (c1).r-=(c2).r; (c1).g-=(c2).g; (c1).b-=(c2).b; (c1).a-=(c2).a; }
 #define CSUBCTO(c1, c2, c3) { (c3).r=(c1).r-(c2).r; (c3).g=(c1).g-(c2).g;  (c3).b=(c1).b-(c2).b; (c3).a=(c1).a-(c2).a; }
 
-#define CADD(c1, rr,gg,bb,aa) { (c1).r+=rr; (c1).g+=gg; (c1).b+=bb; (c1).a+=aa; }
+#define CADD(c1, rr,gg,bb,aa) { (c1).r+=(rr); (c1).g+=(gg); (c1).b+=(bb); (c1).a+=(aa); }
 #define CADDC(c1, c2) { (c1).r+=(c2).r; (c1).g+=(c2).g; (c1).b+=(c2).b; (c1).a+=(c2).a; }
 #define CADDTO(c1, c2, c3) { (c3).r=(c1).r+(c2).r; (c3).g=(c1).g+(c2).g;  (c3).b=(c1).b+(c2).b; (c3).a=(c1).a+(c2).a; }
 #define CADDCK(c1, c2, k) { (c1).r+=k*(c2).r; (c1).g+=k*(c2).g; (c1).b+=k*(c2).b; (c1).a+=k*(c2).a; }
 
-#define CMUL(c, s) { (c).r*=s; (c).g*=s; (c).b*=s; (c).a*=s; }
+#define CMUL(c, s) { (c).r*=(s); (c).g*=(s); (c).b*=(s); (c).a*=(s); }
 #define CMULC(c1, c2) { (c1).r *= (c2).r; (c1).g *= (c2).g ; (c1).b *= (c2).b; (c1).a *= (c2).a; }
 #define CMULTO(c1, c2, c3) { (c3).r=(c1).r*(c2).r; (c3).g=(c1).g*(c2).g;  (c3).b=(c1).b*(c2).b; (c3).a=(c1).a*(c2).a; }
 #define CDIV(c, s) { (c).r/=s; (c).g/=s; (c).b/=s; (c).a/=s; }
@@ -158,11 +163,5 @@ void SHImage_dtor(SHImage * i);
 
 #define INT2COLCOORD(i, max) ( (SHfloat)(i) / (SHfloat)(max)  )
 #define COL2INTCOORD(c, max) ( (SHuint)SH_FLOOR((c) * (SHfloat)(max) + 0.5f) )
-
-SHuint32 shPackColor(SHColor *c, const SHImageFormatDesc *f);
-void shStorePackedColor(void *data, SHuint8 colorFormatSize, SHuint32 packedColor);
-void shStoreColor(SHColor *c, void *data, const SHImageFormatDesc *f);
-void shLoadColor(SHColor *c, const void *data, const SHImageFormatDesc *f);
-void shLoadPixelColor(SHColor * restrict c, const void * restrict data, const SHImageFormatDesc * restrict f, SHint x, SHint y, SHint32 stride);
 
 #endif /* __SHIMAGE_H */

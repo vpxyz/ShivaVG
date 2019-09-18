@@ -20,9 +20,11 @@ enum KernelType {
    SOBEL_KERNEL
 } kernelType = NONE;
 
+VGImage srcImage;
+
 void display(void)
 {
-   VGImage srcImage, dstImage;
+   VGImage dstImage;
    VGfloat white[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
    // 4 elements in order to align data. We use only the firt 3 values
@@ -35,18 +37,13 @@ void display(void)
    VGshort sobelKernelX[4] = { -1, 0, -1, 0 };
    VGshort sobelKernelY[4] = { 1, 2, 1, 0 };
 
-   VGImageFormat imgFormat;
-   #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-   imgFormat = VG_sABGR_8888;
-   #else
-   imgFormat = VG_sRGBA_8888;
-   #endif
-
    vgSetfv(VG_CLEAR_COLOR, 4, white);
    vgClear(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-   srcImage = vgCreateImage(imgFormat, SCREEN_WIDTH, SCREEN_HEIGHT, VG_IMAGE_QUALITY_BETTER);
-   vgImageSubData(srcImage, cimg, SCREEN_WIDTH*4, VG_sRGBA_8888, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+   if (kernelType == NONE) {
+      vgDrawImage(srcImage);
+      return ;
+   }
 
    dstImage = vgCreateImage(imgFormat, SCREEN_WIDTH, SCREEN_HEIGHT, VG_IMAGE_QUALITY_BETTER );
 
@@ -69,7 +66,6 @@ void display(void)
       break;
    }
 
-   vgDestroyImage(srcImage);
    vgDestroyImage(dstImage);
 }
 
@@ -126,6 +122,11 @@ int main(int argc, char *argv[])
    testOverlayString(help);
    testOverlayColor(1, 1, 1, 1);
    kernelType = NONE;
+
+   // init image
+   srcImage = vgCreateImage(imgFormat, SCREEN_WIDTH, SCREEN_HEIGHT, VG_IMAGE_QUALITY_BETTER );
+   vgImageSubData(srcImage, cimg, SCREEN_WIDTH * 4, VG_sRGBA_8888, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT );
+
    testRun();
    return EXIT_SUCCESS;
 

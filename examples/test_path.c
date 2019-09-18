@@ -170,7 +170,7 @@ void loadPath(void)
       0.7f, 0.5f
    };
 
-   // The background will just cleared with black color.
+   // The background will just cleared
    vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
 
    // Create a paint object.

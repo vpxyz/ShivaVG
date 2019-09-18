@@ -34,7 +34,7 @@ void cleanUp(void)
 void display(void)
 {
    VGImage dstImage;
-   VGfloat white[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+   VGfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
    VGfloat RedMatrix[] = { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
                            0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
@@ -51,7 +51,7 @@ void display(void)
                            0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
                            0.0f, 0.0f, 0.0f, 1.0f, 0.0f };
 
-   vgSetfv(VG_CLEAR_COLOR, 4, white);
+   vgSetfv(VG_CLEAR_COLOR, 4, black);
    vgClear(0, 0, img.width,img.height);
 
    dstImage = vgCreateImage(VG_lABGR_8888, img.width, img.height, VG_IMAGE_QUALITY_BETTER);
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
    testInit(argc, argv, 1280, 720, "ShivaVG: test color example");
    testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
    testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);
-   testOverlayColor(1, 1, 1, 1);
+   testOverlayColor(1.0f, 1.0f, 1.0f, 1.0f);
    testOverlayString(help);
    initImage();
    testRun();

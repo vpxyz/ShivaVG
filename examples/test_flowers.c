@@ -114,20 +114,20 @@ const char commands[] =
    "Click & drag mouse to change\n"
    "value for current mode\n\n"
    "h - this help\n"
-   "q - change display rendere quality\n"
-   "x - quit";
+   "r - change display rendere quality\n"
+   "q - quit";
 
 
 void key(unsigned char code, int x, int y)
 {
    switch(tolower(code)) {
-   case 'q':
+   case 'r':
       if (quality == VG_RENDERING_QUALITY_FASTER)
          quality = VG_RENDERING_QUALITY_BETTER;
       else
          quality = VG_RENDERING_QUALITY_FASTER;
       break;
-   case 'x':
+   case 'q':
       exit(EXIT_SUCCESS);
       break;
    case 'h':

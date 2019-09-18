@@ -123,8 +123,8 @@ int main(int argc, char *argv[])
    testInit(argc, argv, SCREEN_WIDTH, SCREEN_HEIGHT , "ShivaVG: gaussian blur example");
 
    // init source image
-   srcImage = vgCreateImage(VG_sRGBA_8888, SCREEN_WIDTH, SCREEN_HEIGHT, VG_IMAGE_QUALITY_BETTER);
-   vgImageSubData( srcImage, cimg, SCREEN_WIDTH*4, VG_sABGR_8888, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+   srcImage = vgCreateImage(imgFormat, SCREEN_WIDTH, SCREEN_HEIGHT, VG_IMAGE_QUALITY_BETTER);
+   vgImageSubData(srcImage, cimg, SCREEN_WIDTH*4, VG_sRGBA_8888, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
    testCallback(TEST_CALLBACK_DISPLAY, (CallbackFunc) display);
    testCallback(TEST_CALLBACK_KEY, (CallbackFunc) key);

@@ -41,7 +41,7 @@
 #define _ARRAY_DEFINE
 #include "shArrayBase.h"
 
-#define SH_BASE_IMAGE_FORMAT(format) (format & 0x1F)
+#define SH_BASE_IMAGE_FORMAT(format) ((format) & 0x1F)
 
 static inline SHfloat
 shInt2ColorComponent(SHuint c)
@@ -109,7 +109,8 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
    bgrBit = ((vg & (1 << 7)) >> 7);
 
    /* Find component ordering and size */
-   switch (SH_BASE_IMAGE_FORMAT(vg)) {
+   VGImageFormat baseFormat = SH_BASE_IMAGE_FORMAT(vg);
+   switch (baseFormat) {
    case VG_sRGBX_8888:
    case VG_lRGBX_8888:
       f->bytes = 4;
@@ -125,6 +126,8 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
       f->amask = 0x0;
       f->ashift = 0;
       f->amax = 1;
+      f->linear = baseFormat & 7;
+      f->premultiplied = true;
       break;
    case VG_sRGBA_8888:
    case VG_sRGBA_8888_PRE:
@@ -143,6 +146,8 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
       f->amask = 0x000000FF;
       f->ashift = 0;
       f->amax = 255;
+      f->linear = (baseFormat & 8) | (baseFormat & 9);
+      f->premultiplied = false;
       break;
    case VG_sRGB_565:
       f->bytes = 2;
@@ -158,6 +163,8 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
       f->amask = 0x0;
       f->ashift = 0;
       f->amax = 1;
+      f->linear = false;
+      f->premultiplied = true;
       break;
    case VG_sRGBA_5551:
       f->bytes = 2;
@@ -173,6 +180,8 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
       f->amask = 0x0001;
       f->ashift = 0;
       f->amax = 1;
+      f->linear = false;
+      f->premultiplied = false;
       break;
    case VG_sRGBA_4444:
       f->bytes = 2;
@@ -188,6 +197,8 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
       f->amask = 0x000F;
       f->ashift = 0;
       f->amax = 15;
+      f->linear = false;
+      f->premultiplied = false;
       break;
    case VG_sL_8:
    case VG_lL_8:
@@ -204,6 +215,8 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
       f->amask = 0x0;
       f->ashift = 0;
       f->amax = 1;
+      f->linear = baseFormat & 10;
+      f->premultiplied = false;
       break;
    case VG_A_8:
       f->bytes = 1;
@@ -219,6 +232,8 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
       f->amask = 0xFF;
       f->ashift = 0;
       f->amax = 255;
+      f->linear = false;
+      f->premultiplied = false;
       break;
    case VG_BW_1:
       f->bytes = 1;
@@ -234,6 +249,8 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
       f->amask = 0x0;
       f->ashift = 0;
       f->amax = 1;
+      f->linear = false;
+      f->premultiplied = false;
       break;
    }
 
@@ -267,18 +284,10 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
 
    SH_DEBUG("shSetupImageFormat bgrBit %d, amsbBit %d\n ", bgrBit, amsbBit);
 
-// For some color formats we need to know the byte order of the machine
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#define SH_IMAGE_FORMAT(img) img ## _REV
-#define SH_IMAGE_FORMAT_REV(img) img
-#else
-#define SH_IMAGE_FORMAT(img) img
-#define SH_IMAGE_FORMAT_REV(img) img ## _REV
-#endif
-
    /* Find proper mapping to OpenGL formats */
    // TODO: fix this! The endianness calc seems not correct.
    // https://www.opengl.org/discussion_boards/showthread.php/151639-GL_UNSIGNED_INT_8_8_8_8-%21-GL_UNSIGNED_BYTE
+   // OpenGLES support only GL_RGB{A} internal format. The library must handle byte swap
    switch (SH_BASE_IMAGE_FORMAT(vg)) {
    case VG_sRGBX_8888:
    case VG_lRGBX_8888:
@@ -291,19 +300,18 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
 
       if (amsbBit == 0 && bgrBit == 0) {
          f->glformat = GL_RGBA;
-         f->gltype = SH_IMAGE_FORMAT(GL_UNSIGNED_INT_8_8_8_8);
-
+         f->gltype = GL_UNSIGNED_INT_8_8_8_8; // probabilmente l'endianness dei test è sbagliata (quelle koreane tipo test_gaussian test_eb) bisogna fare un test per verificare questo caso
       } else if (amsbBit == 1 && bgrBit == 0) {
-         f->glformat = GL_BGRA; // must be GL_RGBA ?
-         f->gltype = SH_IMAGE_FORMAT_REV(GL_UNSIGNED_INT_8_8_8_8); // TODO: might be REV ?
+         f->glformat = GL_BGRA; // should be GL_RGBA ?
+         f->gltype = GL_UNSIGNED_INT_8_8_8_8_REV; // TODO: might be REV ?
 
       } else if (amsbBit == 0 && bgrBit == 1) {
          f->glformat = GL_BGRA;
-         f->gltype = SH_IMAGE_FORMAT(GL_UNSIGNED_INT_8_8_8_8);
+         f->gltype = GL_UNSIGNED_INT_8_8_8_8;
 
       } else if (amsbBit == 1 && bgrBit == 1) {
          f->glformat = GL_RGBA;
-         f->gltype = SH_IMAGE_FORMAT(GL_UNSIGNED_INT_8_8_8_8);
+         f->gltype = GL_UNSIGNED_INT_8_8_8_8_REV;
       }
       break;
    case VG_sRGBA_5551:
@@ -334,19 +342,19 @@ shSetupImageFormat(VGImageFormat vg, SHImageFormatDesc * f)
 
       if (amsbBit == 0 && bgrBit == 0) {
          f->glformat = GL_RGBA;
-         f->gltype = SH_IMAGE_FORMAT(GL_UNSIGNED_SHORT_4_4_4_4); // GL_UNSIGNED_SHORT_4_4_4_4;
+         f->gltype = GL_UNSIGNED_SHORT_4_4_4_4; // GL_UNSIGNED_SHORT_4_4_4_4;
 
       } else if (amsbBit == 1 && bgrBit == 0) {
          f->glformat = GL_BGRA;
-         f->gltype = SH_IMAGE_FORMAT_REV(GL_UNSIGNED_SHORT_4_4_4_4); // GL_UNSIGNED_SHORT_4_4_4_4_REV
+         f->gltype = GL_UNSIGNED_SHORT_4_4_4_4_REV; // GL_UNSIGNED_SHORT_4_4_4_4_REV
 
       } else if (amsbBit == 0 && bgrBit == 1) {
          f->glformat = GL_BGRA;
-         f->gltype = SH_IMAGE_FORMAT(GL_UNSIGNED_SHORT_4_4_4_4); // GL_UNSIGNED_SHORT_4_4_4_4;
+         f->gltype = GL_UNSIGNED_SHORT_4_4_4_4; // GL_UNSIGNED_SHORT_4_4_4_4;
 
       } else if (amsbBit == 1 && bgrBit == 1) {
          f->glformat = GL_RGBA;
-         f->gltype = SH_IMAGE_FORMAT_REV(GL_UNSIGNED_SHORT_4_4_4_4); // GL_UNSIGNED_SHORT_4_4_4_4_REV
+         f->gltype = GL_UNSIGNED_SHORT_4_4_4_4_REV;
       }
 
       break;
@@ -434,7 +442,7 @@ shIsSupportedImageFormat(VGImageFormat format)
  * Packed color according to given color format
  *--------------------------------------------------------*/
 
-inline SHuint32
+static inline SHuint32
 shPackColor(SHColor * restrict c, const SHImageFormatDesc * restrict f)
 {
    /*
@@ -465,7 +473,7 @@ shPackColor(SHColor * restrict c, const SHImageFormatDesc * restrict f)
  * address according to given color format size
  *--------------------------------------------------------*/
 
-inline void
+static inline void
 shStorePackedColor(void * restrict data, SHuint8 colorFormatSize, SHuint32 packedColor)
 {
    SH_ASSERT(data != NULL);
@@ -489,7 +497,7 @@ shStorePackedColor(void * restrict data, SHuint8 colorFormatSize, SHuint32 packe
  * address according to given format
  *--------------------------------------------------------*/
 
-inline void
+static inline void
 shStoreColor(SHColor * restrict c, void * restrict data, const SHImageFormatDesc * restrict f)
 {
    SHuint32 packedColor = shPackColor(c, f);
@@ -501,7 +509,7 @@ shStoreColor(SHColor * restrict c, void * restrict data, const SHImageFormatDesc
  * address according to the given format
  *---------------------------------------------------------*/
 
-inline void
+static inline void
 shLoadColor(SHColor * restrict c, const void * restrict data, const SHImageFormatDesc * restrict f)
 {
    /*
@@ -549,14 +557,14 @@ shLoadColor(SHColor * restrict c, const void * restrict data, const SHImageForma
  * given coordinates
  *---------------------------------------------------------*/
 
-inline void
+static inline void
 shLoadPixelColor(SHColor * restrict c, const void * restrict data, const SHImageFormatDesc * restrict f, SHint x, SHint y, SHint32 stride)
 {
    SHuint8 *px = (SHuint8 *) data + y * stride + x * f->bytes;
    shLoadColor(c,  px, f);
 }
 
-inline void
+static inline void
 shStorePixelColor(SHColor * restrict c, const void * restrict data, const SHImageFormatDesc * restrict f, SHint x, SHint y, SHint32 stride)
 {
    SHuint8 *px = (SHuint8 *) data + y * stride + x * f->bytes;
@@ -609,7 +617,7 @@ SHImage_dtor(SHImage * i)
 
 /*--------------------------------------------------------
  * Finds appropriate OpenGL texture size for the size of
- * the given image
+ * the given image 
  *--------------------------------------------------------*/
 
 void
@@ -745,7 +753,7 @@ vgCreateImage(VGImageFormat format,
    }
 
    /* Initialize data by zeroing-out */
-   memset(i->data, 1, width * height * fd.bytes);
+   memset(i->data, 1, i->stride * i->texheight);
    shUpdateImageTexture(i, context);
 
    /* Add to resource list */
@@ -796,25 +804,34 @@ vgClearImage(VGImage image, VGint x, VGint y, VGint width, VGint height)
       VG_RETURN(VG_NO_RETVAL);
 
    /* Clamp to image bounds */
-   SHint X, Y, ix, iy, dx, dy;
-   ix = SH_MAX(x, 0);
-   dx = ix - x;
-   iy = SH_MAX(y, 0);
-   dy = iy - y;
+   SHint ix = SH_MAX(x, 0);
+   SHint dx = ix - x;
+   SHint iy = SH_MAX(y, 0);
+   SHint dy = iy - y;
    width = SH_MIN(width - dx, i->width - ix);
    height = SH_MIN(height - dy, i->height - iy);
 
    /* Walk pixels and clear */
-   SHuint8 *data;
    SHuint32 packedColor = shPackColor(&context->clearColor, &i->fd);
-   for (Y = iy; Y < iy + height; ++Y) {
-      data = i->data + (Y * i->stride + ix * i->fd.bytes);
+   SHuint8 fdBytes = i->fd.bytes;
+   SHuint8 *data;
+   for (SHint Y = iy; Y < iy + height; ++Y) {
+      data = i->data + (Y * i->stride + ix * fdBytes);
 
-      for (X = ix; X < ix + width; ++X) {
-         shStorePackedColor(data, i->fd.bytes, packedColor);
-         data += i->fd.bytes;
+      for (SHint X = ix; X < ix + width; ++X) {
+         shStorePackedColor(data, fdBytes, packedColor);
+         data += fdBytes;
       }
    }
+
+   /*
+    * SHColor *clearColor = &context->clearColor;
+    * for (SHint Y = iy; Y < iy + height; ++Y) {
+    *    for (SHint X = ix; X < ix + width; ++X) {
+    *       shStorePixelColor(clearColor, i->data, &(i->fd), X, Y, i->stride);
+    *    }
+    * }
+    */
 
    shUpdateImageTexture(i, context);
    VG_RETURN(VG_NO_RETVAL);
@@ -944,7 +961,6 @@ shCopyPixels(SHuint8 * dst, VGImageFormat dstFormat, SHint dstStride,
          DD += dfd.bytes;
       }
    }
-
 }
 
 /*---------------------------------------------------------
@@ -1189,6 +1205,15 @@ vgWritePixels(const void *data, VGint dataStride,
                 width, height, width, height, 0, 0, 0, 0, width, height);
 
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+   glPixelStorei(GL_UNPACK_SWAP_BYTES, 1);
+   glPixelStorei(GL_PACK_SWAP_BYTES, 1);
+#else
+   glPixelStorei(GL_UNPACK_SWAP_BYTES, 0);
+   glPixelStorei(GL_PACK_SWAP_BYTES, 0);
+#endif
+
    glRasterPos2i(dx, dy);
    glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
    glRasterPos2i(0, 0);
@@ -1234,6 +1259,15 @@ vgGetPixels(VGImage dst, VGint dx, VGint dy,
    SH_RETURN_ERR_IF(!pixels, VG_OUT_OF_MEMORY_ERROR, SH_NO_RETVAL);
 
    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+   glPixelStorei(GL_UNPACK_SWAP_BYTES, 1);
+   glPixelStorei(GL_PACK_SWAP_BYTES, 1);
+#else
+   glPixelStorei(GL_UNPACK_SWAP_BYTES, 0);
+   glPixelStorei(GL_PACK_SWAP_BYTES, 0);
+#endif
+
    glReadPixels(sx, sy, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
    /* FIXME: we shouldnt be reading alpha */
@@ -1316,8 +1350,14 @@ vgCopyPixels(VGint dx, VGint dy,
    VG_RETURN_ERR_IF(width <= 0 || height <= 0,
                     VG_ILLEGAL_ARGUMENT_ERROR, VG_NO_RETVAL);
 
-   glPixelStorei(GL_PACK_ALIGNMENT, 1);
-   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+   glPixelStorei(GL_UNPACK_SWAP_BYTES, 1);
+   glPixelStorei(GL_PACK_SWAP_BYTES, 1);
+#else
+   glPixelStorei(GL_UNPACK_SWAP_BYTES, 0);
+   glPixelStorei(GL_PACK_SWAP_BYTES, 0);
+#endif
+
    glRasterPos2i(dx, dy);
    glCopyPixels(sx, sy, width, height, GL_COLOR);
    glRasterPos2i(0, 0);

@@ -1,4 +1,15 @@
 #include <stdint.h>
+#include <VG/openvg.h>
+
+/*
+ * #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+ * VGImageFormat imgFormat = VG_sABGR_8888;
+ * #else
+ */
+VGImageFormat imgFormat = VG_sRGBA_8888;
+/*
+ * #endif
+ */
 
 uint32_t cimg[] = {
 0x467C55FF, 0x4B7E58FF, 0x4B805DFF, 0x4D8260FF, 0x508462FF, 0x548769FF, 0x598A6DFF, 0x5D8B71FF, 0x5E8D75FF, 0x618F78FF,

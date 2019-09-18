@@ -80,9 +80,14 @@ void genPaints(void)
    vgSetParameteri(paintDst, VG_PAINT_COLOR_RAMP_SPREAD_MODE, VG_COLOR_RAMP_SPREAD_PAD);
 }
 
+
 void genImages(void)
 {
    VGfloat black[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+   // destroy previous images
+   vgDestroyImage(srcImage);
+   vgDestroyImage(dstImage);
+
    srcImage = vgCreateImage(VG_sRGBA_8888, imageSize, imageSize, VG_IMAGE_QUALITY_BETTER);
    dstImage = vgCreateImage(VG_sRGBA_8888, imageSize, imageSize, VG_IMAGE_QUALITY_BETTER);
    // clear surface with a transparent black
@@ -117,25 +122,55 @@ void genImages(void)
 
 void genPaths(void)
 {
-   VGubyte pathSegs[6];
-   VGfloat pathData[26];
+   /*
+    * VGubyte pathSegs[6];
+    * VGfloat pathData[26];
+    *
+    * flower = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 0, 0, VG_PATH_CAPABILITY_ALL);
+    * pathSegs[0] = VG_MOVE_TO_ABS;
+    * pathData[0] = -20.0f; pathData[1] = 20.0f;
+    * pathSegs[1] = VG_CUBIC_TO_ABS;
+    * pathData[2] = -200.0f; pathData[3] = 170.0f; pathData[4] = -200.0f; pathData[5] = -170.0f; pathData[6] = -20.0f; pathData[7] = -20.0f;
+    * pathSegs[2] = VG_CUBIC_TO_ABS;
+    * pathData[8] = -170.0f; pathData[9] = -200.0f; pathData[10] = 170.0f; pathData[11] = -200.0f; pathData[12] = 20.0f; pathData[13] = -20.0f;
+    * pathSegs[3] = VG_CUBIC_TO_ABS;
+    * pathData[14] = 200.0f; pathData[15] = -170.0f; pathData[16] = 200.0f; pathData[17] = 170.0f; pathData[18] = 20.0f; pathData[19] = 20.0f;
+    * pathSegs[4] = VG_CUBIC_TO_ABS;
+    * pathData[20] = 170.0f; pathData[21] = 200.0f; pathData[22] = -170.0f; pathData[23] = 200.0f; pathData[24] = -20.0f; pathData[25] = 20.0f;
+    * pathSegs[5] = VG_CLOSE_PATH;
+    * vgAppendPathData(flower, 6, pathSegs, pathData);
+    */
 
+   // flower-like path commands
+   VGubyte flowerCmds[] = {
+      VG_MOVE_TO,
+      VG_CUBIC_TO,
+      VG_CUBIC_TO,
+      VG_CUBIC_TO,
+      VG_CUBIC_TO,
+      VG_CLOSE_PATH
+   };
+   // flower-like path coordinates
+   VGfloat flowerCoords[] = {
+      // move to
+      -20.0f, 20.0f,
+      // cubic to
+      -200.0f, 170.0f, -200.0f, -170.0f, -20.0f, -20.0f,
+      // cubic to
+      -170.0f, -200.0f, 170.0f, -200.0f, 20.0f, -20.0f,
+      // cubic to
+      200.0f, -170.0f, 200.0f, 170.0f, 20.0f, 20.0f,
+      // cubic to
+      170.0f, 200.0f, -170.0f, 200.0f, -20.0f, 20.0f
+   };
+
+   // create the flower-like path: it will be used to generate images
    flower = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 0, 0, VG_PATH_CAPABILITY_ALL);
-   pathSegs[0] = VG_MOVE_TO_ABS;
-   pathData[0] = -20.0f; pathData[1] = 20.0f;
-   pathSegs[1] = VG_CUBIC_TO_ABS;
-   pathData[2] = -200.0f; pathData[3] = 170.0f; pathData[4] = -200.0f; pathData[5] = -170.0f; pathData[6] = -20.0f; pathData[7] = -20.0f;
-   pathSegs[2] = VG_CUBIC_TO_ABS;
-   pathData[8] = -170.0f; pathData[9] = -200.0f; pathData[10] = 170.0f; pathData[11] = -200.0f; pathData[12] = 20.0f; pathData[13] = -20.0f;
-   pathSegs[3] = VG_CUBIC_TO_ABS;
-   pathData[14] = 200.0f; pathData[15] = -170.0f; pathData[16] = 200.0f; pathData[17] = 170.0f; pathData[18] = 20.0f; pathData[19] = 20.0f;
-   pathSegs[4] = VG_CUBIC_TO_ABS;
-   pathData[20] = 170.0f; pathData[21] = 200.0f; pathData[22] = -170.0f; pathData[23] = 200.0f; pathData[24] = -20.0f; pathData[25] = 20.0f;
-   pathSegs[5] = VG_CLOSE_PATH;
-   vgAppendPathData(flower, 6, pathSegs, pathData);
+   vgAppendPathData(flower, 6, flowerCmds, flowerCoords);
 
    circle = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 0, 0, VG_PATH_CAPABILITY_ALL);
    vguEllipse(circle, 0.0f, 0.0f, 8.0f, 8.0f);
+
    square = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 0, 0, VG_PATH_CAPABILITY_ALL);
    vguRect(square, 0, 0, 346.0f, 346.0f);
 }
@@ -143,7 +178,7 @@ void genPaths(void)
 void display(void)
 {
    VGfloat clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-   VGfloat dashPattern[4] = { 5.0f, 5.0f };
+   VGfloat dashPattern[4] = { 10.0f, 10.0f };
 
    vgSetfv(VG_STROKE_DASH_PATTERN, 0, NULL);
    vgSeti(VG_RENDERING_QUALITY, quality);
@@ -155,10 +190,6 @@ void display(void)
    vgSeti(VG_MATRIX_MODE, VG_MATRIX_IMAGE_USER_TO_SURFACE);
    vgLoadIdentity();
    vgTranslate(dstCenter[X_COORD] - 173.0f, dstCenter[Y_COORD] - 173.0f);
-   /*
-    * vgTranslate(dstCenter[0] - 173.0f, dstCenter[1] - 173.0f);
-    */
-   vgScale(0.90f, 0.90f);
    vgDrawImage(dstImage);
 
    // draw source image according to the current blend mode
@@ -166,10 +197,6 @@ void display(void)
    vgSeti(VG_MATRIX_MODE, VG_MATRIX_IMAGE_USER_TO_SURFACE);
    vgLoadIdentity();
    vgTranslate(srcCenter[X_COORD] - 173.0f, srcCenter[Y_COORD] - 173.0f);
-   /*
-    * vgTranslate(srcCenter[0] - 173.0f, srcCenter[1] - 173.0f);
-    */
-   vgScale(0.90f, 0.90f);
    vgDrawImage(srcImage);
 
    // draw control points
@@ -186,7 +213,7 @@ void display(void)
    vgDrawPath(circle, VG_STROKE_PATH);
 
    // draw images bounds
-   vgSetf(VG_STROKE_LINE_WIDTH, 1.0f);
+   vgSetf(VG_STROKE_LINE_WIDTH, 2.0f);
    vgSetfv(VG_STROKE_DASH_PATTERN, 2, dashPattern);
    vgLoadIdentity();
    vgTranslate(dstCenter[X_COORD] - 173.0f, dstCenter[Y_COORD] - 173.0f);
@@ -336,7 +363,7 @@ const char commands[] =
    "Click & drag mouse to change\n"
    "value for current mode\n\n"
    "h - this help\n"
-   "a - change blend mode\n"
+   "b - change blend mode\n"
    "r - change display render quality\n"
    "q - quit";
 
@@ -352,17 +379,11 @@ void key(unsigned char code, int x, int y)
       else
          quality = VG_RENDERING_QUALITY_FASTER;
       break;
-   case 'a':
-   {
-      VGuint i = (VGuint) blendMode;
-      i++;
-      if (i > VG_BLEND_ADDITIVE)
-         blendMode = VG_BLEND_SRC;
-      else
-         blendMode = (VGBlendMode) i;
-      printf("new blend mode: %#x\n", blendMode);
-   }
-   break;
+   case 'b':
+      blendMode = nextBlendMode(blendMode);
+      testOverlayString("%s, m: %s", help, blendModeStr(blendMode));
+      printf("new blend mode: %s\n", blendModeStr(blendMode));
+      break;
    case 'q':
       exit(EXIT_SUCCESS);
       break;
@@ -372,7 +393,7 @@ void key(unsigned char code, int x, int y)
          testOverlayString(commands);
          open = 1;
       } else {
-         testOverlayString(help);
+         testOverlayString("%s, m: %s", help, blendModeStr(blendMode));
          open = 0;
       }
       return;
@@ -433,7 +454,7 @@ int main(int argc, char *argv[])
     */
    testCallback(TEST_CALLBACK_RESHAPE, (CallbackFunc) reshape);
 
-   testOverlayString(help);
+   testOverlayString("%s, m: %s", help, blendModeStr(blendMode));
    testOverlayColor(1, 1, 1, 1);
 
    testRun();

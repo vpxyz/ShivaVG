@@ -109,24 +109,24 @@ typedef union
 
 /* Portable function definitions */
 
-#define SH_SQRT   sqrtf
-#define SH_COS    cosf
-#define SH_SIN    sinf
-#define SH_ACOS   acosf
-#define SH_ASIN   asinf
-#define SH_ATAN   atanf
-#define SH_FLOOR  floorf
-#define SH_ROUND  roundf
-#define SH_CEIL   ceilf
-#define SH_LOG    logf
-#define SH_ASSERT assert
+#define SH_SQRT(a)   sqrtf((a))
+#define SH_COS(a)    cosf((a))
+#define SH_SIN(a)    sinf((a))
+#define SH_ACOS(a)   acosf((a))
+#define SH_ASIN(a)   asinf((a))
+#define SH_ATAN(a)   atanf((a))
+#define SH_FLOOR(a)  floorf((a))
+#define SH_ROUND(a)  roundf((a))
+#define SH_CEIL(a)   ceilf((a))
+#define SH_LOG(a)    logf((a))
+#define SH_ASSERT(a) assert((a))
 
 #if defined(__isnan) || (defined(__APPLE__) && (__GNUC__ == 3))
-#  define SH_ISNAN __isnan
+#  define SH_ISNAN(a) __isnan((a))
 #elif defined(_isnan) || defined(WIN32)
-#  define SH_ISNAN _isnan
+#  define SH_ISNAN(a) _isnan((a))
 #else
-#  define SH_ISNAN isnan
+#  define SH_ISNAN(a) isnan((a))
 #endif
 
 /* Helper macros */
@@ -174,16 +174,18 @@ typedef union
 
 /* OpenGL headers */
 
+/* GLEW must preceed others GL headers */
+#include <GL/glew.h>
+
 #if defined(__APPLE__)
-#  include <OpenGL/gl.h>
 #  include <OpenGL/glu.h>
 #elif defined(_WIN32)
-#  include <GL/gl.h>
 #  include <GL/glu.h>
 #else
-#  include <GL/gl.h>
 #  include <GL/glu.h>
-#  define GL_GLEXT_LEGACY         /* don't include glext.h */
+/*
+ * #  define GL_GLEXT_LEGACY         /\* don't include glext.h *\/
+ */
 #  include <GL/glx.h>
 #  include <GL/glext.h>
 #endif
@@ -208,8 +210,8 @@ typedef union
 
 #define SH_CLEAN_ERRNO() (errno == 0 ? "None" : strerror(errno))
 #define SH_LOG_ERR(M, ...) fprintf(stderr, "[ERROR] (%s:%s:%d: errno: %s) " M "\n", __FILE__, __func__, __LINE__, SH_CLEAN_ERRNO(), ##__VA_ARGS__)
-#define SH_LOG_WARN(M, ...) fprintf(stderr, "[WARN] (%s:%s:%d: errno: %s) " M "\n", __FILE__, __func__, __LINE__, SH_CLEAN_ERRNO(), ##__VA_ARGS__)
-#define SH_LOG_INFO(M, ...) fprintf(stderr, "[INFO] (%s:%s:%d) " M "\n", __FILE__, __func__, __LINE__, ##__VA_ARGS__)
+#define SH_LOG_WARN(M, ...) fprintf(stderr, "[WARN]  (%s:%s:%d: errno: %s) " M "\n", __FILE__, __func__, __LINE__, SH_CLEAN_ERRNO(), ##__VA_ARGS__)
+#define SH_LOG_INFO(M, ...) fprintf(stderr, "[INFO]  (%s:%s:%d) " M "\n", __FILE__, __func__, __LINE__, ##__VA_ARGS__)
 #define SH_CHECK(A, M, ...) if (!(A)) { SH_LOG_ERR(M, ##__VA_ARGS__); errno = 0; goto error; }
 #define SH_SENTINEL(M, ...)  { SH_LOG_ERR(M, ##__VA_ARGS__); errno = 0; goto error; }
 #define SH_CHECK_MEM(A) SH_CHECK((A), "Out of memory.")

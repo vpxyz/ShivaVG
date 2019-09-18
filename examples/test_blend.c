@@ -45,7 +45,7 @@ void createOperands(void)
   unsigned int wsrc, hsrc;
   unsigned char *src;
   unsigned int err = lodepng_decode32_file(&src, &wsrc, &hsrc, IMAGE_DIR"test_blend_src.png");
-  
+
   if (err != 0) {
      printf("Something goes wrong %s\n",lodepng_error_text(err));
      exit(EXIT_FAILURE);
@@ -60,6 +60,7 @@ void createOperands(void)
      exit(EXIT_FAILURE);
   }
 
+  // Remember png are big-endian
   isrc = vgCreateImage(VG_sRGBA_8888, wsrc,
                        hsrc, VG_IMAGE_QUALITY_BETTER);
 

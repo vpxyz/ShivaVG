@@ -55,13 +55,13 @@ VGfloat btnColor[4] = { 0, 0, 0, 1 };
 VGfloat btnOverColor[4] = { 0.1, 0.1, 0.1, 1 };
 VGfloat btnShineColor[4] = { 0.4, 0.4, 0.4, 0.4 };
 
-void
+inline void
 copyMatrix(VGfloat * dst, VGfloat * src)
 {
    memcpy(dst, src, 16 * (sizeof(VGfloat)));
 }
 
-void
+inline void
 copyColor(VGfloat * dst, VGfloat * src)
 {
    memcpy(dst, src, 4 * (sizeof(VGfloat)));

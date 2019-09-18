@@ -3,10 +3,13 @@ project(ShivaVG)
 # TODO test on Windows/MinGW
 # TODO separate targets for examples and install target
 # TODO update INSTALL/README etc
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 include(CheckIncludeFiles)
 include(CheckLibraryExists)
 include(CheckTypeSize)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 set(CMAKE_C_FLAGS "-O3 -mtune=generic -std=gnu99 -pedantic -Werror=incompatible-pointer-types -Werror=strict-prototypes -fno-strict-aliasing -Wall -Wvla")
@@ -26,11 +29,13 @@ option(BUILD_VGU               "Build VGU example (default=yes)]"               
 option(BUILD_DASH              "Build Dashing example (default=yes)]"                      OFF)
 option(BUILD_LINEAR            "Build Linear Gradient example (default=yes)]"              OFF)
 option(BUILD_RADIAL            "Build Radial Gradient example (default=yes)]"              OFF)
+option(BUILD_GRADIENT          "Build Gradient example (default=yes)]"                     OFF)
 option(BUILD_INTERPOLATE       "Build Path Interpolation example (default=yes)]"           OFF)
 option(BUILD_TIGER             "Build Tiger SVG example (default=yes)]"                    OFF)
 option(BUILD_IMAGE             "Build Images example (default=yes)]"                       OFF)
 option(BUILD_PATTERN           "Build Pattern Paint example (default=yes)]"                OFF)
 option(BUILD_BLEND             "Build Blending example (default=yes)]"                     OFF)
+option(BUILD_PORTERDUFF        "Build Porter Duff example (default=yes)]"                  OFF)
 option(BUILD_EB                "Build Electro Body example (default=yes)]"                 OFF)
 option(BUILD_WARP              "Build Warp image example (default=yes)]"                   OFF)
 option(BUILD_PATH              "Build Path image example (default=yes)]"                   OFF)
@@ -48,6 +53,7 @@ option(BUILD_LOOKUP            "Build Color lookup example (default=yes)]"      
 option(BUILD_LOOKUP2           "Build Color lookup2 example (default=yes)]"                OFF)
 option(BUILD_LOOKUP_SINGLE     "Build Color lookup single example (default=yes)]"          OFF)
 option(BUILD_COLOR             "Build Simple color matrix example (default=yes)]"          OFF)
+option(BUILD_SRGB              "Build sRGB example (default=yes)]"                         OFF)
 option(BUILD_IMAGE_MODE        "Build Image mode example (default=yes)]"                   OFF)
 option(BUILD_TILING_MODE       "Build Tiling mode example (default=yes)]"                  OFF)
 
@@ -61,11 +67,13 @@ if(BUILD_ALL_EXAMPLES)
     set(BUILD_DASH ON)
     set(BUILD_LINEAR ON)
     set(BUILD_RADIAL ON)
+    set(BUILD_GRADIENT ON)
     set(BUILD_INTERPOLATE ON)
     set(BUILD_TIGER ON)
     set(BUILD_IMAGE ON)
     set(BUILD_PATTERN ON)
     set(BUILD_BLEND ON)
+    set(BUILD_PORTERDUFF ON)
     set(BUILD_EB ON)
     set(BUILD_WARP ON)
     set(BUILD_PATH ON)
@@ -83,14 +91,15 @@ if(BUILD_ALL_EXAMPLES)
     set(BUILD_LOOKUP2 ON)
     set(BUILD_LOOKUP_SINGLE ON)
     set(BUILD_COLOR ON)
+    set(BUILD_SRGB ON)
     set(BUILD_IMAGE_MODE ON)
     set(BUILD_TILING_MODE ON)
 endif()
-set(BUILD_EXAMPLES BUILD_VGU OR BUILD_DASH OR BUILD_LINEAR OR BUILD_RADIAL OR BUILD_INTERPOLATE OR BUILD_TIGER
-  OR BUILD_IMAGE OR BUILD_PATTERN OR BUILD_BLEND OR BUILD_EB OR BUILD_WARP OR BUILD_PATH OR BUILD_FLOWERS
+set(BUILD_EXAMPLES BUILD_VGU OR BUILD_DASH OR BUILD_LINEAR OR BUILD_RADIAL OR BUILD_GRADIENT OR BUILD_INTERPOLATE OR BUILD_TIGER
+  OR BUILD_IMAGE OR BUILD_PATTERN OR BUILD_BLEND OR BUILD_PORTERDUFF OR BUILD_EB OR BUILD_WARP OR BUILD_PATH OR BUILD_FLOWERS
   OR BUILD_STRESS OR BUILD_CLOCK OR BUILD_SUBWAYMAP OR BUILD_COMPOSITING OR BUILD_COLORMATRIX OR BUILD_CONVOLVE OR BUILD_SEPARABLECONVOLVE
   OR BUILD_GAUSSIANBLUR OR BUILD_GAUSSIANBLUR2 OR BUILD_LOOKUP OR BUILD_LOOKUP2 OR BUID_LOOKUP_SINGLE
-  OR BUILD_COLOR OR BUILD_IMAGE_MODE OR BUILD_TILING_MODE)
+  OR BUILD_COLOR OR BUILD_SRGB OR BUILD_IMAGE_MODE OR BUILD_TILING_MODE)
 
 # Finding packages
 # TODO: EGL/OpenGLES and friends?
@@ -99,6 +108,17 @@ set(BUILD_EXAMPLES BUILD_VGU OR BUILD_DASH OR BUILD_LINEAR OR BUILD_RADIAL OR BU
 # TODO: detailed report instead of failure like configure did
 # TODO: properly look for GLX on XWindow-based systems
 find_package(OpenGL REQUIRED)
+if (OpenGL_FOUND)
+    include_directories(${OPENGL_INCLUDE_DIR})
+    link_libraries(${OPENGL_LIBRARIES})
+endif()
+
+find_package(GLEW REQUIRED)
+if (GLEW_FOUND)
+    include_directories(${GLEW_INCLUDE_DIRS})
+    link_libraries(${GLEW_LIBRARIES})
+endif()
+
 if(BUILD_EXAMPLES)
     # All the examples require GLUT
     find_package(GLUT REQUIRED)
@@ -106,7 +126,6 @@ if(BUILD_EXAMPLES)
         find_package(JPEG REQUIRED)
     endif()
 endif()
-
 # Platform checks
 check_include_files(dlfcn.h HAVE_DLFCN_H)
 check_include_files(inttypes.h HAVE_INTTYPES_H)
@@ -171,6 +190,7 @@ message("ShivaVG will be compiled with the following example programs\n"
         "  Images                    ${BUILD_IMAGE}\n"
         "  Pattern paint             ${BUILD_PATTERN}\n"
         "  Blending                  ${BUILD_BLEND}\n"
+        "  Porter Duff               ${BUILD_PORTERDUFF}\n"
         "  Electro Body              ${BUILD_EB}\n"
         "  Warp Image                ${BUILD_WARP}\n"
         "  Flowers                   ${BUILD_FLOWERS}\n"
@@ -187,6 +207,7 @@ message("ShivaVG will be compiled with the following example programs\n"
         "  Color lookup2             ${BUILD_LOOKUP2}\n"
         "  Color lookup single       ${BUILD_LOOKUP_SINGLE}\n"
         "  Simple color matrix       ${BUILD_COLOR}\n"
+        "  sRGB color                ${BUILD_SRGB}\n"
         "  Image mode                ${BUILD_IMAGE_MODE}\n"
         "  Tiling mode               ${BUILD_TILING_MODE}\n"
         )
@@ -200,4 +221,4 @@ if(BUILD_EXAMPLES)
 endif()
 
 
-install(DIRECTORY include/vg DESTINATION include)
+install(DIRECTORY include/VG DESTINATION include)

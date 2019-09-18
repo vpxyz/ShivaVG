@@ -106,9 +106,9 @@ void display(void)
    VGint i, j, k;
    VGfloat c, s;
 
-#define ROTATE_POINT(_x, _y) \
+#define ROTATE_POINT(_x, _y) {          \
    pathData[j++] = c * (_x) + s * (_y);  \
-   pathData[j++] = -s * (_x) + c * (_y);
+   pathData[j++] = -s * (_x) + c * (_y); }
 
    vgSeti(VG_RENDERING_QUALITY, quality);
    vgClear(0, 0, windowWidth, windowHeight);

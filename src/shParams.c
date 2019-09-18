@@ -157,9 +157,9 @@ getMaxFloat(void)
 SHfloat
 shValidInputFloat(VGfloat f)
 {
-   SHfloat max = getMaxFloat();
    if (SH_ISNAN(f))
       return 0.0f;              /* convert NAN to zero */
+   SHfloat max = getMaxFloat();
    SH_CLAMP(f, -max, max);      /* clamp to valid range */
    return (SHfloat) f;
 }

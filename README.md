@@ -18,10 +18,11 @@ IV.   EXTENSIONS
 
 ### Prerequisites
 
-   OpenGL development libraries and headers should be installed.
-   Other than that, since it's ANSI C should compile with any modern
-   C compiler. jpeglib needs to be installed for example programs
-   that use images.
+   OpenGL and GLEW development libraries headers should be installed.
+   Now ShivaVG require OpenGL >= 2.0 .
+   Other than that, since it's ANSI C99 should compile with any modern
+   C compiler (gcc or clang are the best choice).
+   jpeglib needs to be installed for example programs that use images.
 
 ### Compiling
 ShivaVG has now been converted to [CMake](http://www.cmake.org/).

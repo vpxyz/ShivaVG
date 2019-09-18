@@ -23,6 +23,7 @@
 #include "shContext.h"
 #include "shPaint.h"
 #include <stdio.h>
+#include "shCommons.h"
 
 #define _ITEM_T SHStop
 #define _ARRAY_T SHStopArray
@@ -547,12 +548,18 @@ shDrawLinearGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       /* Fill boundbox with color at offset 1 */
       SHColor *c = &p->stops.items[p->stops.size - 1].color;
       glColor4fv((GLfloat *) c);
-      glBegin(GL_QUADS);
-         glVertex2fv((GLfloat *) & corners[0]);
-         glVertex2fv((GLfloat *) & corners[1]);
-         glVertex2fv((GLfloat *) & corners[2]);
-         glVertex2fv((GLfloat *) & corners[3]);
-      glEnd();
+      glEnableClientState(GL_VERTEX_ARRAY);
+      glVertexPointer(2, GL_FLOAT, 0, (GLfloat *) & corners);
+      glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+      glDisableClientState(GL_VERTEX_ARRAY);
+      /*
+       * glBegin(GL_QUADS);
+       *    glVertex2fv((GLfloat *) & corners[0]);
+       *    glVertex2fv((GLfloat *) & corners[1]);
+       *    glVertex2fv((GLfloat *) & corners[2]);
+       *    glVertex2fv((GLfloat *) & corners[3]);
+       * glEnd();
+       */
       return 1;
    }
 
@@ -598,15 +605,34 @@ shDrawLinearGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    shSetGradientTexGLState(p);
 
    glEnable(GL_TEXTURE_1D);
-   glBegin(GL_QUAD_STRIP);
+   /*
+    * glBegin(GL_QUAD_STRIP);
+    */
+   glBegin(GL_TRIANGLES);
 
-      glMultiTexCoord1f(texUnit, minOffset);
-      glVertex2fv((GLfloat *) & r1);
-      glVertex2fv((GLfloat *) & l1);
+   /*
+    * glMultiTexCoord1f(texUnit, minOffset);
+    * glVertex2fv((GLfloat *) & r1);
+    * glVertex2fv((GLfloat *) & l1);
+    * 
+    * glMultiTexCoord1f(texUnit, maxOffset);
+    * glVertex2fv((GLfloat *) & r2);
+    * glVertex2fv((GLfloat *) & l2);
+    */
 
-      glMultiTexCoord1f(texUnit, maxOffset);
-      glVertex2fv((GLfloat *) & r2);
-      glVertex2fv((GLfloat *) & l2);
+   // Draw a Quads
+   // first triangle
+   glMultiTexCoord1f(texUnit, minOffset);
+   glVertex2fv((GLfloat *) & r1);
+   glVertex2fv((GLfloat *) & l1);
+   glMultiTexCoord1f(texUnit, maxOffset);
+   glVertex2fv((GLfloat *) & r2);
+
+   // second triangle
+   glVertex2fv((GLfloat *) & r2);
+   glVertex2fv((GLfloat *) & l2);
+   glMultiTexCoord1f(texUnit, minOffset);
+   glVertex2fv((GLfloat *) & l1);
 
    glEnd();
    glDisable(GL_TEXTURE_1D);
@@ -650,10 +676,6 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    SHfloat maxA = 0.0f;
    SHfloat startA = 0.0f;
 
-   SHint numsteps = 100;
-   SHfloat step;
-   SHVector2 tmin, tmax;
-   SHVector2 min1, max1, min2, max2;
 
    /* Pick paint transform matrix */
    SH_GETCONTEXT(0);
@@ -706,12 +728,18 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       /* Fill boundbox with color at offset 1 */
       SHColor *c = &p->stops.items[p->stops.size - 1].color;
       glColor4fv((GLfloat *) c);
-      glBegin(GL_QUADS);
-        glVertex2fv((GLfloat *) & corners[0]);
-        glVertex2fv((GLfloat *) & corners[1]);
-        glVertex2fv((GLfloat *) & corners[2]);
-        glVertex2fv((GLfloat *) & corners[3]);
-      glEnd();
+      glEnableClientState(GL_VERTEX_ARRAY);
+      glVertexPointer(2, GL_FLOAT, 0, (GLfloat *) & corners);
+      glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+      glDisableClientState(GL_VERTEX_ARRAY);
+      /*
+       * glBegin(GL_QUADS);
+       *   glVertex2fv((GLfloat *) & corners[0]);
+       *   glVertex2fv((GLfloat *) & corners[1]);
+       *   glVertex2fv((GLfloat *) & corners[2]);
+       *   glVertex2fv((GLfloat *) & corners[3]);
+       * glEnd();
+       */
       return 1;
    }
 
@@ -794,6 +822,10 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       of the gradient function when X and Y are substitued
       with a line equation for each bound-box edge. As a
       workaround we use 0.0f for now. */
+   SHint numsteps = 100;
+   SHfloat step;
+
+
    minOffset = 0.0f;
    step = PI / 50;
    numsteps = (SHint) SH_CEIL(maxA / step) + 1;
@@ -802,9 +834,15 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    shSetGradientTexGLState(p);
 
    glEnable(GL_TEXTURE_1D);
-   glBegin(GL_QUADS);
+   /*
+    * glBegin(GL_QUADS);
+    */
+
+   glBegin(GL_TRIANGLES);
 
    /* Walk the steps and draw gradient mesh */
+   SHVector2 tmin, tmax;
+   SHVector2 min1, max1, min2, max2;
    SHint i;
    SHfloat a;
    for (i = 0, a = startA; i < numsteps; ++i, a += step) {
@@ -833,14 +871,33 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       max2.x = f.x + tmax.x * ux.x + tmax.y * uy.x;
       max2.y = f.y + tmax.x * ux.y + tmax.y * uy.y;
 
+      // TODO: per sostituire questo pezzo, devo accumulare i valori in due array, in questo loop, fuori dal loop li disegno
       /* Draw quad */
-      if (i != 0) {
+      /*
+       * if (i != 0) {
+       *    glMultiTexCoord1f(texUnit, minOffset);
+       *    glVertex2fv((GLfloat *) & min1);
+       *    glVertex2fv((GLfloat *) & min2);
+       *    glMultiTexCoord1f(texUnit, maxOffset);
+       *    glVertex2fv((GLfloat *) & max2);
+       *    glVertex2fv((GLfloat *) & max1);
+       * }
+       */
+
+      if (i > 0) {
+         // Draw a Quads
+         // first triangle
          glMultiTexCoord1f(texUnit, minOffset);
          glVertex2fv((GLfloat *) & min1);
          glVertex2fv((GLfloat *) & min2);
          glMultiTexCoord1f(texUnit, maxOffset);
          glVertex2fv((GLfloat *) & max2);
+
+         // second triangle
+         glVertex2fv((GLfloat *) & max2);
          glVertex2fv((GLfloat *) & max1);
+         glMultiTexCoord1f(texUnit, minOffset);
+         glVertex2fv((GLfloat *) & min1);
       }
 
       /* Save prev points */
@@ -888,12 +945,16 @@ shDrawPatternMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       /* Fill boundbox with tile fill color */
       SHColor *c = &context->tileFillColor;
       glColor4fv((GLfloat *) c);
-      glBegin(GL_QUADS);
-         glVertex2fv((GLfloat *) & corners[0]);
-         glVertex2fv((GLfloat *) & corners[1]);
-         glVertex2fv((GLfloat *) & corners[2]);
-         glVertex2fv((GLfloat *) & corners[3]);
-      glEnd();
+      shDrawQuadsArray((GLfloat *) corners);
+
+      /*
+       * glBegin(GL_QUADS);
+       *    glVertex2fv((GLfloat *) & corners[0]);
+       *    glVertex2fv((GLfloat *) & corners[1]);
+       *    glVertex2fv((GLfloat *) & corners[2]);
+       *    glVertex2fv((GLfloat *) & corners[3]);
+       * glEnd();
+       */
       return 1;
    }
 
@@ -914,16 +975,57 @@ shDrawPatternMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       that will get transformed back to paint space */
    shSetPatternTexGLState(p, context);
    glEnable(GL_TEXTURE_2D);
-   glBegin(GL_QUADS);
+
+   /*
+    * glBegin(GL_QUADS);
+    *    glMultiTexCoord2f(texUnit, corners[0].x, corners[0].y);
+    *    glVertex2fv((GLfloat *) & corners[0]);
+    *    glMultiTexCoord2f(texUnit, corners[1].x, corners[1].y);
+    *    glVertex2fv((GLfloat *) & corners[1]);
+    *    glMultiTexCoord2f(texUnit, corners[2].x, corners[2].y);
+    *    glVertex2fv((GLfloat *) & corners[2]);
+    *    glMultiTexCoord2f(texUnit, corners[3].x, corners[3].y);
+    *    glVertex2fv((GLfloat *) & corners[3]);
+    * glEnd();
+    */
+
+   glBegin(GL_TRIANGLES);
       glMultiTexCoord2f(texUnit, corners[0].x, corners[0].y);
       glVertex2fv((GLfloat *) & corners[0]);
       glMultiTexCoord2f(texUnit, corners[1].x, corners[1].y);
       glVertex2fv((GLfloat *) & corners[1]);
       glMultiTexCoord2f(texUnit, corners[2].x, corners[2].y);
       glVertex2fv((GLfloat *) & corners[2]);
+
+      glMultiTexCoord2f(texUnit, corners[2].x, corners[2].y);
+      glVertex2fv((GLfloat *) & corners[2]);
       glMultiTexCoord2f(texUnit, corners[3].x, corners[3].y);
       glVertex2fv((GLfloat *) & corners[3]);
+      glMultiTexCoord2f(texUnit, corners[0].x, corners[0].y);
+      glVertex2fv((GLfloat *) & corners[0]);
    glEnd();
+
+   /*
+    * // TODO: è necessario studiare bene come funziano questa cosa del client state quando ci sono di mezzo le texture 
+    * SHVector2 txc[6] = {corners[0], corners[1], corners[2], corners[2], corners[3], corners[0]};
+    * SHVector2 nc[6] = {corners[0], corners[1], corners[2], corners[2], corners[3], corners[0]};
+    * 
+    * glClientActiveTexture(texUnit);
+    * glEnableClientState(GL_VERTEX_ARRAY);
+    * glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    *    glTexCoordPointer(2, GL_FLOAT, 0, txc);
+    *    glVertexPointer(2, GL_FLOAT, 0, nc);
+    *    glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
+    *    /\*
+    *     * glTexCoordPointer(2, GL_FLOAT, 0, corners);
+    *     * glVertexPointer(2, GL_FLOAT, 0, corners);
+    *     * glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    *     *\/
+    * glDisableClientState(GL_VERTEX_ARRAY);
+    * glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    */
+
+
    glDisable(GL_TEXTURE_2D);
    glPopMatrix();
    glMatrixMode(GL_MODELVIEW);

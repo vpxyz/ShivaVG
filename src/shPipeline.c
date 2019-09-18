@@ -27,6 +27,7 @@
 #include "shImage.h"
 #include "shGeometry.h"
 #include "shPaint.h"
+#include "shCommons.h"
 
 static void
 shPremultiplyFramebuffer(void)
@@ -45,32 +46,26 @@ shUnpremultiplyFramebuffer(void)
 /*-----------------------------------------------------------
  * Set the render quality.
  *-----------------------------------------------------------*/
-static void
+static inline void
 shSetRenderQualityGL(VGRenderingQuality quality)
 {
    switch (quality) {
    case VG_RENDERING_QUALITY_NONANTIALIASED:
       glDisable(GL_LINE_SMOOTH);
-      glDisable(GL_POLYGON_SMOOTH);
       glDisable(GL_MULTISAMPLE);
       break;
    case VG_RENDERING_QUALITY_FASTER:
       glEnable(GL_LINE_SMOOTH);
       glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
-      glEnable(GL_POLYGON_SMOOTH);
-      glHint(GL_POLYGON_SMOOTH_HINT, GL_FASTEST);
       glDisable(GL_MULTISAMPLE);
       break;
    case VG_RENDERING_QUALITY_BETTER:
       glEnable(GL_LINE_SMOOTH);
       glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-      glEnable(GL_POLYGON_SMOOTH);
-      glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
       glEnable(GL_MULTISAMPLE);
       break;
    default:
       glDisable(GL_LINE_SMOOTH);
-      glDisable(GL_POLYGON_SMOOTH);
       glEnable(GL_MULTISAMPLE);
       break;
    }
@@ -82,96 +77,228 @@ updateBlendingStateGL(VGContext * restrict c, int alphaIsOne)
    /* Most common drawing mode (SRC_OVER with alpha=1)
       as well as SRC is optimized by turning OpenGL
       blending off. In other cases its turned on. */
-
+   // Ok la roba giusta sta qui http://www.realtimerendering.com/blog/gpus-prefer-premultiplication/
+   // e qui https://stackoverflow.com/questions/19674740/opengl-es2-premultiplied-vs-straight-alpha-blending#37869033
+   // ad esempio per src over glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+   // bisogna memorizzare se la texture corrente è in formato pre-multiplied o meno. Oppure bisogna trasformare i premultiplied in unpremultiplied
+   // meglio ancora sarebbe convertire tutti i formati unpremultiplied in premultiplied in modo da rendere più semplice sia il blending sia il filtering delle immagini
+   // quello giusto è questo: http://apoorvaj.io/alpha-compositing-opengl-blending-and-premultiplied-alpha.html
+   // Leggi cosa dice quando parla dei pre-multiplied. In sostanza quando alphaIsOne == true devo usare quell'approccio, se no l'altro
    SH_DEBUG("updateBlendingStateGL(): alphaIsOne = %d\n", alphaIsOne);
    SH_ASSERT(c != NULL);
    switch (c->blendMode) {
    case VG_BLEND_SRC:
-      glBlendFunc(GL_ONE, GL_ZERO);
-      glDisable(GL_BLEND);
+      // ensure blend equation set to default
+      /*
+       * glBlendEquation(GL_FUNC_ADD);
+       * /\*
+       *  * glBlendFunc(GL_ONE, GL_ZERO);
+       *  * glEnable(GL_BLEND);
+       *  *\/
+       * glBlendFunc(GL_SRC_ALPHA, GL_ZERO);
+       */
+      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+      glBlendFuncSeparate(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
+      glEnable(GL_BLEND);
       break;
 
    case VG_BLEND_SRC_IN:
-      glBlendFunc(GL_DST_ALPHA, GL_ZERO);
+      // ensure blend equation set to default
+      /*
+       * glBlendEquation(GL_FUNC_ADD);
+       * glBlendFunc(GL_DST_ALPHA, GL_ZERO);
+       */
+
+      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+      /*
+       * glBlendFuncSeparate(GL_DST_ALPHA, GL_ZERO, GL_DST_ALPHA, GL_ZERO);
+       */
+      /*
+       * glBlendFuncSeparate(GL_DST_ALPHA, GL_ZERO, GL_DST_ALPHA, GL_ZERO);
+       */
+      glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_DST_ALPHA, GL_ZERO);
       glEnable(GL_BLEND);
       break;
 
    case VG_BLEND_DST_IN:
-      glBlendFunc(GL_ZERO, GL_SRC_ALPHA);
+      // ensure blend equation set to default
+      /*
+       * glBlendEquation(GL_FUNC_ADD);
+       * glBlendFunc(GL_ZERO, GL_SRC_ALPHA);
+       */
+      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+      glBlendFuncSeparate(GL_ZERO, GL_SRC_ALPHA, GL_ZERO, GL_SRC_ALPHA);
       glEnable(GL_BLEND);
       break;
 
    case VG_BLEND_SRC_OUT_SH:
-      glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_ZERO);
+      // ensure blend equation set to default
+      /*
+       * glBlendEquation(GL_FUNC_ADD);
+       * glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_ZERO);
+       */
+      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+      glBlendFuncSeparate(GL_ONE_MINUS_DST_ALPHA, GL_ZERO, GL_ONE_MINUS_DST_ALPHA, GL_ZERO);
       glEnable(GL_BLEND);
       break;
 
    case VG_BLEND_DST_OUT_SH:
-      glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+      // ensure blend equation set to default
+      /*
+       * glBlendEquation(GL_FUNC_ADD);
+       * glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+       */
+      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+      glBlendFuncSeparate(GL_ZERO, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
       glEnable(GL_BLEND);
       break;
 
    case VG_BLEND_SRC_ATOP_SH:
-      glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      // ensure blend equation set to default
+      /*
+       * glBlendEquation(GL_FUNC_ADD);
+       * glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+       */
+      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+      glBlendFuncSeparate(GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       glEnable(GL_BLEND);
       break;
 
    case VG_BLEND_DST_ATOP_SH:
-      glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_SRC_ALPHA);
-      glEnable(GL_BLEND);
-      break;
-
-   case VG_BLEND_DST_OVER:
-      glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
-      glEnable(GL_BLEND);
-      break;
-
-   case VG_BLEND_ADDITIVE:
-      glBlendFunc(GL_ONE, GL_ONE);
-      glEnable(GL_BLEND);
-      break;
-
-   case VG_BLEND_MULTIPLY:
-      glBlendFunc(GL_DST_COLOR, GL_ZERO);
-      glEnable(GL_BLEND);
-      break;
-
-   case VG_BLEND_SCREEN:
-      glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE);
-      glEnable(GL_BLEND);
-      break;
-
-   case VG_BLEND_DARKEN:
-      glBlendEquation(GL_MIN);
-      glBlendFunc(GL_ONE, GL_ONE);
-      glEnable(GL_BLEND);
-      break;
-
-   case VG_BLEND_LIGHTEN:
-      glBlendEquation(GL_MAX);
-      glBlendFunc(GL_ONE, GL_ONE);
+      // ensure blend equation set to default
+      /*
+       * glBlendEquation(GL_FUNC_ADD);
+       * glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_SRC_ALPHA);
+       */
+      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+      glBlendFuncSeparate(GL_ONE_MINUS_DST_ALPHA, GL_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA, GL_SRC_ALPHA);
       glEnable(GL_BLEND);
       break;
 
    case VG_BLEND_SRC_OVER:
+      // ensure blend equation set to default
+      /*
+       * glBlendEquation(GL_FUNC_ADD);
+       * /\*
+       *  * glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+       *  *\/
+       * glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+       */
+      // TODO: da verificare
+      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+      /*
+       * glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+       */
+      glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+      /*
+       * glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+       */
+      glEnable(GL_BLEND);
+      break;
+
+   case VG_BLEND_DST_OVER:
+      // ensure blend equation set to default
+      /*
+       * glBlendEquation(GL_FUNC_ADD);
+       * glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
+       */
+      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+      glBlendFuncSeparate(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
+      glEnable(GL_BLEND);
+      break;
+
+   case VG_BLEND_ADDITIVE:
+      // ensure blend equation set to default
+      /*
+       * glBlendEquation(GL_FUNC_ADD);
+       * /\*
+       *  * glBlendFunc(GL_ONE, GL_ONE);
+       *  *\/
+       * glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
+       */
+      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+      glBlendFuncSeparate(GL_SRC_ALPHA, GL_DST_ALPHA, GL_SRC_ALPHA, GL_DST_ALPHA);
+      glEnable(GL_BLEND);
+      break;
+
+   case VG_BLEND_MULTIPLY:
+      // ensure blend equation set to default
+      /*
+       * glBlendEquation(GL_FUNC_ADD);
+       * glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR);
+       */
+      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+      glBlendFuncSeparate(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR, GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR);
+      glEnable(GL_BLEND);
+      break;
+
+   case VG_BLEND_SCREEN:
+      // ensure blend equation set to default
+      /*
+       * glBlendEquation(GL_FUNC_ADD);
+       * glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE);
+       */
+      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+      glBlendFuncSeparate(GL_ONE_MINUS_DST_COLOR, GL_ONE, GL_ONE_MINUS_DST_COLOR, GL_ONE);
+      glEnable(GL_BLEND);
+      break;
+
+   case VG_BLEND_DARKEN:
+      /*
+       * glBlendEquation(GL_MIN);
+       * glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
+       */
+      /*
+       * glBlendFunc(GL_ONE, GL_ONE);
+       */
+      glBlendEquationSeparate(GL_MIN, GL_MIN);
+      glBlendFuncSeparate(GL_SRC_ALPHA, GL_DST_ALPHA, GL_SRC_ALPHA, GL_DST_ALPHA);
+      glEnable(GL_BLEND);
+      break;
+
+   case VG_BLEND_LIGHTEN:
+      /*
+       * glBlendEquation(GL_MAX);
+       * /\*
+       *  * glBlendFunc(GL_ONE, GL_ONE);
+       *  *\/
+       * glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
+       */
+      glBlendEquationSeparate(GL_MAX, GL_MAX);
+      glBlendFuncSeparate(GL_SRC_ALPHA, GL_DST_ALPHA, GL_SRC_ALPHA, GL_DST_ALPHA);
+      glEnable(GL_BLEND);
+      break;
    default:
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      if (alphaIsOne)
-         glDisable(GL_BLEND);
-      else
-         glEnable(GL_BLEND);
+      // ensure blend equation set to default
+      /*
+       * glBlendEquation(GL_FUNC_ADD);
+       * /\*
+       *  * glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+       *  *\/
+       * glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+       */
+      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+      if (alphaIsOne) {
+         glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+         /*
+          * glDisable(GL_BLEND);
+          */
+      } else {
+         glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      }
+      glEnable(GL_BLEND);
       break;
    };
+
 }
 
 /*-----------------------------------------------------------
  * Draws the triangles representing the stroke of a path.
  *-----------------------------------------------------------*/
 
-inline static void
+static inline void
 shDrawStroke(SHPath * restrict p)
 {
-
    SH_ASSERT(p != NULL);
    glEnableClientState(GL_VERTEX_ARRAY);
    glVertexPointer(2, GL_FLOAT, 0, p->stroke.items);
@@ -213,15 +340,34 @@ shDrawBoundBox(VGContext * restrict c, SHPath * restrict p, VGPaintMode mode)
 {
    SH_ASSERT(c != NULL && p != NULL);
    SHfloat K = 1.0f;
-   if (mode == VG_STROKE_PATH)
+   if (mode == VG_STROKE_PATH) {
       K = SH_CEIL(c->strokeMiterLimit * c->strokeLineWidth) + 1.0f;
+   }
 
-   glBegin(GL_QUADS);
-   glVertex2f(p->min.x - K, p->min.y - K);
-   glVertex2f(p->max.x + K, p->min.y - K);
-   glVertex2f(p->max.x + K, p->max.y + K);
-   glVertex2f(p->min.x - K, p->max.y + K);
-   glEnd();
+   /*
+    * glBegin(GL_QUADS);
+    * glVertex2f(p->min.x - K, p->min.y - K);
+    * glVertex2f(p->max.x + K, p->min.y - K);
+    * glVertex2f(p->max.x + K, p->max.y + K);
+    * glVertex2f(p->min.x - K, p->max.y + K);
+    * glEnd();
+    */
+
+   /* OpenGLES2 version */
+   shDrawQuads(p->min.x - K, p->min.y - K, p->max.x + K, p->min.y - K, p->max.x + K, p->max.y + K, p->min.x - K, p->max.y + K);
+
+   /*
+    * GLfloat p0 = p->min.x - K, p1 = p->min.y - K ,p2 = p->max.x + K, p3 = p->max.y + K;
+    * glBegin(GL_TRIANGLES);
+    * glVertex3f(p0, p1, 0.0f);
+    * glVertex3f(p2, p1, 0.0f);
+    * glVertex3f(p2, p3, 0.0f);
+    *
+    * glVertex3f(p0, p1, 0.0f);
+    * glVertex3f(p2, p3, 0.0f);
+    * glVertex3f(v0, p3, 0.0f);
+    * glEnd();
+    */
 }
 
 /*--------------------------------------------------------------
@@ -277,12 +423,18 @@ shDrawPaintMesh(VGContext * c, SHVector2 * min, SHVector2 * max,
 
    case VG_PAINT_TYPE_COLOR:
       glColor4fv((GLfloat *) & p->color);
-      glBegin(GL_QUADS);
-      glVertex2f(pmin.x, pmin.y);
-      glVertex2f(pmax.x, pmin.y);
-      glVertex2f(pmax.x, pmax.y);
-      glVertex2f(pmin.x, pmax.y);
-      glEnd();
+      /*
+       * glBegin(GL_QUADS);
+       * glVertex2f(pmin.x, pmin.y);
+       * glVertex2f(pmax.x, pmin.y);
+       * glVertex2f(pmax.x, pmax.y);
+       * glVertex2f(pmin.x, pmax.y);
+       * glEnd();
+       */
+
+      /* OpenGLES2 version */
+      shDrawQuads(pmin.x, pmin.y, pmax.x, pmin. y,pmax.x, pmax.y, pmin.x, pmax.y);
+
       break;
    }
 }
@@ -419,6 +571,7 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
    glPushMatrix();
    glMultMatrixf(mgl);
 
+   // TODO: bisogna capire se serve sempre abilitare la scrittura nello stencil (sembra crei problemi a test_composition)
    if (paintModes & VG_FILL_PATH) {
       /* Tesselate into stencil */
       glEnable(GL_STENCIL_TEST);
@@ -441,15 +594,14 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
       /* Clear stencil for sure */
       /* TODO: Is there any way to do this safely along
          with the paint generation pass?? */
-      glDisable(GL_BLEND);
-      glDisable(GL_MULTISAMPLE);
       glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
       shDrawBoundBox(context, p, VG_FILL_PATH);
 
       /* Reset state */
+      glDisable(GL_BLEND);
       glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
       glDisable(GL_STENCIL_TEST);
-      glDisable(GL_BLEND);
+
    }
 
    /* TODO: Turn antialiasing on/off */
@@ -496,7 +648,9 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
          /* Reset state */
          glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
          glDisable(GL_STENCIL_TEST);
-         glDisable(GL_BLEND);
+         /*
+          * glDisable(GL_BLEND);
+          */
 
       }
       else {
@@ -508,9 +662,10 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
 
          /* Draw contour as a line */
          glDisable(GL_MULTISAMPLE);
+         glBlendEquation(GL_FUNC_ADD);
+         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
          glEnable(GL_BLEND);
          glEnable(GL_LINE_SMOOTH);
-         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
          glColor4fv((GLfloat *) & c);
          shDrawVertices(p, GL_LINE_STRIP);
 
@@ -600,15 +755,14 @@ vgDrawImage(VGImage image)
    SHPaint *fill = (context->fillPaint ? context->fillPaint : &context->defaultPaint);
 
    /* Use paint color when multiplying with a color-paint */
-   if (context->imageMode == VG_DRAW_IMAGE_MULTIPLY &&
-       fill->type == VG_PAINT_TYPE_COLOR)
+   if ((context->imageMode == VG_DRAW_IMAGE_MULTIPLY && fill->type == VG_PAINT_TYPE_COLOR)
+       || context->imageMode == VG_DRAW_IMAGE_STENCIL)
       glColor4fv((GLfloat *) & fill->color);
    else
       glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
    /* Check image drawing mode */
-   if (context->imageMode == VG_DRAW_IMAGE_MULTIPLY &&
-       fill->type != VG_PAINT_TYPE_COLOR) {
+   if (context->imageMode == VG_DRAW_IMAGE_MULTIPLY && fill->type != VG_PAINT_TYPE_COLOR) {
 
       /* Draw image quad into stencil */
       glDisable(GL_BLEND);
@@ -618,15 +772,20 @@ vgDrawImage(VGImage image)
       glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
       glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
-      glBegin(GL_QUADS);
-      glVertex2i(0, 0);
-      glVertex2i(i->width, 0);
-      glVertex2i(i->width, i->height);
-      glVertex2i(0, i->height);
-      glEnd();
+      /*
+       * glBegin(GL_QUADS);
+       * glVertex2i(0, 0);
+       * glVertex2i(i->width, 0);
+       * glVertex2i(i->width, i->height);
+       * glVertex2i(0, i->height);
+       * glEnd();
+       */
+
+      /* OpenGLES2 version */
+      shDrawQuadsInt(0, 0, i->width, 0 ,i->width, i->height , 0, i->height);
 
       /* Setup blending */
-      updateBlendingStateGL(context, 0);
+      updateBlendingStateGL(context, i->fd.premultiplied);
 
       /* Draw gradient mesh where stencil 1 */
       glEnable(GL_TEXTURE_2D);
@@ -656,57 +815,72 @@ vgDrawImage(VGImage image)
       glDisable(GL_STENCIL_TEST);
 
    } else if (context->imageMode == VG_DRAW_IMAGE_STENCIL) {
-      if (0) {
-      SH_LOG_INFO("vgDrawImage(): VG_DRAW_IMAGE_STENCIL not implemented yet\n");
-      } else  {
-         /* Draw image quad into stencil */
-         glDisable(GL_BLEND);
-         glDisable(GL_TEXTURE_2D);
-         glEnable(GL_STENCIL_TEST);
-         glStencilFunc(GL_ALWAYS, 1, 1);
-         glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
-         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
-         glBegin(GL_QUADS);
-         glVertex2i(0, 0);
-         glVertex2i(i->width, 0);
-         glVertex2i(i->width, i->height);
-         glVertex2i(0, i->height);
-         glEnd();
+      /* Draw image quad into stencil */
+      glDisable(GL_BLEND);
+      glDisable(GL_TEXTURE_2D);
+      glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+      glClear(GL_STENCIL_BUFFER_BIT);
+      glDisable(GL_DEPTH_TEST);
+      glEnable(GL_STENCIL_TEST);
 
-         /* Setup blending */
-         updateBlendingStateGL(context, 0);
+      glStencilFunc(GL_ALWAYS, 1, ~0U);
+      glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 
-         /* Draw image where stencil 1 */
-         glEnable(GL_TEXTURE_2D);
-         glStencilFunc(GL_ALWAYS, 1, 1);
-         glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
-         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+      /*
+       * glBegin(GL_QUADS);
+       * glVertex2i(0, 0);
+       * glVertex2i(i->width, 0);
+       * glVertex2i(i->width, i->height);
+       * glVertex2i(0, i->height);
+       * glEnd();
+       */
 
-         // 
-         // epilogue
-         /*
-          * glActiveTexture(GL_TEXTURE0);
-          */
-         glDisable(GL_TEXTURE_2D);
-         glDisable(GL_STENCIL_TEST);
-      }
+      /* OpenGLES2 version */
+      shDrawQuadsInt(0, 0, i->width, 0 ,i->width, i->height , 0, i->height);
+
+      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+      glStencilFunc(GL_EQUAL, 1, ~0U);
+      glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+
+      /* Setup blending */
+      updateBlendingStateGL(context, i->fd.premultiplied);
+      glEnable(GL_TEXTURE_2D);
+
+      /*
+       * glBegin(GL_QUADS);
+       * glVertex2i(0, 0);
+       * glVertex2i(i->width, 0);
+       * glVertex2i(i->width, i->height);
+       * glVertex2i(0, i->height);
+       * glEnd();
+       */
+
+      /* OpenGLES2 version */
+      shDrawQuadsInt(0, 0, i->width, 0 ,i->width, i->height , 0, i->height);
+
+      glDisable(GL_TEXTURE_2D);
 
    } else {
       /* Either normal mode or multiplying with a color-paint */
 
       /* Setup blending */
-      updateBlendingStateGL(context, 0);
+      updateBlendingStateGL(context, i->fd.premultiplied);
 
       /* Draw textured quad */
       glEnable(GL_TEXTURE_2D);
 
-      glBegin(GL_QUADS);
-      glVertex2i(0, 0);
-      glVertex2i(i->width, 0);
-      glVertex2i(i->width, i->height);
-      glVertex2i(0, i->height);
-      glEnd();
+      /*
+       * glBegin(GL_QUADS);
+       * glVertex2i(0, 0);
+       * glVertex2i(i->width, 0);
+       * glVertex2i(i->width, i->height);
+       * glVertex2i(0, i->height);
+       * glEnd();
+       */
+
+      /* OpenGLES2 version */
+      shDrawQuadsInt(0, 0, i->width, 0 ,i->width, i->height , 0, i->height);
 
       glDisable(GL_TEXTURE_2D);
    }
@@ -717,6 +891,10 @@ vgDrawImage(VGImage image)
 
    if (context->scissoring == VG_TRUE)
       glDisable(GL_SCISSOR_TEST);
+   if (context->imageMode == VG_DRAW_IMAGE_STENCIL) {
+      glDisable(GL_STENCIL_TEST);
+   }
 
+   glDisable(GL_BLEND);
    VG_RETURN(VG_NO_RETVAL);
 }
