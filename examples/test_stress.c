@@ -68,7 +68,9 @@ void genPaths(void)
 
    // this frame rise a bug
    totalFrames = 8999;
-   //totalFrames = 0;
+   /*
+    * totalFrames = 0;
+    */
    for (VGint j = 0; j < totalFrames; ++j) {
       for (VGint i = 0; i < 8; ++i) {
          if (controlPoints[i].x < -BOUNCE_DIMENSION) {
@@ -106,10 +108,8 @@ void display(void)
    VGint i, j, k;
    VGfloat c, s;
 
-#define ROTATE_POINT(_x, _y) {          \
-   pathData[j++] = c * (_x) + s * (_y);  \
-   pathData[j++] = -s * (_x) + c * (_y); }
-
+   totalFrames++;
+   
    vgSeti(VG_RENDERING_QUALITY, quality);
    vgClear(0, 0, windowWidth, windowHeight);
 
@@ -150,6 +150,10 @@ void display(void)
    // subpath
    c = (VGfloat)cos(0.01 * totalFrames / 180.0f * 3.14159265);
    s = (VGfloat)sin(0.01 * totalFrames / 180.0f * 3.14159265);
+
+   #define ROTATE_POINT(_x, _y) {          \
+   pathData[j++] = c * (_x) + s * (_y);  \
+   pathData[j++] = -s * (_x) + c * (_y); }
 
    pathSegs[k++] = VG_MOVE_TO_ABS;
    ROTATE_POINT(-200.0f, -200.0f)
