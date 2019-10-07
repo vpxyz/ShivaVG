@@ -11,8 +11,13 @@ display(void)
 {
    VGImage backGround, foreGround;
 
-   VGfloat redClear[]   = { 1.0f, 0.0f, 0.0f, 0.6f };
-   VGfloat blueClear[]  = { 0.0f, 0.0f, 1.0f, 0.6f };
+   VGfloat srcColor[4] = { 0.12f, 0.58f, 0.95f, 1.0f}; // #2196f3
+   VGfloat dstColor[4] = { 0.91f, 0.11f, 0.38f, 1.0f}; // #e91e63
+
+   /*
+    * VGfloat redClear[]   = { 1.0f, 0.0f, 0.0f, 0.6f };
+    * VGfloat blueClear[]  = { 0.0f, 0.0f, 1.0f, 0.6f };
+    */
    VGfloat clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
    vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
@@ -22,10 +27,16 @@ display(void)
    backGround = vgCreateImage(VG_sRGBA_8888, 200, 260, VG_IMAGE_QUALITY_BETTER);
    foreGround = vgCreateImage(VG_sRGBA_8888, 200, 260, VG_IMAGE_QUALITY_BETTER);
 
-   vgSetfv(VG_CLEAR_COLOR, 4, redClear);
+   /*
+    * vgSetfv(VG_CLEAR_COLOR, 4, redClear);
+    */
+   vgSetfv(VG_CLEAR_COLOR, 4, dstColor);
    vgClearImage(backGround, 0, 0, 200, 260);
 
-   vgSetfv(VG_CLEAR_COLOR, 4, blueClear);
+   /*
+    * vgSetfv(VG_CLEAR_COLOR, 4, blueClear);
+    */
+   vgSetfv(VG_CLEAR_COLOR, 4, srcColor);
    vgClearImage(foreGround, 0, 0, 200, 260);
 
    vgLoadIdentity();

@@ -60,6 +60,9 @@ vgCreateContextSH(VGint width, VGint height)
    glMatrixMode(GL_MODELVIEW);
    glLoadIdentity();
 
+   glDisable(GL_LIGHTING);
+   glShadeModel(GL_FLAT);
+   
    return VG_TRUE;
 }
 

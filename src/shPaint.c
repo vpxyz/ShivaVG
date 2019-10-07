@@ -552,14 +552,7 @@ shDrawLinearGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       glVertexPointer(2, GL_FLOAT, 0, (GLfloat *) & corners);
       glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
       glDisableClientState(GL_VERTEX_ARRAY);
-      /*
-       * glBegin(GL_QUADS);
-       *    glVertex2fv((GLfloat *) & corners[0]);
-       *    glVertex2fv((GLfloat *) & corners[1]);
-       *    glVertex2fv((GLfloat *) & corners[2]);
-       *    glVertex2fv((GLfloat *) & corners[3]);
-       * glEnd();
-       */
+
       return 1;
    }
 
@@ -605,20 +598,7 @@ shDrawLinearGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    shSetGradientTexGLState(p);
 
    glEnable(GL_TEXTURE_1D);
-   /*
-    * glBegin(GL_QUAD_STRIP);
-    */
    glBegin(GL_TRIANGLES);
-
-   /*
-    * glMultiTexCoord1f(texUnit, minOffset);
-    * glVertex2fv((GLfloat *) & r1);
-    * glVertex2fv((GLfloat *) & l1);
-    * 
-    * glMultiTexCoord1f(texUnit, maxOffset);
-    * glVertex2fv((GLfloat *) & r2);
-    * glVertex2fv((GLfloat *) & l2);
-    */
 
    // Draw a Quads
    // first triangle
@@ -732,14 +712,7 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       glVertexPointer(2, GL_FLOAT, 0, (GLfloat *) & corners);
       glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
       glDisableClientState(GL_VERTEX_ARRAY);
-      /*
-       * glBegin(GL_QUADS);
-       *   glVertex2fv((GLfloat *) & corners[0]);
-       *   glVertex2fv((GLfloat *) & corners[1]);
-       *   glVertex2fv((GLfloat *) & corners[2]);
-       *   glVertex2fv((GLfloat *) & corners[3]);
-       * glEnd();
-       */
+
       return 1;
    }
 
@@ -834,10 +807,6 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    shSetGradientTexGLState(p);
 
    glEnable(GL_TEXTURE_1D);
-   /*
-    * glBegin(GL_QUADS);
-    */
-
    glBegin(GL_TRIANGLES);
 
    /* Walk the steps and draw gradient mesh */
@@ -870,19 +839,6 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       min2.y = f.y + tmin.x * ux.y + tmin.y * uy.y;
       max2.x = f.x + tmax.x * ux.x + tmax.y * uy.x;
       max2.y = f.y + tmax.x * ux.y + tmax.y * uy.y;
-
-      // TODO: per sostituire questo pezzo, devo accumulare i valori in due array, in questo loop, fuori dal loop li disegno
-      /* Draw quad */
-      /*
-       * if (i != 0) {
-       *    glMultiTexCoord1f(texUnit, minOffset);
-       *    glVertex2fv((GLfloat *) & min1);
-       *    glVertex2fv((GLfloat *) & min2);
-       *    glMultiTexCoord1f(texUnit, maxOffset);
-       *    glVertex2fv((GLfloat *) & max2);
-       *    glVertex2fv((GLfloat *) & max1);
-       * }
-       */
 
       if (i > 0) {
          // Draw a Quads
@@ -947,14 +903,6 @@ shDrawPatternMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       glColor4fv((GLfloat *) c);
       shDrawQuadsArray((GLfloat *) corners);
 
-      /*
-       * glBegin(GL_QUADS);
-       *    glVertex2fv((GLfloat *) & corners[0]);
-       *    glVertex2fv((GLfloat *) & corners[1]);
-       *    glVertex2fv((GLfloat *) & corners[2]);
-       *    glVertex2fv((GLfloat *) & corners[3]);
-       * glEnd();
-       */
       return 1;
    }
 
@@ -976,19 +924,6 @@ shDrawPatternMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    shSetPatternTexGLState(p, context);
    glEnable(GL_TEXTURE_2D);
 
-   /*
-    * glBegin(GL_QUADS);
-    *    glMultiTexCoord2f(texUnit, corners[0].x, corners[0].y);
-    *    glVertex2fv((GLfloat *) & corners[0]);
-    *    glMultiTexCoord2f(texUnit, corners[1].x, corners[1].y);
-    *    glVertex2fv((GLfloat *) & corners[1]);
-    *    glMultiTexCoord2f(texUnit, corners[2].x, corners[2].y);
-    *    glVertex2fv((GLfloat *) & corners[2]);
-    *    glMultiTexCoord2f(texUnit, corners[3].x, corners[3].y);
-    *    glVertex2fv((GLfloat *) & corners[3]);
-    * glEnd();
-    */
-
    glBegin(GL_TRIANGLES);
       glMultiTexCoord2f(texUnit, corners[0].x, corners[0].y);
       glVertex2fv((GLfloat *) & corners[0]);
@@ -1006,7 +941,7 @@ shDrawPatternMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    glEnd();
 
    /*
-    * // TODO: è necessario studiare bene come funziano questa cosa del client state quando ci sono di mezzo le texture 
+    * // TODO: è necessario studiare bene come funziano questa cosa del client state quando ci sono di mezzo le texture
     * SHVector2 txc[6] = {corners[0], corners[1], corners[2], corners[2], corners[3], corners[0]};
     * SHVector2 nc[6] = {corners[0], corners[1], corners[2], corners[2], corners[3], corners[0]};
     * 

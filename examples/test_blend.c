@@ -9,8 +9,8 @@ VGPaint dstFill;
 VGImage isrc;
 VGImage idst;
 
-VGfloat srcColor[4] = { 0.4f, 0.6f, 1.0f, 1.0f};
-VGfloat dstColor[4] = { 1.0f, 1.0f, 0.3f, 1.0f};
+VGfloat srcColor[4] = { 0.12f, 0.58f, 0.95f, 1.0f}; // #2196f3
+VGfloat dstColor[4] = { 0.91f, 0.11f, 0.38f, 1.0f}; // #e91e63
 
 #ifndef IMAGE_DIR
 #define IMAGE_DIR "./"
@@ -85,7 +85,7 @@ display(float interval)
 
    vgSeti(VG_MATRIX_MODE, VG_MATRIX_PATH_USER_TO_SURFACE);
    vgLoadIdentity();
-   
+
    vgSeti(VG_BLEND_MODE, VG_BLEND_SRC_IN);
    vgDrawImage(isrc);
    vgSeti(VG_BLEND_MODE, VG_BLEND_SRC_OVER);

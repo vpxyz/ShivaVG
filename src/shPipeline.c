@@ -49,6 +49,7 @@ shUnpremultiplyFramebuffer(void)
 static inline void
 shSetRenderQualityGL(VGRenderingQuality quality)
 {
+   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
    switch (quality) {
    case VG_RENDERING_QUALITY_NONANTIALIASED:
       glDisable(GL_LINE_SMOOTH);
@@ -89,15 +90,10 @@ updateBlendingStateGL(VGContext * restrict c, int alphaIsOne)
    switch (c->blendMode) {
    case VG_BLEND_SRC:
       // ensure blend equation set to default
-      /*
-       * glBlendEquation(GL_FUNC_ADD);
-       * /\*
-       *  * glBlendFunc(GL_ONE, GL_ZERO);
-       *  * glEnable(GL_BLEND);
-       *  *\/
-       * glBlendFunc(GL_SRC_ALPHA, GL_ZERO);
-       */
+
+      // OK
       glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+      // premultiplied and non-premultiplied are equals
       glBlendFuncSeparate(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
       glEnable(GL_BLEND);
       break;
@@ -110,13 +106,7 @@ updateBlendingStateGL(VGContext * restrict c, int alphaIsOne)
        */
 
       glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-      /*
-       * glBlendFuncSeparate(GL_DST_ALPHA, GL_ZERO, GL_DST_ALPHA, GL_ZERO);
-       */
-      /*
-       * glBlendFuncSeparate(GL_DST_ALPHA, GL_ZERO, GL_DST_ALPHA, GL_ZERO);
-       */
-      glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_DST_ALPHA, GL_ZERO);
+      glBlendFuncSeparate(GL_DST_ALPHA, GL_ZERO, GL_DST_ALPHA, GL_ZERO);
       glEnable(GL_BLEND);
       break;
 
@@ -228,7 +218,10 @@ updateBlendingStateGL(VGContext * restrict c, int alphaIsOne)
        * glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR);
        */
       glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-      glBlendFuncSeparate(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR, GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR);
+      /*
+       * glBlendFuncSeparate(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR, GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR);
+       */
+      glBlendFuncSeparate(GL_DST_COLOR, GL_ZERO, GL_DST_ALPHA, GL_ZERO);
       glEnable(GL_BLEND);
       break;
 
@@ -344,30 +337,8 @@ shDrawBoundBox(VGContext * restrict c, SHPath * restrict p, VGPaintMode mode)
       K = SH_CEIL(c->strokeMiterLimit * c->strokeLineWidth) + 1.0f;
    }
 
-   /*
-    * glBegin(GL_QUADS);
-    * glVertex2f(p->min.x - K, p->min.y - K);
-    * glVertex2f(p->max.x + K, p->min.y - K);
-    * glVertex2f(p->max.x + K, p->max.y + K);
-    * glVertex2f(p->min.x - K, p->max.y + K);
-    * glEnd();
-    */
-
-   /* OpenGLES2 version */
    shDrawQuads(p->min.x - K, p->min.y - K, p->max.x + K, p->min.y - K, p->max.x + K, p->max.y + K, p->min.x - K, p->max.y + K);
 
-   /*
-    * GLfloat p0 = p->min.x - K, p1 = p->min.y - K ,p2 = p->max.x + K, p3 = p->max.y + K;
-    * glBegin(GL_TRIANGLES);
-    * glVertex3f(p0, p1, 0.0f);
-    * glVertex3f(p2, p1, 0.0f);
-    * glVertex3f(p2, p3, 0.0f);
-    *
-    * glVertex3f(p0, p1, 0.0f);
-    * glVertex3f(p2, p3, 0.0f);
-    * glVertex3f(v0, p3, 0.0f);
-    * glEnd();
-    */
 }
 
 /*--------------------------------------------------------------
@@ -423,18 +394,7 @@ shDrawPaintMesh(VGContext * c, SHVector2 * min, SHVector2 * max,
 
    case VG_PAINT_TYPE_COLOR:
       glColor4fv((GLfloat *) & p->color);
-      /*
-       * glBegin(GL_QUADS);
-       * glVertex2f(pmin.x, pmin.y);
-       * glVertex2f(pmax.x, pmin.y);
-       * glVertex2f(pmax.x, pmax.y);
-       * glVertex2f(pmin.x, pmax.y);
-       * glEnd();
-       */
-
-      /* OpenGLES2 version */
       shDrawQuads(pmin.x, pmin.y, pmax.x, pmin. y,pmax.x, pmax.y, pmin.x, pmax.y);
-
       break;
    }
 }
@@ -528,9 +488,9 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
 
    /* Check whether scissoring is enabled and scissor
       rectangle is valid */
-   SHRectangle *rect;
+
    if (context->scissoring == VG_TRUE) {
-      rect = &context->scissor.items[0];
+      SHRectangle *rect = &context->scissor.items[0];
       if (context->scissor.size == 0)
          VG_RETURN(VG_NO_RETVAL);
       if (rect->w <= 0.0f || rect->h <= 0.0f)
@@ -544,9 +504,11 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
 
    /* If user-to-surface matrix invertible tessellate in
       surface space for better path resolution */
-   SHMatrix3x3 mi;
+
    if (shIsTessCacheValid(context, p) == VG_FALSE) {
+      SHMatrix3x3 mi;
       if (shInvertMatrix(&context->pathTransform, &mi)) {
+         // TODO: replace shFlattenPath with libtess2
          shFlattenPath(p, 1);
          shTransformVertices(&mi, p);
       } else {
@@ -558,7 +520,7 @@ vgDrawPath(VGPath path, VGbitfield paintModes)
    /* Change render quality according to the context */
    /* TODO: Turn antialiasing on/off */
    shSetRenderQualityGL(context->renderingQuality);
-   
+
    /* Pick paint if available or default */
    SHPaint *fill = (context->fillPaint ? context->fillPaint : &context->defaultPaint);
    SHPaint *stroke =
@@ -772,16 +734,6 @@ vgDrawImage(VGImage image)
       glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
       glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
-      /*
-       * glBegin(GL_QUADS);
-       * glVertex2i(0, 0);
-       * glVertex2i(i->width, 0);
-       * glVertex2i(i->width, i->height);
-       * glVertex2i(0, i->height);
-       * glEnd();
-       */
-
-      /* OpenGLES2 version */
       shDrawQuadsInt(0, 0, i->width, 0 ,i->width, i->height , 0, i->height);
 
       /* Setup blending */
@@ -827,16 +779,6 @@ vgDrawImage(VGImage image)
       glStencilFunc(GL_ALWAYS, 1, ~0U);
       glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 
-      /*
-       * glBegin(GL_QUADS);
-       * glVertex2i(0, 0);
-       * glVertex2i(i->width, 0);
-       * glVertex2i(i->width, i->height);
-       * glVertex2i(0, i->height);
-       * glEnd();
-       */
-
-      /* OpenGLES2 version */
       shDrawQuadsInt(0, 0, i->width, 0 ,i->width, i->height , 0, i->height);
 
       glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -847,16 +789,6 @@ vgDrawImage(VGImage image)
       updateBlendingStateGL(context, i->fd.premultiplied);
       glEnable(GL_TEXTURE_2D);
 
-      /*
-       * glBegin(GL_QUADS);
-       * glVertex2i(0, 0);
-       * glVertex2i(i->width, 0);
-       * glVertex2i(i->width, i->height);
-       * glVertex2i(0, i->height);
-       * glEnd();
-       */
-
-      /* OpenGLES2 version */
       shDrawQuadsInt(0, 0, i->width, 0 ,i->width, i->height , 0, i->height);
 
       glDisable(GL_TEXTURE_2D);
@@ -870,16 +802,6 @@ vgDrawImage(VGImage image)
       /* Draw textured quad */
       glEnable(GL_TEXTURE_2D);
 
-      /*
-       * glBegin(GL_QUADS);
-       * glVertex2i(0, 0);
-       * glVertex2i(i->width, 0);
-       * glVertex2i(i->width, i->height);
-       * glVertex2i(0, i->height);
-       * glEnd();
-       */
-
-      /* OpenGLES2 version */
       shDrawQuadsInt(0, 0, i->width, 0 ,i->width, i->height , 0, i->height);
 
       glDisable(GL_TEXTURE_2D);
