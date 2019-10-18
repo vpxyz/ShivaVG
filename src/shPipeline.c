@@ -75,6 +75,7 @@ shSetRenderQualityGL(VGRenderingQuality quality)
 static void
 updateBlendingStateGL(VGContext * restrict c, int alphaIsOne)
 {
+   // WORK ONLY WITH STRAIGHT COLOR
    /* Most common drawing mode (SRC_OVER with alpha=1)
       as well as SRC is optimized by turning OpenGL
       blending off. In other cases its turned on. */
@@ -84,44 +85,39 @@ updateBlendingStateGL(VGContext * restrict c, int alphaIsOne)
    // bisogna memorizzare se la texture corrente è in formato pre-multiplied o meno. Oppure bisogna trasformare i premultiplied in unpremultiplied
    // meglio ancora sarebbe convertire tutti i formati unpremultiplied in premultiplied in modo da rendere più semplice sia il blending sia il filtering delle immagini
    // quello giusto è questo: http://apoorvaj.io/alpha-compositing-opengl-blending-and-premultiplied-alpha.html
-   // Leggi cosa dice quando parla dei pre-multiplied. In sostanza quando alphaIsOne == true devo usare quell'approccio, se no l'altro
    SH_DEBUG("updateBlendingStateGL(): alphaIsOne = %d\n", alphaIsOne);
    SH_ASSERT(c != NULL);
    switch (c->blendMode) {
    case VG_BLEND_SRC:
       // ensure blend equation set to default
-
+      glEnable(GL_BLEND);
       // OK
       glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
       // premultiplied and non-premultiplied are equals
+      // OK
       glBlendFuncSeparate(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
-      glEnable(GL_BLEND);
+
       break;
 
    case VG_BLEND_SRC_IN:
-      // ensure blend equation set to default
-      /*
-       * glBlendEquation(GL_FUNC_ADD);
-       * glBlendFunc(GL_DST_ALPHA, GL_ZERO);
-       */
-
-      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-      glBlendFuncSeparate(GL_DST_ALPHA, GL_ZERO, GL_DST_ALPHA, GL_ZERO);
       glEnable(GL_BLEND);
+      // ensure blend equation set to default
+      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+      // OK
+      glBlendFuncSeparate(GL_DST_ALPHA, GL_ZERO, GL_DST_ALPHA, GL_ZERO);
+
       break;
 
    case VG_BLEND_DST_IN:
-      // ensure blend equation set to default
-      /*
-       * glBlendEquation(GL_FUNC_ADD);
-       * glBlendFunc(GL_ZERO, GL_SRC_ALPHA);
-       */
-      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-      glBlendFuncSeparate(GL_ZERO, GL_SRC_ALPHA, GL_ZERO, GL_SRC_ALPHA);
       glEnable(GL_BLEND);
+      // ensure blend equation set to default
+      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+      // OK
+      glBlendFuncSeparate(GL_ZERO, GL_SRC_ALPHA, GL_ZERO, GL_SRC_ALPHA);
       break;
 
    case VG_BLEND_SRC_OUT_SH:
+      glEnable(GL_BLEND);
       // ensure blend equation set to default
       /*
        * glBlendEquation(GL_FUNC_ADD);
@@ -129,10 +125,11 @@ updateBlendingStateGL(VGContext * restrict c, int alphaIsOne)
        */
       glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
       glBlendFuncSeparate(GL_ONE_MINUS_DST_ALPHA, GL_ZERO, GL_ONE_MINUS_DST_ALPHA, GL_ZERO);
-      glEnable(GL_BLEND);
+
       break;
 
    case VG_BLEND_DST_OUT_SH:
+      glEnable(GL_BLEND);
       // ensure blend equation set to default
       /*
        * glBlendEquation(GL_FUNC_ADD);
@@ -140,10 +137,10 @@ updateBlendingStateGL(VGContext * restrict c, int alphaIsOne)
        */
       glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
       glBlendFuncSeparate(GL_ZERO, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
-      glEnable(GL_BLEND);
       break;
 
    case VG_BLEND_SRC_ATOP_SH:
+      glEnable(GL_BLEND);
       // ensure blend equation set to default
       /*
        * glBlendEquation(GL_FUNC_ADD);
@@ -151,10 +148,10 @@ updateBlendingStateGL(VGContext * restrict c, int alphaIsOne)
        */
       glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
       glBlendFuncSeparate(GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glEnable(GL_BLEND);
       break;
 
    case VG_BLEND_DST_ATOP_SH:
+      glEnable(GL_BLEND);
       // ensure blend equation set to default
       /*
        * glBlendEquation(GL_FUNC_ADD);
@@ -162,42 +159,30 @@ updateBlendingStateGL(VGContext * restrict c, int alphaIsOne)
        */
       glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
       glBlendFuncSeparate(GL_ONE_MINUS_DST_ALPHA, GL_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA, GL_SRC_ALPHA);
-      glEnable(GL_BLEND);
       break;
 
    case VG_BLEND_SRC_OVER:
-      // ensure blend equation set to default
-      /*
-       * glBlendEquation(GL_FUNC_ADD);
-       * /\*
-       *  * glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-       *  *\/
-       * glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-       */
-      // TODO: da verificare
-      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-      /*
-       * glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-       */
-      glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-      /*
-       * glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-       */
       glEnable(GL_BLEND);
+      // ensure blend equation set to default
+      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+      // OK
+      glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
       break;
 
    case VG_BLEND_DST_OVER:
+      glEnable(GL_BLEND);
       // ensure blend equation set to default
       /*
        * glBlendEquation(GL_FUNC_ADD);
        * glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
        */
       glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-      glBlendFuncSeparate(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
-      glEnable(GL_BLEND);
+      // OK
+      glBlendFuncSeparate(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA, GL_ONE);
       break;
 
    case VG_BLEND_ADDITIVE:
+      glEnable(GL_BLEND);
       // ensure blend equation set to default
       /*
        * glBlendEquation(GL_FUNC_ADD);
@@ -208,78 +193,58 @@ updateBlendingStateGL(VGContext * restrict c, int alphaIsOne)
        */
       glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
       glBlendFuncSeparate(GL_SRC_ALPHA, GL_DST_ALPHA, GL_SRC_ALPHA, GL_DST_ALPHA);
-      glEnable(GL_BLEND);
       break;
 
    case VG_BLEND_MULTIPLY:
-      // ensure blend equation set to default
-      /*
-       * glBlendEquation(GL_FUNC_ADD);
-       * glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR);
-       */
-      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-      /*
-       * glBlendFuncSeparate(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR, GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR);
-       */
-      glBlendFuncSeparate(GL_DST_COLOR, GL_ZERO, GL_DST_ALPHA, GL_ZERO);
       glEnable(GL_BLEND);
+      // ensure blend equation set to default
+      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+      // almost OK
+      glBlendFuncSeparate(GL_ONE_MINUS_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
       break;
 
    case VG_BLEND_SCREEN:
-      // ensure blend equation set to default
-      /*
-       * glBlendEquation(GL_FUNC_ADD);
-       * glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE);
-       */
-      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-      glBlendFuncSeparate(GL_ONE_MINUS_DST_COLOR, GL_ONE, GL_ONE_MINUS_DST_COLOR, GL_ONE);
       glEnable(GL_BLEND);
+      // ensure blend equation set to default
+      glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+      // almost OK
+      glBlendFuncSeparate(GL_ONE_MINUS_DST_COLOR, GL_ONE, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
       break;
 
    case VG_BLEND_DARKEN:
       /*
-       * glBlendEquation(GL_MIN);
-       * glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
+       * glBlendEquationSeparate(GL_MIN, GL_MIN);
        */
       /*
-       * glBlendFunc(GL_ONE, GL_ONE);
+       * glBlendFuncSeparate(GL_SRC_ALPHA, GL_DST_ALPHA, GL_SRC_ALPHA, GL_DST_ALPHA);
        */
-      glBlendEquationSeparate(GL_MIN, GL_MIN);
-      glBlendFuncSeparate(GL_SRC_ALPHA, GL_DST_ALPHA, GL_SRC_ALPHA, GL_DST_ALPHA);
+      /*
+       * glBlendFuncSeparate(GL_ONE_MINUS_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+       */
+
+      /*
+       * glBlendFuncSeparate(GL_SRC_ALPHA, GL_DST_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+       */
       glEnable(GL_BLEND);
+      glBlendFuncSeparate(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+      glBlendEquationSeparate(GL_MIN, GL_FUNC_ADD);
       break;
 
    case VG_BLEND_LIGHTEN:
-      /*
-       * glBlendEquation(GL_MAX);
-       * /\*
-       *  * glBlendFunc(GL_ONE, GL_ONE);
-       *  *\/
-       * glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
-       */
-      glBlendEquationSeparate(GL_MAX, GL_MAX);
-      glBlendFuncSeparate(GL_SRC_ALPHA, GL_DST_ALPHA, GL_SRC_ALPHA, GL_DST_ALPHA);
       glEnable(GL_BLEND);
+      glBlendEquationSeparate(GL_MAX, GL_MAX);
+      // almost Ok
+      glBlendFuncSeparate(GL_SRC_ALPHA, GL_DST_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
       break;
    default:
+      glEnable(GL_BLEND);
       // ensure blend equation set to default
-      /*
-       * glBlendEquation(GL_FUNC_ADD);
-       * /\*
-       *  * glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-       *  *\/
-       * glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-       */
       glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
       if (alphaIsOne) {
          glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
-         /*
-          * glDisable(GL_BLEND);
-          */
       } else {
          glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       }
-      glEnable(GL_BLEND);
       break;
    };
 

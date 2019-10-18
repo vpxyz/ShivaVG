@@ -11,13 +11,13 @@ display(void)
 {
    VGImage backGround, foreGround;
 
-   VGfloat srcColor[4] = { 0.12f, 0.58f, 0.95f, 1.0f}; // #2196f3
-   VGfloat dstColor[4] = { 0.91f, 0.11f, 0.38f, 1.0f}; // #e91e63
-
    /*
-    * VGfloat redClear[]   = { 1.0f, 0.0f, 0.0f, 0.6f };
-    * VGfloat blueClear[]  = { 0.0f, 0.0f, 1.0f, 0.6f };
+    * VGfloat srcColor[4] = { 0.12f, 0.58f, 0.95f, 1.0f}; // #2196f3
+    * VGfloat dstColor[4] = { 0.91f, 0.11f, 0.38f, 1.0f}; // #e91e63
     */
+
+   VGfloat dstColor[]   = { 1.0f, 0.0f, 0.0f, 0.6f }; // red
+   VGfloat srcColor[]  = { 0.0f, 0.0f, 1.0f, 0.6f }; // blue
    VGfloat clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
    vgSetfv(VG_CLEAR_COLOR, 4, clearColor);

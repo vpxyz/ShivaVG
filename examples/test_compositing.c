@@ -47,36 +47,44 @@ static VGint mouseButton = MOUSE_BUTTON_NONE;
 
 void genPaints(void)
 {
-   VGfloat gradient[4], colStops[10], col[4];
-
    // create a solid color paint
    solidColor = vgCreatePaint();
-   col[0] = 1.0f;
-   col[1] = 1.0f;
-   col[2] = 1.0f;
-   col[3] = 1.0f;
-   vgSetParameterfv(solidColor, VG_PAINT_COLOR, 4, col);
 
-   // create and set source paint
+   VGfloat white[] = {1.0f,1.0f,1.0f,1.0f};
+   vgSetParameteri(solidColor, VG_PAINT_TYPE, VG_PAINT_TYPE_COLOR);
+   vgSetParameterfv(solidColor, VG_PAINT_COLOR, 4, white);
+
+   // color stops used to generate SRC image
+   const VGfloat srcStops[] = {
+      0.00f, 0.60f, 0.05f, 0.10f, 1.00f,
+      1.00f, 0.30f, 0.90f, 0.10f, 0.30f
+   };
+   const VGfloat srcGrad[] = {
+      -160.0f, 0.0f,
+      160.0f, 0.0f
+   };
+   // color stops used to generate DST image
+   const VGfloat dstStops[] = {
+      0.00f, 0.90f, 0.80f, 0.00f, 0.90f,
+      1.00f, 0.00f, 0.20f, 0.80f, 0.40f
+   };
+   const VGfloat dstGrad[] = {
+      -160.0f, 0.0f,
+      160.0f, 0.0f
+   };
+
+   // create paint that will be used to generate SRC image
    paintSrc = vgCreatePaint();
-   colStops[0] = 0.00f; colStops[1] = 0.6f; colStops[2] = 0.05f; colStops[3] = 0.1f; colStops[4] = 1.0f;
-   colStops[5] = 1.00f; colStops[6] = 0.3f; colStops[7] = 0.9f; colStops[8] = 0.1f; colStops[9] = 0.3f;
-   gradient[0] = -160.0f; gradient[1] = 0.0f;
-   gradient[2] = 160.0f; gradient[3] = 0.0f;
    vgSetParameteri(paintSrc, VG_PAINT_TYPE, VG_PAINT_TYPE_LINEAR_GRADIENT);
-   vgSetParameterfv(paintSrc, VG_PAINT_COLOR_RAMP_STOPS, 10, colStops);
-   vgSetParameterfv(paintSrc, VG_PAINT_LINEAR_GRADIENT, 4, gradient);
+   vgSetParameterfv(paintSrc, VG_PAINT_COLOR_RAMP_STOPS, 10, srcStops);
+   vgSetParameterfv(paintSrc, VG_PAINT_LINEAR_GRADIENT, 4, srcGrad);
    vgSetParameteri(paintSrc, VG_PAINT_COLOR_RAMP_SPREAD_MODE, VG_COLOR_RAMP_SPREAD_PAD);
 
-   // create and set dest paint
+   // create paint that will be used to generate DST image
    paintDst = vgCreatePaint();
-   colStops[0] = 0.00f; colStops[1] = 0.9f; colStops[2] = 0.8f; colStops[3] = 0.0f; colStops[4] = 0.9f;
-   colStops[5] = 1.00f; colStops[6] = 0.0f; colStops[7] = 0.2f; colStops[8] = 0.8f; colStops[9] = 0.4f;
-   gradient[0] = -160.0f; gradient[1] = 0.0f;
-   gradient[2] = 160.0f; gradient[3] = 0.0f;
    vgSetParameteri(paintDst, VG_PAINT_TYPE, VG_PAINT_TYPE_LINEAR_GRADIENT);
-   vgSetParameterfv(paintDst, VG_PAINT_COLOR_RAMP_STOPS, 10, colStops);
-   vgSetParameterfv(paintDst, VG_PAINT_LINEAR_GRADIENT, 4, gradient);
+   vgSetParameterfv(paintDst, VG_PAINT_COLOR_RAMP_STOPS, 10, dstStops);
+   vgSetParameterfv(paintDst, VG_PAINT_LINEAR_GRADIENT, 4, dstGrad);
    vgSetParameteri(paintDst, VG_PAINT_COLOR_RAMP_SPREAD_MODE, VG_COLOR_RAMP_SPREAD_PAD);
 }
 
