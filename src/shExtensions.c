@@ -97,35 +97,52 @@ shGetProcAddress(const char *name)
 void shLoadExtensions(VGContext *c)
 {
    SH_ASSERT(c != NULL);
+
+#if defined(_WIN32)
+   wglMakeCurrent(NULL, NULL);
+#endif
+
    glewInit();
 
    if (!GL_VERSION_2_1) {
-      SH_LOG_ERR("ShivaVG require OpenGL 2.0");
+      SH_LOG_ERR("ShivaVG require OpenGL 2.1");
       exit(EXIT_FAILURE);
    }
 
    /* GL_TEXTURE_CLAMP_TO_EDGE */
-   if (glewIsSupported("GL_VERSION_2_0  GL_EXT_texture_edge_clamp")) 
+   if (glewIsSupported("GL_VERSION_2_1  GL_EXT_texture_edge_clamp"))
       c->isGLAvailable_ClampToEdge = 1;
-   else if (glewIsSupported("GL_VERSION_2_0  GL_SGIS_texture_edge_clamp"))
+   else if (glewIsSupported("GL_VERSION_2_1  GL_SGIS_texture_edge_clamp"))
       c->isGLAvailable_ClampToEdge = 1;
    else                         /* Unavailable */
       c->isGLAvailable_ClampToEdge = 0;
 
      /* GL_TEXTURE_MIRRORED_REPEAT */
-   if (glewIsSupported("GL_VERSION_2_0 GL_ARB_texture_mirrored_repeat"))
+   if (glewIsSupported("GL_VERSION_2_1 GL_ARB_texture_mirrored_repeat"))
       c->isGLAvailable_MirroredRepeat = 1;
-   else if (glewIsSupported("GL_VERSION_2_0 GL_IBM_texture_mirrored_repeat"))
+   else if (glewIsSupported("GL_VERSION_2_1 GL_IBM_texture_mirrored_repeat"))
       c->isGLAvailable_MirroredRepeat = 1;
    else                         /* Unavailable */
       c->isGLAvailable_MirroredRepeat = 0;
 
-   if (glewIsSupported("GL_VERSION_2_0 GL_ARB_multitexture"))
+   /* glActiveTexture, glMultiTexCoord1f */
+   if (glewIsSupported("GL_VERSION_2_1 GL_ARB_multitexture")) {
       c->isGLAvailable_Multitexture = 1;
-   else
+      c->pglActiveTexture = (SH_PGLACTIVETEXTURE)
+         shGetProcAddress("glActiveTextureARB");
+      c->pglMultiTexCoord1f = (SH_PGLMULTITEXCOORD1F)
+         shGetProcAddress("glMultiTexCoord1fARB");
+      c->pglMultiTexCoord2f = (SH_PGLMULTITEXCOORD2F)
+         shGetProcAddress("glMultiTexCoord2fARB");
+   } else {
       c->isGLAvailable_Multitexture = 0;
+      c->pglActiveTexture = (SH_PGLACTIVETEXTURE) fallbackActiveTexture;
+      c->pglMultiTexCoord1f = (SH_PGLMULTITEXCOORD1F) fallbackMultiTexCoord1f;
+      c->pglMultiTexCoord2f = (SH_PGLMULTITEXCOORD2F) fallbackMultiTexCoord2f;
+   }
 
-   if (glewIsSupported("GL_VERSION_2_0 GL_ARB_texture_non_power_of_two"))
+   /* Non-power-of-two textures */
+   if (glewIsSupported("GL_VERSION_2_1 GL_ARB_texture_non_power_of_two"))
       c->isGLAvailable_TextureNonPowerOfTwo = 1;
    else
       c->isGLAvailable_TextureNonPowerOfTwo = 0;

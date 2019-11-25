@@ -74,7 +74,7 @@ VGErrorCode JN(_ARRAY_T, _ctor) (_ARRAY_T * restrict a)
 #ifdef _ARRAY_DEFINE
 {
    SH_ASSERT(a != NULL);
-   a->items = (_ITEM_T *) malloc(sizeof(_ITEM_T));
+   a->items = (_ITEM_T *) malloc(sizeof(_ITEM_T) * 64);
 
    if (a->items == NULL) {
       a->capacity = 0;
@@ -82,7 +82,7 @@ VGErrorCode JN(_ARRAY_T, _ctor) (_ARRAY_T * restrict a)
       return VG_OUT_OF_MEMORY_ERROR;
    }
 
-   a->capacity = 1;
+   a->capacity = 64;
    a->size = 0;
    return VG_NO_ERROR;
 }

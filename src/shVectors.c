@@ -160,8 +160,8 @@ shInvertMatrix(SHMatrix3x3 * restrict m, SHMatrix3x3 * restrict mout)
    return 1;
 }
 
-SHfloat
-shVectorOrientation(SHVector2 * v)
+inline SHfloat
+shVectorOrientation(SHVector2 * restrict v)
 {
    SH_ASSERT(v != NULL);
    SHfloat norm = (SHfloat) NORM2((*v));
@@ -170,9 +170,9 @@ shVectorOrientation(SHVector2 * v)
    return (SHfloat) (sina >= 0 ? SH_ACOS(cosa) : 2.0f * PI - SH_ACOS(cosa));
 }
 
-SHint
-shLineLineXsection(SHVector2 * o1, SHVector2 * v1,
-                   SHVector2 * o2, SHVector2 * v2, SHVector2 * xsection)
+inline SHint
+shLineLineXsection(SHVector2 * restrict o1, SHVector2 * restrict v1,
+                   SHVector2 * restrict o2, SHVector2 * restrict v2, SHVector2 * restrict xsection)
 {
    SH_ASSERT(o1 != NULL && o2 != NULL && v1 != NULL && v2 != NULL);
    SHfloat rightU = o2->x - o1->x;

@@ -24,8 +24,8 @@
 #include "shGeometry.h"
 #include "shMath.h"
 
-static int
-shAddVertex(SHPath * p, SHVertex * v, SHint * contourStart)
+static inline int
+shAddVertex(SHPath * restrict p, SHVertex * restrict v, SHint * restrict contourStart)
 {
    SH_ASSERT(p != NULL && v != NULL && contourStart != NULL);
    /* Assert contour was open */
@@ -46,7 +46,7 @@ shAddVertex(SHPath * p, SHVertex * v, SHint * contourStart)
 }
 
 static void
-shSubrecurseQuad(SHPath * p, SHQuad * quad, SHint * contourStart)
+shSubrecurseQuad(SHPath * restrict p, SHQuad * quad, SHint * restrict contourStart)
 {
    SHVertex v;
    SHVector2 mid, dif, c1, c2, c3;
@@ -115,7 +115,7 @@ shSubrecurseQuad(SHPath * p, SHQuad * quad, SHint * contourStart)
 }
 
 static void
-shSubrecurseCubic(SHPath * p, SHCubic * cubic, SHint * contourStart)
+shSubrecurseCubic(SHPath * restrict p, SHCubic * cubic, SHint * restrict contourStart)
 {
    SHVertex v;
    SHfloat dx1, dy1, dx2, dy2;
@@ -125,7 +125,7 @@ shSubrecurseCubic(SHPath * p, SHCubic * cubic, SHint * contourStart)
    SHint cindex = 0;
 
    SH_ASSERT(p != NULL && cubic != NULL && contourStart != NULL);
-   
+
    cubics[0] = *cubic;
 
    while (cindex >= 0) {
@@ -204,9 +204,9 @@ shSubrecurseCubic(SHPath * p, SHCubic * cubic, SHint * contourStart)
 }
 
 static void
-shSubrecurseArc(SHPath * p, SHArc * arc,
+shSubrecurseArc(SHPath * restrict p, SHArc * arc,
                 SHVector2 * c, SHVector2 * ux, SHVector2 * uy,
-                SHint * contourStart)
+                SHint * restrict contourStart)
 {
    SHVertex v;
    SHfloat am, cosa, sina, dx, dy;
@@ -240,12 +240,8 @@ shSubrecurseArc(SHPath * p, SHArc * arc,
       SET2V(m, a->p1);
       ADD2V(m, a->p2);
       DIV2(m, 2);
-      dx = c1.x - m.x;
-      dy = c1.y - m.y;
-      if (dx < 0.0f)
-         dx = -dx;
-      if (dy < 0.0f)
-         dy = -dy;
+      dx = SH_ABS(c1.x - m.x);
+      dy = SH_ABS(c1.y - m.y);
 
       /* Stop if flat enough */
       if (dx + dy <= SH_PATH_ESTIMATE_QUALITY
@@ -266,8 +262,7 @@ shSubrecurseArc(SHPath * p, SHArc * arc,
             return;
          --aindex;
 
-      }
-      else {
+      } else {
 
          /* Left subdivision goes on top of stack! */
          aright = a;
@@ -289,7 +284,7 @@ shSubrecurseArc(SHPath * p, SHArc * arc,
 }
 
 static void
-shSubdivideSegment(SHPath * p, VGPathSegment segment,
+shSubdivideSegment(SHPath * restrict p, VGPathSegment segment,
                    VGPathCommand originalCommand,
                    SHfloat * data, void *userData)
 {
@@ -424,7 +419,7 @@ shSubdivideSegment(SHPath * p, VGPathSegment segment,
  *--------------------------------------------------*/
 
 void
-shFlattenPath(SHPath * p, SHint surfaceSpace)
+shFlattenPath(SHPath * restrict p, SHint surfaceSpace)
 {
    SHint contourStart = -1;
    SHint *userData[2];
@@ -446,9 +441,9 @@ shFlattenPath(SHPath * p, SHint surfaceSpace)
  * Adds a rectangle to the path's stroke.
  *-------------------------------------------*/
 
-static void
-shPushStrokeQuad(SHPath * p, SHVector2 * p1, SHVector2 * p2,
-                 SHVector2 * p3, SHVector2 * p4)
+static inline void
+shPushStrokeQuad(SHPath * restrict p, SHVector2 * restrict p1, SHVector2 * restrict p2,
+                 SHVector2 * restrict p3, SHVector2 * restrict p4)
 {
    SH_ASSERT(p != NULL && p1 != NULL && p2 != NULL && p3 != NULL && p4 != NULL);
    shVector2ArrayPushBackP(&p->stroke, p1);
@@ -463,8 +458,8 @@ shPushStrokeQuad(SHPath * p, SHVector2 * p1, SHVector2 * p2,
  * Adds a triangle to the path's stroke.
  *-------------------------------------------*/
 
-static void
-shPushStrokeTri(SHPath * p, SHVector2 * p1, SHVector2 * p2, SHVector2 * p3)
+static inline void
+shPushStrokeTri(SHPath * restrict p, SHVector2 * restrict p1, SHVector2 * restrict p2, SHVector2 * restrict p3)
 {
    SH_ASSERT(p != NULL && p1 != NULL && p2 != NULL && p3 != NULL);
    shVector2ArrayPushBackP(&p->stroke, p1);
@@ -480,7 +475,7 @@ shPushStrokeTri(SHPath * p, SHVector2 * p1, SHVector2 * p2, SHVector2 * p3)
  *-----------------------------------------------------------*/
 
 static void
-shStrokeJoinMiter(SHPath * p, SHVector2 * c,
+shStrokeJoinMiter(SHPath * restrict p, SHVector2 * c,
                   SHVector2 * o1, SHVector2 * d1,
                   SHVector2 * o2, SHVector2 * d2)
 {
@@ -507,9 +502,9 @@ shStrokeJoinMiter(SHPath * p, SHVector2 * c,
  *-----------------------------------------------------------*/
 
 static void
-shStrokeJoinRound(SHPath * p, SHVector2 * c,
-                  SHVector2 * pstart, SHVector2 * tstart,
-                  SHVector2 * pend, SHVector2 * tend)
+shStrokeJoinRound(SHPath * restrict p, SHVector2 * restrict c,
+                  SHVector2 * restrict pstart, SHVector2 * restrict tstart,
+                  SHVector2 * restrict pend, SHVector2 * restrict tend)
 {
    SHVector2 p1, p2;
    SHfloat a, ang, cosa, sina;
