@@ -217,6 +217,12 @@ typedef union
 #define SH_CHECK_MEM(A) SH_CHECK((A), "Out of memory.")
 #define SH_CHECK_DEBUG(A, M, ...) if (!(A)) { SH_DEBUG(M, ##__VA_ARGS__); errno = 0; goto error; }
 
+#define SH_GL_ERROR_CHECK(op) {                                         \
+      for (GLint error = glGetError(); error; error = glGetError()) {   \
+         SH_LOG_ERR("after %s() glError (0x%x)\n", (op), error);        \
+      }                                                                 \
+   }
+
 /*
  * Timing helper
 */
