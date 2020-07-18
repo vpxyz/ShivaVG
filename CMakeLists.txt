@@ -15,10 +15,10 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
   # using Clang
-  set(CMAKE_C_FLAGS "-O3 -mtune=generic  -std=gnu99 -Wincompatible-pointer-types -Wstrict-prototypes -Wall -Wvla")
+  set(CMAKE_C_FLAGS "-O3 -std=gnu99 -Wincompatible-pointer-types -Wstrict-prototypes -Wall -Wvla")
 elseif (CMAKE_C_COMPILER_ID STREQUAL "GNU")
   # using GCC
-set(CMAKE_C_FLAGS "-O3 -mtune=generic -std=gnu99 -pedantic -Werror=incompatible-pointer-types -Werror=strict-prototypes -fno-strict-aliasing -Wall -Wvla")
+set(CMAKE_C_FLAGS "-O3 -std=gnu99 -pedantic -Werror=incompatible-pointer-types -Werror=strict-prototypes -fno-strict-aliasing -Wall -Wvla")
 endif()
 
 
