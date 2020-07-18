@@ -111,6 +111,7 @@ typedef struct
    SHint isGLAvailable_MirroredRepeat;
    SHint isGLAvailable_Multitexture;
    SHint isGLAvailable_TextureNonPowerOfTwo;
+   SHint isGLAvailable_PixelBufferObject;
    SH_PGLACTIVETEXTURE pglActiveTexture;
    SH_PGLMULTITEXCOORD1F pglMultiTexCoord1f;
    SH_PGLMULTITEXCOORD2F pglMultiTexCoord2f;

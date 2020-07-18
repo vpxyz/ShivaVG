@@ -110,20 +110,22 @@ void shLoadExtensions(VGContext *c)
    }
 
    /* GL_TEXTURE_CLAMP_TO_EDGE */
-   if (glewIsSupported("GL_VERSION_2_1  GL_EXT_texture_edge_clamp"))
-      c->isGLAvailable_ClampToEdge = 1;
-   else if (glewIsSupported("GL_VERSION_2_1  GL_SGIS_texture_edge_clamp"))
+   if (glewIsSupported("GL_VERSION_2_1  GL_EXT_texture_edge_clamp")
+       || glewIsSupported("GL_VERSION_2_1  GL_SGIS_texture_edge_clamp"))
       c->isGLAvailable_ClampToEdge = 1;
    else                         /* Unavailable */
       c->isGLAvailable_ClampToEdge = 0;
 
-     /* GL_TEXTURE_MIRRORED_REPEAT */
-   if (glewIsSupported("GL_VERSION_2_1 GL_ARB_texture_mirrored_repeat"))
-      c->isGLAvailable_MirroredRepeat = 1;
-   else if (glewIsSupported("GL_VERSION_2_1 GL_IBM_texture_mirrored_repeat"))
+   SH_LOG_INFO("Clamp to Edge extension  = %d", c->isGLAvailable_ClampToEdge);
+
+   /* GL_TEXTURE_MIRRORED_REPEAT */
+   if (glewIsSupported("GL_VERSION_2_1 GL_ARB_texture_mirrored_repeat")
+      || glewIsSupported("GL_VERSION_2_1 GL_IBM_texture_mirrored_repeat"))
       c->isGLAvailable_MirroredRepeat = 1;
    else                         /* Unavailable */
       c->isGLAvailable_MirroredRepeat = 0;
+
+   SH_DEBUG("Mirrored Repeat extension  = %d", c->isGLAvailable_MirroredRepeat);
 
    /* glActiveTexture, glMultiTexCoord1f */
    if (glewIsSupported("GL_VERSION_2_1 GL_ARB_multitexture")) {
@@ -141,63 +143,21 @@ void shLoadExtensions(VGContext *c)
       c->pglMultiTexCoord2f = (SH_PGLMULTITEXCOORD2F) fallbackMultiTexCoord2f;
    }
 
+   SH_DEBUG("Multi Texture extension = %d", c->isGLAvailable_Multitexture);
+
    /* Non-power-of-two textures */
    if (glewIsSupported("GL_VERSION_2_1 GL_ARB_texture_non_power_of_two"))
       c->isGLAvailable_TextureNonPowerOfTwo = 1;
    else
       c->isGLAvailable_TextureNonPowerOfTwo = 0;
 
-}
+   SH_DEBUG("Texture Non Power of two = %d", c->isGLAvailable_TextureNonPowerOfTwo);
 
-void
-shLoadExtensions_old(VGContext * c)
-{
-   SH_ASSERT(c != NULL);
-   const char *ext = (const char *) glGetString(GL_EXTENSIONS);
+   /* GL_EXT_pixel_buffer_object */
+   if (glewIsSupported("GL_EXT_pixel_buffer_object") || glewIsSupported("GL_ARB_pixel_buffer_object"))
+      c->isGLAvailable_PixelBufferObject = 1;
+   else
+      c->isGLAvailable_PixelBufferObject = 0;
 
-   /* GL_TEXTURE_CLAMP_TO_EDGE */
-   if (checkExtension(ext, "GL_EXT_texture_edge_clamp"))
-      c->isGLAvailable_ClampToEdge = 1;
-   else if (checkExtension(ext, "GL_SGIS_texture_edge_clamp"))
-      c->isGLAvailable_ClampToEdge = 1;
-   else                         /* Unavailable */
-      c->isGLAvailable_ClampToEdge = 0;
-
-
-   /* GL_TEXTURE_MIRRORED_REPEAT */
-   if (checkExtension(ext, "GL_ARB_texture_mirrored_repeat"))
-      c->isGLAvailable_MirroredRepeat = 1;
-   else if (checkExtension(ext, "GL_IBM_texture_mirrored_repeat"))
-      c->isGLAvailable_MirroredRepeat = 1;
-   else                         /* Unavailable */
-      c->isGLAvailable_MirroredRepeat = 0;
-
-
-   /* glActiveTexture, glMultiTexCoord1f */
-   if (checkExtension(ext, "GL_ARB_multitexture")) {
-      c->isGLAvailable_Multitexture = 1;
-
-      c->pglActiveTexture = (SH_PGLACTIVETEXTURE)
-         shGetProcAddress("glActiveTextureARB");
-      c->pglMultiTexCoord1f = (SH_PGLMULTITEXCOORD1F)
-         shGetProcAddress("glMultiTexCoord1fARB");
-      c->pglMultiTexCoord2f = (SH_PGLMULTITEXCOORD2F)
-         shGetProcAddress("glMultiTexCoord2fARB");
-
-      if (c->pglActiveTexture == NULL || c->pglMultiTexCoord1f == NULL ||
-          c->pglMultiTexCoord2f == NULL)
-         c->isGLAvailable_Multitexture = 0;
-
-   } else {                       /* Unavailable */
-      c->isGLAvailable_Multitexture = 0;
-      c->pglActiveTexture = (SH_PGLACTIVETEXTURE) fallbackActiveTexture;
-      c->pglMultiTexCoord1f = (SH_PGLMULTITEXCOORD1F) fallbackMultiTexCoord1f;
-      c->pglMultiTexCoord2f = (SH_PGLMULTITEXCOORD2F) fallbackMultiTexCoord2f;
-   }
-
-   /* Non-power-of-two textures */
-   if (checkExtension(ext, "GL_ARB_texture_non_power_of_two"))
-      c->isGLAvailable_TextureNonPowerOfTwo = 1;
-   else                         /* Unavailable */
-      c->isGLAvailable_TextureNonPowerOfTwo = 0;
+   SH_DEBUG("Pixel Buffer Object extension = %d", c->isGLAvailable_PixelBufferObject);
 }
