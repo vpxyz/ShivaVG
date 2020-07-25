@@ -1121,7 +1121,6 @@ shPathLength(SHPath * p, VGPathSegment segment,
    case VG_MOVE_TO:            /* no drawn path, not counted in length */
       break;
    default:
-      
       break;
    }
 

@@ -48,34 +48,6 @@ fallbackMultiTexCoord2f(GLenum target, GLfloat x, GLfloat y)
    glTexCoord2f(x, y);
 }
 
-static int
-checkExtension(const char *extensions, const char *name)
-{
-   SH_ASSERT(extensions != NULL && name != NULL);
-   int nlen = (int) strlen(name);
-   int elen = (int) strlen(extensions);
-   const char *e = extensions;
-   SH_ASSERT(nlen > 0);
-
-   while (1) {
-
-      /* Try to find sub-string */
-      e = strstr(e, name);
-      if (e == NULL)
-         return 0;
-      /* Check if last */
-      if (e == extensions + elen - nlen)
-         return 1;
-      /* Check if space follows (avoid same names with a suffix) */
-      if (*(e + nlen) == ' ')
-         return 1;
-
-      e += nlen;
-   }
-
-   return 0;
-}
-
 typedef void (*PFVOID) (void);
 
 PFVOID
@@ -116,7 +88,7 @@ void shLoadExtensions(VGContext *c)
    else                         /* Unavailable */
       c->isGLAvailable_ClampToEdge = 0;
 
-   SH_LOG_INFO("Clamp to Edge extension  = %d", c->isGLAvailable_ClampToEdge);
+   SH_DEBUG("Clamp to Edge extension  = %d", c->isGLAvailable_ClampToEdge);
 
    /* GL_TEXTURE_MIRRORED_REPEAT */
    if (glewIsSupported("GL_VERSION_2_1 GL_ARB_texture_mirrored_repeat")

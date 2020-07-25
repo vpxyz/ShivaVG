@@ -382,9 +382,10 @@ shIsTessCacheValid(VGContext * restrict c, SHPath * restrict p)
       valid = VG_FALSE;
    } else {
       /* TODO: Compare change matrix for any scale or shear  */
+      /* mi contains the invert matrix of p->cacheTransform */
       MULMATMAT(c->pathTransform, mi, mchange);
-      SET2(X, mi.m[0][0], mi.m[1][0]);
-      SET2(Y, mi.m[0][1], mi.m[1][1]);
+      SET2(X, mchange.m[0][0], mchange.m[1][0]);
+      SET2(Y, mchange.m[0][1], mchange.m[1][1]);
       nX = NORM2(X);
       nY = NORM2(Y);
       if (nX > 1.01f || nX < 0.99 || nY > 1.01f || nY < 0.99)
