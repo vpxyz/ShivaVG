@@ -82,8 +82,8 @@ void shLoadExtensions(VGContext *c)
    }
 
    /* GL_TEXTURE_CLAMP_TO_EDGE */
-   if (glewIsSupported("GL_VERSION_2_1  GL_EXT_texture_edge_clamp")
-       || glewIsSupported("GL_VERSION_2_1  GL_SGIS_texture_edge_clamp"))
+   if (glewIsSupported("GL_VERSION_2_1 GL_EXT_texture_edge_clamp")
+       || glewIsSupported("GL_VERSION_2_1 GL_SGIS_texture_edge_clamp"))
       c->isGLAvailable_ClampToEdge = 1;
    else                         /* Unavailable */
       c->isGLAvailable_ClampToEdge = 0;
@@ -126,7 +126,7 @@ void shLoadExtensions(VGContext *c)
    SH_DEBUG("Texture Non Power of two = %d", c->isGLAvailable_TextureNonPowerOfTwo);
 
    /* GL_EXT_pixel_buffer_object */
-   if (glewIsSupported("GL_EXT_pixel_buffer_object") || glewIsSupported("GL_ARB_pixel_buffer_object"))
+   if (glewIsSupported("GL_EXT_pixel_buffer_object") || glewIsSupported("GL_ARB_pixel_buffer_object") || glewIsSupported("GL_NV_pixel_buffer_object"))
       c->isGLAvailable_PixelBufferObject = 1;
    else
       c->isGLAvailable_PixelBufferObject = 0;
