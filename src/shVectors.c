@@ -107,7 +107,7 @@ SHMatrix3x3_dtor(SHMatrix3x3 * mt)
 {
 }
 
-void
+inline void
 shMatrixToGL(SHMatrix3x3 * restrict m, SHfloat mgl[16])
 {
    SH_ASSERT(m != NULL);
@@ -135,11 +135,21 @@ SHint
 shInvertMatrix(SHMatrix3x3 * restrict m, SHMatrix3x3 * restrict mout)
 {
    SH_ASSERT(m != NULL && mout != NULL);
+   SHfloat m00 = m->m[0][0];
+   SHfloat m01 = m->m[0][1];
+   SHfloat m02 = m->m[0][2];
+   SHfloat m10 = m->m[1][0];
+   SHfloat m11 = m->m[1][1];
+   SHfloat m12 = m->m[1][2];
+   SHfloat m20 = m->m[2][0];
+   SHfloat m21 = m->m[2][1];
+   SHfloat m22 = m->m[2][2];
+
    /* Calculate determinant */
-   SHfloat D0 = m->m[1][1] * m->m[2][2] - m->m[2][1] * m->m[1][2];
-   SHfloat D1 = m->m[2][0] * m->m[1][2] - m->m[1][0] * m->m[2][2];
-   SHfloat D2 = m->m[1][0] * m->m[2][1] - m->m[2][0] * m->m[1][1];
-   SHfloat D = m->m[0][0] * D0 + m->m[0][1] * D1 + m->m[0][2] * D2;
+   SHfloat D0 = m11 * m22 - m21 * m12;
+   SHfloat D1 = m20 * m12 - m10 * m22;
+   SHfloat D2 = m10 * m21 - m20 * m11;
+   SHfloat D = m00 * D0 + m01 * D1 + m02 * D2;
 
    /* Check if singular */
    if (D == 0.0f)
@@ -148,14 +158,14 @@ shInvertMatrix(SHMatrix3x3 * restrict m, SHMatrix3x3 * restrict mout)
 
    /* Calculate inverse */
    mout->m[0][0] = D * D0;
+   mout->m[0][1] = D * (m21 * m02 - m01 * m22);
+   mout->m[0][2] = D * (m01 * m12 - m11 * m02);
    mout->m[1][0] = D * D1;
+   mout->m[1][1] = D * (m00 * m22 - m20 * m02);
+   mout->m[1][2] = D * (m10 * m02 - m00 * m12);
    mout->m[2][0] = D * D2;
-   mout->m[0][1] = D * (m->m[2][1] * m->m[0][2] - m->m[0][1] * m->m[2][2]);
-   mout->m[1][1] = D * (m->m[0][0] * m->m[2][2] - m->m[2][0] * m->m[0][2]);
-   mout->m[2][1] = D * (m->m[2][0] * m->m[0][1] - m->m[0][0] * m->m[2][1]);
-   mout->m[0][2] = D * (m->m[0][1] * m->m[1][2] - m->m[1][1] * m->m[0][2]);
-   mout->m[1][2] = D * (m->m[1][0] * m->m[0][2] - m->m[0][0] * m->m[1][2]);
-   mout->m[2][2] = D * (m->m[0][0] * m->m[1][1] - m->m[1][0] * m->m[0][1]);
+   mout->m[2][1] = D * (m20 * m01 - m00 * m21);
+   mout->m[2][2] = D * (m00 * m11 - m10 * m01);
 
    return 1;
 }
@@ -167,7 +177,7 @@ shVectorOrientation(SHVector2 * restrict v)
    SHfloat norm = (SHfloat) NORM2((*v));
    SHfloat cosa = v->x / norm;
    SHfloat sina = v->y / norm;
-   return (SHfloat) (sina >= 0 ? SH_ACOS(cosa) : 2.0f * PI - SH_ACOS(cosa));
+   return (SHfloat) (sina >= 0.0f ? SH_ACOS(cosa) : 2.0f * PI - SH_ACOS(cosa));
 }
 
 inline SHint
