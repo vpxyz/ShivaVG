@@ -62,7 +62,7 @@ vgCreateContextSH(VGint width, VGint height)
 
    glDisable(GL_LIGHTING);
    glShadeModel(GL_FLAT);
-   
+
    return VG_TRUE;
 }
 

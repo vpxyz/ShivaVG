@@ -598,23 +598,18 @@ shDrawLinearGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    shSetGradientTexGLState(p);
 
    glEnable(GL_TEXTURE_1D);
-   glBegin(GL_TRIANGLES);
 
-   // Draw a Quads
-   // first triangle
-   glMultiTexCoord1f(texUnit, minOffset);
-   glVertex2fv((GLfloat *) & r1);
-   glVertex2fv((GLfloat *) & l1);
-   glMultiTexCoord1f(texUnit, maxOffset);
-   glVertex2fv((GLfloat *) & r2);
+   SHVector2 cnrs[] = {r1,l1,r2,r2,l2,l1};
+   SHfloat txt[] = {minOffset,minOffset,maxOffset,maxOffset,maxOffset,minOffset};
 
-   // second triangle
-   glVertex2fv((GLfloat *) & r2);
-   glVertex2fv((GLfloat *) & l2);
-   glMultiTexCoord1f(texUnit, minOffset);
-   glVertex2fv((GLfloat *) & l1);
-
-   glEnd();
+   glClientActiveTexture(texUnit);
+   glEnableClientState(GL_VERTEX_ARRAY);
+   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+      glTexCoordPointer(1, GL_FLOAT, 0, txt);
+      glVertexPointer(2, GL_FLOAT, 0, cnrs);
+      glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
+   glDisableClientState(GL_VERTEX_ARRAY);
+   glDisableClientState(GL_TEXTURE_COORD_ARRAY);
    glDisable(GL_TEXTURE_1D);
 
    return 1;
@@ -795,25 +790,25 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       of the gradient function when X and Y are substitued
       with a line equation for each bound-box edge. As a
       workaround we use 0.0f for now. */
-   SHint numsteps = 100;
-   SHfloat step;
-
-
    minOffset = 0.0f;
-   step = PI / 50;
-   numsteps = (SHint) SH_CEIL(maxA / step) + 1;
+   SHfloat step = PI / 50.0f;
+   SHint numsteps = (SHint) SH_CEIL(maxA / step) + 1;
 
    glActiveTexture(texUnit);
    shSetGradientTexGLState(p);
-
-   glEnable(GL_TEXTURE_1D);
-   glBegin(GL_TRIANGLES);
 
    /* Walk the steps and draw gradient mesh */
    SHVector2 tmin, tmax;
    SHVector2 min1, max1, min2, max2;
    SHint i;
    SHfloat a;
+
+   SHVector2 *cnrs = (SHVector2 *) malloc((numsteps - 1) * 6 * sizeof(SHVector2));
+   SH_ASSERT(cnrs != NULL);
+   SHfloat *txt = (SHfloat *) malloc((numsteps -1) * 6 * sizeof(SHfloat));
+   SH_ASSERT(txt != NULL);
+
+   SHint next = 0;
    for (i = 0, a = startA; i < numsteps; ++i, a += step) {
 
       /* Distance from focus to circle border
@@ -841,19 +836,21 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       max2.y = f.y + tmax.x * ux.y + tmax.y * uy.y;
 
       if (i > 0) {
-         // Draw a Quads
-         // first triangle
-         glMultiTexCoord1f(texUnit, minOffset);
-         glVertex2fv((GLfloat *) & min1);
-         glVertex2fv((GLfloat *) & min2);
-         glMultiTexCoord1f(texUnit, maxOffset);
-         glVertex2fv((GLfloat *) & max2);
+         cnrs[next] = min1;
+         cnrs[next+1] = min2;
+         cnrs[next+2] = max2;
+         cnrs[next+3] = max2;
+         cnrs[next+4] = max1;
+         cnrs[next+5] = min1;
 
-         // second triangle
-         glVertex2fv((GLfloat *) & max2);
-         glVertex2fv((GLfloat *) & max1);
-         glMultiTexCoord1f(texUnit, minOffset);
-         glVertex2fv((GLfloat *) & min1);
+         txt[next] = minOffset;
+         txt[next+1] = minOffset;
+         txt[next+2] = maxOffset;
+         txt[next+3] = maxOffset;
+         txt[next+4] = maxOffset;
+         txt[next+5] = minOffset;
+
+         next += 6;
       }
 
       /* Save prev points */
@@ -861,8 +858,18 @@ shDrawRadialGradientMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
       max1 = max2;
    }
 
-   glEnd();
+   glEnable(GL_TEXTURE_1D);
+   glClientActiveTexture(texUnit);
+   glEnableClientState(GL_VERTEX_ARRAY);
+   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+      glTexCoordPointer(1, GL_FLOAT, 0, txt);
+      glVertexPointer(2, GL_FLOAT, 0, cnrs);
+      glDrawArrays(GL_TRIANGLE_FAN, 0, (numsteps - 1) * 6);
+   glDisableClientState(GL_VERTEX_ARRAY);
+   glDisableClientState(GL_TEXTURE_COORD_ARRAY);
    glDisable(GL_TEXTURE_1D);
+   free(cnrs);
+   free(txt);
 
    return 1;
 }
@@ -924,41 +931,42 @@ shDrawPatternMesh(SHPaint * p, SHVector2 * min, SHVector2 * max,
    shSetPatternTexGLState(p, context);
    glEnable(GL_TEXTURE_2D);
 
-   glBegin(GL_TRIANGLES);
-      glMultiTexCoord2f(texUnit, corners[0].x, corners[0].y);
-      glVertex2fv((GLfloat *) & corners[0]);
-      glMultiTexCoord2f(texUnit, corners[1].x, corners[1].y);
-      glVertex2fv((GLfloat *) & corners[1]);
-      glMultiTexCoord2f(texUnit, corners[2].x, corners[2].y);
-      glVertex2fv((GLfloat *) & corners[2]);
-
-      glMultiTexCoord2f(texUnit, corners[2].x, corners[2].y);
-      glVertex2fv((GLfloat *) & corners[2]);
-      glMultiTexCoord2f(texUnit, corners[3].x, corners[3].y);
-      glVertex2fv((GLfloat *) & corners[3]);
-      glMultiTexCoord2f(texUnit, corners[0].x, corners[0].y);
-      glVertex2fv((GLfloat *) & corners[0]);
-   glEnd();
-
    /*
-    * // TODO: è necessario studiare bene come funziano questa cosa del client state quando ci sono di mezzo le texture
-    * SHVector2 txc[6] = {corners[0], corners[1], corners[2], corners[2], corners[3], corners[0]};
-    * SHVector2 nc[6] = {corners[0], corners[1], corners[2], corners[2], corners[3], corners[0]};
+    * glBegin(GL_TRIANGLES);
+    *    glMultiTexCoord2f(texUnit, corners[0].x, corners[0].y);
+    *    glVertex2fv((GLfloat *) & corners[0]);
+    *    glMultiTexCoord2f(texUnit, corners[1].x, corners[1].y);
+    *    glVertex2fv((GLfloat *) & corners[1]);
+    *    glMultiTexCoord2f(texUnit, corners[2].x, corners[2].y);
+    *    glVertex2fv((GLfloat *) & corners[2]);
     * 
-    * glClientActiveTexture(texUnit);
-    * glEnableClientState(GL_VERTEX_ARRAY);
-    * glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    *    glTexCoordPointer(2, GL_FLOAT, 0, txc);
-    *    glVertexPointer(2, GL_FLOAT, 0, nc);
-    *    glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
-    *    /\*
-    *     * glTexCoordPointer(2, GL_FLOAT, 0, corners);
-    *     * glVertexPointer(2, GL_FLOAT, 0, corners);
-    *     * glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-    *     *\/
-    * glDisableClientState(GL_VERTEX_ARRAY);
-    * glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    *    glMultiTexCoord2f(texUnit, corners[2].x, corners[2].y);
+    *    glVertex2fv((GLfloat *) & corners[2]);
+    *    glMultiTexCoord2f(texUnit, corners[3].x, corners[3].y);
+    *    glVertex2fv((GLfloat *) & corners[3]);
+    *    glMultiTexCoord2f(texUnit, corners[0].x, corners[0].y);
+    *    glVertex2fv((GLfloat *) & corners[0]);
+    * glEnd();
     */
+
+   // TODO: è necessario studiare bene come funziano questa cosa del client state quando ci sono di mezzo le texture
+   /*
+    * SHVector2 c[6] = {corners[0], corners[1], corners[2], corners[2], corners[3], corners[0]};
+    */
+
+   glClientActiveTexture(texUnit);
+   glEnableClientState(GL_VERTEX_ARRAY);
+   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+      /*
+       * glTexCoordPointer(2, GL_FLOAT, 0, c);
+       * glVertexPointer(2, GL_FLOAT, 0, c);
+       * glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
+       */
+      glTexCoordPointer(2, GL_FLOAT, 0, corners);
+      glVertexPointer(2, GL_FLOAT, 0, corners);
+      glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+   glDisableClientState(GL_VERTEX_ARRAY);
+   glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
 
    glDisable(GL_TEXTURE_2D);
