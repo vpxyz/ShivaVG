@@ -102,6 +102,7 @@ typedef struct
    VGErrorCode error;
 
    /* Resources */
+   // TODO: paths, paints and image must be in a different array structure (bucket, or pool), in order to properly use handle
    SHPathArray paths;
    SHPaintArray paints;
    SHImageArray images;

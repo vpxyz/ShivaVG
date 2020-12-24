@@ -285,7 +285,6 @@ shDrawVertices(SHPath * restrict p, GLenum mode)
       glDrawArrays(mode, start, size);
       start += size;
    }
-
    glDisableClientState(GL_VERTEX_ARRAY);
 }
 

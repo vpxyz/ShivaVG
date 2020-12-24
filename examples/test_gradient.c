@@ -6,13 +6,18 @@
 #include <math.h>
 #include <ctype.h>
 
-#define SCREEN_WIDTH	320
-#define SCREEN_HEIGHT   240
+/*
+ * #define SCREEN_WIDTH	320
+ * #define SCREEN_HEIGHT   240
+ */
+#define SCREEN_WIDTH	640
+#define SCREEN_HEIGHT   480
 
 enum gradientType {
    NONE,
    LINEAR,
-   RADIAL
+   RADIAL,
+   RADIAL_CENTERED
 } gradientType;
 
 
@@ -26,15 +31,28 @@ void display( void )
 
    VGubyte segments[] = { VG_MOVE_TO_ABS, VG_LINE_TO_REL, VG_LINE_TO_REL, VG_LINE_TO_REL, VG_CLOSE_PATH };
 
-   VGfloat coords[]   = { 0.0f, 0.0f, 0.0f, 10.0f, 10.0f, 0.0f, 0.0f, -10.0f, -10.0f, 0.0f };
+   /*
+    * VGfloat coords[]   = { 0.0f, 0.0f, 0.0f, 10.0f, 10.0f, 0.0f, 0.0f, -10.0f, -10.0f, 0.0f };
+    */
+   VGfloat coords[]   = { 0.0f, 0.0f, 0.0f, 20.0f, 20.0f, 0.0f, 0.0f, -20.0f, -20.0f, 0.0f };
 
+   /*
+    * VGfloat rampStops[20] = { 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+    *                           0.3f, 1.0f, 0.0f, 0.0f, 1.0f,
+    *                           0.7f, 0.0f, 1.0f, 0.0f, 1.0f,
+    *                           1.0f, 0.0f, 0.0f, 1.0f, 1.0f };
+    */
    VGfloat rampStops[20] = { 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-                             0.3f, 1.0f, 0.0f, 0.0f, 1.0f,
-                             0.7f, 0.0f, 1.0f, 0.0f, 1.0f,
+                             0.33f, 1.0f, 0.0f, 0.0f, 1.0f,
+                             0.66f, 0.0f, 1.0f, 0.0f, 1.0f,
                              1.0f, 0.0f, 0.0f, 1.0f, 1.0f };
 
    VGfloat linearGradient[4] = { 2.0f, 2.0f, 8.0f, 8.0f };
    VGfloat radialGradient[5] = { 6.5f, 6.5f, 8.0f, 8.0f, 3.0f };
+   /*
+    * VGfloat radialCenteredGradient[5] = { 6.5f, 6.5f, 6.5f, 6.5f, 3.0f };
+    */
+   VGfloat radialCenteredGradient[5] = { 6.5f, 6.5f, 6.5f, 6.5f, 6.5f };
 
    vgSetfv( VG_CLEAR_COLOR, 4, color );
    vgClear( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT );
@@ -43,15 +61,19 @@ void display( void )
 
    vgLoadIdentity();
    vgScale( 8.0f, 8.0f );
-   vgTranslate( 2.0f, 5.0f );
+   vgTranslate( 2.0f, 10.0f );
 
    path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 0, 0, VG_PATH_CAPABILITY_ALL);
-   vgAppendPathData( path, 4,segments, coords );
+   vgAppendPathData( path, 4, segments, coords );
 
    fill = vgCreatePaint();
    vgSetPaint( fill, VG_FILL_PATH );
 
    switch (gradientType) {
+   case RADIAL_CENTERED:
+      vgSetParameteri( fill, VG_PAINT_TYPE, VG_PAINT_TYPE_RADIAL_GRADIENT );
+      vgSetParameterfv( fill, VG_PAINT_RADIAL_GRADIENT, 5, radialCenteredGradient );
+      break;
    case RADIAL:
       vgSetParameteri( fill, VG_PAINT_TYPE, VG_PAINT_TYPE_RADIAL_GRADIENT );
       vgSetParameterfv( fill, VG_PAINT_RADIAL_GRADIENT, 5, radialGradient );
@@ -67,12 +89,18 @@ void display( void )
    vgSetParameteri( fill, VG_PAINT_COLOR_RAMP_SPREAD_MODE, VG_COLOR_RAMP_SPREAD_PAD );
    vgDrawPath( path, VG_FILL_PATH );
 
-   vgTranslate( 12.0f, 0.0f );
+   /*
+    * vgTranslate( 12.0f, 0.0f );
+    */
+   vgTranslate( 24.0f, 0.0f );
    vgSetParameterfv( fill, VG_PAINT_COLOR_RAMP_STOPS, 20, rampStops );
    vgSetParameteri( fill, VG_PAINT_COLOR_RAMP_SPREAD_MODE, VG_COLOR_RAMP_SPREAD_REPEAT );
    vgDrawPath( path, VG_FILL_PATH );
 
-   vgTranslate( 12.0f, 0.0f );
+   /*
+    * vgTranslate( 12.0f, 0.0f );
+    */
+   vgTranslate( 24.0f, 0.0f );
    vgSetParameterfv( fill, VG_PAINT_COLOR_RAMP_STOPS, 20, rampStops );
    vgSetParameteri( fill, VG_PAINT_COLOR_RAMP_SPREAD_MODE, VG_COLOR_RAMP_SPREAD_REFLECT );
    vgDrawPath( path, VG_FILL_PATH );
@@ -87,6 +115,7 @@ const char commands[] =
    "H - this help\n"
    "l - linear\n"
    "r - radial\n"
+   "c - radial cent.\n"
    "q - quit";
 
 const char help[] = "Press H for a list of commands";
@@ -99,6 +128,9 @@ void key(unsigned char code, int x, int y)
       break;
    case 'r':
      gradientType = RADIAL;
+      break;
+   case 'c':
+      gradientType = RADIAL_CENTERED;
       break;
    case 'q':
       exit(EXIT_SUCCESS);
