@@ -16,6 +16,6 @@ foreach (example vgu dash linear radial interpolate tiger image pattern blend eb
     if(BUILD_${EXAMPLE})
         include_directories(${EXAMPLE_${example}_INCLUDES})
         add_executable(test_${example} ${EXAMPLE_SRCS} test_${example}.c ${EXAMPLE_${example}_SRC} ${EXAMPLE_lodepng_SRC})
-        target_link_libraries(test_${example} ${EXAMPLE_LIBS} OpenVG ${EXAMPLE_${example}_LIBS})
+        target_link_libraries(test_${example} ${EXAMPLE_LIBS} ShivaVG ${EXAMPLE_${example}_LIBS})
     endif()
 endforeach()
