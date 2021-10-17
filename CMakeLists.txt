@@ -150,9 +150,6 @@ check_include_files(sys/types.h HAVE_SYS_TYPES_H)
 check_include_files(unistd.h HAVE_UNISTD_H)
 check_type_size("void*" SIZEOF_VOID_P)
 
-# TODO the AC_TYPE defines need porting
-find_package(ANSIC)
-
 # Trying to get the version of the package
 if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
     find_package(Git)
