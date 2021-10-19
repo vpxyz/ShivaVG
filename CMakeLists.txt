@@ -116,6 +116,7 @@ set(BUILD_EXAMPLES BUILD_VGU OR BUILD_DASH OR BUILD_LINEAR OR BUILD_RADIAL OR BU
 # TODO: detailed report instead of failure like configure did
 # TODO: properly look for GLX on XWindow-based systems
 find_package(OpenGL REQUIRED)
+find_package(X11) # X11/Xlib.h for GL/glx.h
 if (OpenGL_FOUND)
     include_directories(${OPENGL_INCLUDE_DIR})
     link_libraries(${OPENGL_LIBRARIES})
@@ -149,9 +150,6 @@ check_include_files(sys/stat.h HAVE_SYS_STAT_H)
 check_include_files(sys/types.h HAVE_SYS_TYPES_H)
 check_include_files(unistd.h HAVE_UNISTD_H)
 check_type_size("void*" SIZEOF_VOID_P)
-
-# TODO the AC_TYPE defines need porting
-find_package(ANSIC)
 
 # Trying to get the version of the package
 if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
