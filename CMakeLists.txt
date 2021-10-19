@@ -116,7 +116,11 @@ set(BUILD_EXAMPLES BUILD_VGU OR BUILD_DASH OR BUILD_LINEAR OR BUILD_RADIAL OR BU
 # TODO: detailed report instead of failure like configure did
 # TODO: properly look for GLX on XWindow-based systems
 find_package(OpenGL REQUIRED)
-find_package(X11) # X11/Xlib.h for GL/glx.h
+if (OpenGL_GLX_FOUND)
+  # X11 are required by GLX, are available?
+  find_package(X11 REQUIRED)
+endif()
+
 if (OpenGL_FOUND)
     include_directories(${OPENGL_INCLUDE_DIR})
     link_libraries(${OPENGL_LIBRARIES})
@@ -135,10 +139,13 @@ if(BUILD_EXAMPLES)
         find_package(JPEG REQUIRED)
     endif()
 endif()
+
 # Platform checks
 check_include_files(dlfcn.h HAVE_DLFCN_H)
 check_include_files(inttypes.h HAVE_INTTYPES_H)
-check_include_files(jpeglib.h HAVE_JPEGLIB_H) # TODO we can also just reuse FindJPEG's result
+if (JPEG_FOUND)
+  set(HAVE_JPEGLIB_H 1)
+endif()
 check_library_exists(m cos "" HAVE_LIBM) # TODO use link directories instead of "" location parameter
 check_include_files(memory.h HAVE_MEMORY_H)
 check_include_files(stdint.h HAVE_STDINT_H)
