@@ -116,6 +116,7 @@ set(BUILD_EXAMPLES BUILD_VGU OR BUILD_DASH OR BUILD_LINEAR OR BUILD_RADIAL OR BU
 # TODO: detailed report instead of failure like configure did
 # TODO: properly look for GLX on XWindow-based systems
 find_package(OpenGL REQUIRED)
+find_package(X11) # X11/Xlib.h for GL/glx.h
 if (OpenGL_FOUND)
     include_directories(${OPENGL_INCLUDE_DIR})
     link_libraries(${OPENGL_LIBRARIES})
