@@ -1,4 +1,0 @@
-@PACKAGE_INIT@
-
-set(ShivaVG_FOUND True)
-include("${CMAKE_CURRENT_LIST_DIR}/ShivaVGTargets.cmake")

@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.0)
 project(ShivaVG
     VERSION 0.2.1
     LANGUAGES C
-    DESCRIPTION "The shivavg implementation of openvg"
+    DESCRIPTION "The ShivaVG implementation of OpenVG"
 )
 
 # TODO test on Windows/MSVC
@@ -18,17 +18,17 @@ include(CheckTypeSize)
 # make cache variables for install destinations
 include(GNUInstallDirs)
 
-set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
   # using Clang
-  set(CMAKE_C_FLAGS "-O3 -std=gnu99 -Wincompatible-pointer-types -Wstrict-prototypes -Wall -Wvla")
+  set(CMAKE_C_FLAGS "-O3 -std=c11 -Wincompatible-pointer-types -Wstrict-prototypes -Wall -Wvla")
 elseif (CMAKE_C_COMPILER_ID STREQUAL "GNU")
   # using GCC
-set(CMAKE_C_FLAGS "-O3 -std=gnu99 -pedantic -Werror=incompatible-pointer-types -Werror=strict-prototypes -fno-strict-aliasing -Wall -Wvla")
+set(CMAKE_C_FLAGS "-O3 -std=c11 -pedantic -Werror=incompatible-pointer-types -Werror=strict-prototypes -fno-strict-aliasing -Wall -Wvla")
 endif()
 
 
@@ -38,42 +38,47 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # set GLVND as prefered OpenGL policy
 set(OpenGL_GL_PREFERENCE "GLVND")
 
+
+# Set the library name
+set(SHARED_LIBRARY_NAME "OpenVG" CACHE STRING "Shared library name")
+set(STATIC_LIBRARY_NAME "OpenVGStatic" CACHE STRING "Static library name")
+
 # Processing the generator options
 # TODO: can we have a master option that will turn others in UI?
 # TODO: nicer display in UI? http://www.kitware.com/blog/home/post/82
 option(BUILD_DEBUG             "Build with debug (default=no)"                             OFF)
-option(BUILD_ALL_EXAMPLES      "Initialize build values for all examples (default=yes)]"   ON)
-option(BUILD_VGU               "Build VGU example (default=yes)]"                          OFF)
-option(BUILD_DASH              "Build Dashing example (default=yes)]"                      OFF)
-option(BUILD_LINEAR            "Build Linear Gradient example (default=yes)]"              OFF)
-option(BUILD_RADIAL            "Build Radial Gradient example (default=yes)]"              OFF)
-option(BUILD_GRADIENT          "Build Gradient example (default=yes)]"                     OFF)
-option(BUILD_INTERPOLATE       "Build Path Interpolation example (default=yes)]"           OFF)
-option(BUILD_TIGER             "Build Tiger SVG example (default=yes)]"                    OFF)
-option(BUILD_IMAGE             "Build Images example (default=yes)]"                       OFF)
-option(BUILD_PATTERN           "Build Pattern Paint example (default=yes)]"                OFF)
-option(BUILD_BLEND             "Build Blending example (default=yes)]"                     OFF)
-option(BUILD_PORTERDUFF        "Build Porter Duff example (default=yes)]"                  OFF)
-option(BUILD_EB                "Build Electro Body example (default=yes)]"                 OFF)
-option(BUILD_WARP              "Build Warp image example (default=yes)]"                   OFF)
-option(BUILD_PATH              "Build Path image example (default=yes)]"                   OFF)
-option(BUILD_FLOWERS           "Build Flowers example (default=yes)]"                      OFF)
-option(BUILD_STRESS            "Build Stress test example (default=yes)]"                  OFF)
-option(BUILD_CLOCK             "Build Clock example (default=yes)]"                        OFF)
-option(BUILD_SUBWAYMAP         "Build Subwaymap example (default=yes)]"                    OFF)
-option(BUILD_COMPOSITING       "Build Compositing example (default=yes)]"                  OFF)
-option(BUILD_COLORMATRIX       "Build Color matrix example (default=yes)]"                 OFF)
-option(BUILD_GAUSSIANBLUR      "Build Color gaussian blur example (default=yes)]"          OFF)
-option(BUILD_GAUSSIANBLUR2     "Build Color gaussian blur advanced example (default=yes)]" OFF)
-option(BUILD_CONVOLVE          "Build Convolve example (default=yes)]"                     OFF)
-option(BUILD_SEPARABLECONVOLVE "Build Separable Convolve example (default=yes)]"           OFF)
-option(BUILD_LOOKUP            "Build Color lookup example (default=yes)]"                 OFF)
-option(BUILD_LOOKUP2           "Build Color lookup2 example (default=yes)]"                OFF)
-option(BUILD_LOOKUP_SINGLE     "Build Color lookup single example (default=yes)]"          OFF)
-option(BUILD_COLOR             "Build Simple color matrix example (default=yes)]"          OFF)
-option(BUILD_SRGB              "Build sRGB example (default=yes)]"                         OFF)
-option(BUILD_IMAGE_MODE        "Build Image mode example (default=yes)]"                   OFF)
-option(BUILD_TILING_MODE       "Build Tiling mode example (default=yes)]"                  OFF)
+option(BUILD_ALL_EXAMPLES      "Initialize build values for all examples (default=no)]"    OFF)
+option(BUILD_VGU               "Build VGU example (default=no)]"                           OFF)
+option(BUILD_DASH              "Build Dashing example (default=no)]"                       OFF)
+option(BUILD_LINEAR            "Build Linear Gradient example (default=no)]"               OFF)
+option(BUILD_RADIAL            "Build Radial Gradient example (default=no)]"               OFF)
+option(BUILD_GRADIENT          "Build Gradient example (default=no)]"                      OFF)
+option(BUILD_INTERPOLATE       "Build Path Interpolation example (default=no)]"            OFF)
+option(BUILD_TIGER             "Build Tiger SVG example (default=no)]"                     OFF)
+option(BUILD_IMAGE             "Build Images example (default=no)]"                        OFF)
+option(BUILD_PATTERN           "Build Pattern Paint example (default=no)]"                 OFF)
+option(BUILD_BLEND             "Build Blending example (default=no)]"                      OFF)
+option(BUILD_PORTERDUFF        "Build Porter Duff example (default=no)]"                   OFF)
+option(BUILD_EB                "Build Electro Body example (default=no)]"                  OFF)
+option(BUILD_WARP              "Build Warp image example (default=no)]"                    OFF)
+option(BUILD_PATH              "Build Path image example (default=no)]"                    OFF)
+option(BUILD_FLOWERS           "Build Flowers example (default=no)]"                       OFF)
+option(BUILD_STRESS            "Build Stress test example (default=no)]"                   OFF)
+option(BUILD_CLOCK             "Build Clock example (default=no)]"                         OFF)
+option(BUILD_SUBWAYMAP         "Build Subwaymap example (default=no)]"                     OFF)
+option(BUILD_COMPOSITING       "Build Compositing example (default=no)]"                   OFF)
+option(BUILD_COLORMATRIX       "Build Color matrix example (default=no)]"                  OFF)
+option(BUILD_GAUSSIANBLUR      "Build Color gaussian blur example (default=no)]"           OFF)
+option(BUILD_GAUSSIANBLUR2     "Build Color gaussian blur advanced example (default=no)]"  OFF)
+option(BUILD_CONVOLVE          "Build Convolve example (default=no)]"                      OFF)
+option(BUILD_SEPARABLECONVOLVE "Build Separable Convolve example (default=no)]"            OFF)
+option(BUILD_LOOKUP            "Build Color lookup example (default=no)]"                  OFF)
+option(BUILD_LOOKUP2           "Build Color lookup2 example (default=no)]"                 OFF)
+option(BUILD_LOOKUP_SINGLE     "Build Color lookup single example (default=no)]"           OFF)
+option(BUILD_COLOR             "Build Simple color matrix example (default=no)]"           OFF)
+option(BUILD_SRGB              "Build sRGB example (default=no)]"                          OFF)
+option(BUILD_IMAGE_MODE        "Build Image mode example (default=no)]"                    OFF)
+option(BUILD_TILING_MODE       "Build Tiling mode example (default=no)]"                   OFF)
 
 if (BUILD_DEBUG)
   set(DEBUG ON CACHE BOOL "Compile with debug code")
@@ -126,6 +131,11 @@ set(BUILD_EXAMPLES BUILD_VGU OR BUILD_DASH OR BUILD_LINEAR OR BUILD_RADIAL OR BU
 # TODO: detailed report instead of failure like configure did
 # TODO: properly look for GLX on XWindow-based systems
 find_package(OpenGL REQUIRED)
+if (OpenGL_GLX_FOUND)
+  # X11 are required by GLX, are available?
+  find_package(X11 REQUIRED)
+endif()
+
 if (OpenGL_FOUND)
     include_directories(${OPENGL_INCLUDE_DIR})
     link_libraries(${OPENGL_LIBRARIES})
@@ -144,10 +154,13 @@ if(BUILD_EXAMPLES)
         find_package(JPEG REQUIRED)
     endif()
 endif()
+
 # Platform checks
 check_include_files(dlfcn.h HAVE_DLFCN_H)
 check_include_files(inttypes.h HAVE_INTTYPES_H)
-check_include_files(jpeglib.h HAVE_JPEGLIB_H) # TODO we can also just reuse FindJPEG's result
+if (JPEG_FOUND)
+  set(HAVE_JPEGLIB_H 1)
+endif()
 check_library_exists(m cos "" HAVE_LIBM) # TODO use link directories instead of "" location parameter
 check_include_files(memory.h HAVE_MEMORY_H)
 check_include_files(stdint.h HAVE_STDINT_H)
@@ -184,7 +197,7 @@ endif()
 set(PACKAGE ${CMAKE_PROJECT_NAME})
 set(PACKAGE_NAME ${PACKAGE})
 set(PACKAGE_STRING "${PACKAGE}-${PACKAGE_VERSION}")
-set(PACKAGE_TARNAME "shivavg") # TODO I don't really think we -need- that
+set(PACKAGE_TARNAME "Shivavg") # TODO I don't really think we -need- that
 
 # Now generating the config.h and installing master includes
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
@@ -235,4 +248,66 @@ if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
+
+# Installation
+
 install(DIRECTORY include/VG DESTINATION include)
+
+# add include directories
+target_include_directories(ShivaVGShared
+    PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
+
+# install the target and create export-set
+install(TARGETS ShivaVGShared ShivaVGStatic
+    EXPORT ShivaVGTargets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+# generate and install export file
+install(EXPORT ShivaVGTargets
+    FILE ${SHARED_LIBRARY_NAME}Targets.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${SHARED_LIBRARY_NAME}
+)
+
+include(CMakePackageConfigHelpers)
+
+set(version $PROJECT_VERSION)
+
+# generate the version file for the config file
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/${SHARED_LIBRARY_NAME}ConfigVersion.cmake"
+    VERSION "${version}"
+    COMPATIBILITY AnyNewerVersion
+)
+
+# create config file
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
+    "${CMAKE_CURRENT_BINARY_DIR}/${SHARED_LIBRARY_NAME}Config.cmake"
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${SHARED_LIBRARY_NAME}
+    NO_CHECK_REQUIRED_COMPONENTS_MACRO
+)
+
+# install config files
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/${SHARED_LIBRARY_NAME}Config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${SHARED_LIBRARY_NAME}ConfigVersion.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${SHARED_LIBRARY_NAME}
+)
+
+# TODO verify
+# generate pkgconfig file
+set(target1 ${SHARED_LIBRARY_NAME})
+string(TOLOWER ${SHARED_LIBRARY_NAME} PKGCONFIG_NAME)
+configure_file(shivavg.pc.in ${CMAKE_CURRENT_BINARY_DIR}/${PKGCONFIG_NAME}.pc @ONLY)
+
+# install pkgconfig files
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/${PKGCONFIG_NAME}.pc"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+)

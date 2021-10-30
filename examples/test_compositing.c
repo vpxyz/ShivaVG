@@ -96,12 +96,13 @@ void genImages(void)
    vgDestroyImage(srcImage);
    vgDestroyImage(dstImage);
 
-   srcImage = vgCreateImage(VG_sRGBA_8888, imageSize, imageSize, VG_IMAGE_QUALITY_BETTER);
-   dstImage = vgCreateImage(VG_sRGBA_8888, imageSize, imageSize, VG_IMAGE_QUALITY_BETTER);
+   srcImage = vgCreateImage(VG_sRGBA_8888, imageSize, imageSize, VG_IMAGE_QUALITY_NONANTIALIASED);
+   dstImage = vgCreateImage(VG_sRGBA_8888, imageSize, imageSize, VG_IMAGE_QUALITY_NONANTIALIASED);
    // clear surface with a transparent black
    vgSetfv(VG_CLEAR_COLOR, 4, black);
    vgSeti(VG_BLEND_MODE, VG_BLEND_SRC);
    vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
+
    // generate SRC image
    vgClear(0, 0, windowWidth, windowHeight);
    vgSetPaint(paintSrc, VG_FILL_PATH);
@@ -114,6 +115,7 @@ void genImages(void)
     */
    vgDrawPath(flower, VG_FILL_PATH);
    vgGetPixels(srcImage, 0, 0, 0, 0, imageSize, imageSize);
+
    // generate DST image
    vgClear(0, 0, windowWidth, windowHeight);
    vgSetPaint(paintDst, VG_FILL_PATH);
@@ -125,6 +127,10 @@ void genImages(void)
     */
    vgDrawPath(flower, VG_FILL_PATH);
    vgGetPixels(dstImage, 0, 0, 0, 0, imageSize, imageSize);
+
+   // update path used to draw images bounds
+   vgClearPath(square, VG_PATH_CAPABILITY_ALL);
+   vguRect(square, 0, 0, 346.0f, 346.0f);
 
 }
 
@@ -177,10 +183,9 @@ void genPaths(void)
    vgAppendPathData(flower, 6, flowerCmds, flowerCoords);
 
    circle = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 0, 0, VG_PATH_CAPABILITY_ALL);
-   vguEllipse(circle, 0.0f, 0.0f, 8.0f, 8.0f);
+   vguEllipse(circle, 0.0f, 0.0f, controlPointsRadius * 2.0f, controlPointsRadius * 2.0f);
 
    square = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 0, 0, VG_PATH_CAPABILITY_ALL);
-   vguRect(square, 0, 0, 346.0f, 346.0f);
 }
 
 void display(void)
@@ -188,8 +193,6 @@ void display(void)
    VGfloat clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
    VGfloat dashPattern[4] = { 10.0f, 10.0f };
 
-   vgSetfv(VG_STROKE_DASH_PATTERN, 0, NULL);
-   vgSeti(VG_RENDERING_QUALITY, quality);
    vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
    vgClear(0, 0, windowWidth, windowHeight);
 

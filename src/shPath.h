@@ -55,7 +55,6 @@ typedef struct
    SHVector2 tangent;
    SHfloat length;
    SHuint flags;
-
 } SHVertex;
 
 /* Vertex flags for contour definition */
