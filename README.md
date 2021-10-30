@@ -39,6 +39,9 @@ Xcode/OS X:
 `$ cmake .. -G Xcode && xcodebuild`
 
 For Windows, generate Visual Studio project files with the CMake GUI.
+You can customize the name of the shared and static library by editing
+the cmake variables `SHARED_LIBRARY_NAME` and `STATIC_LIBRARY_NAME`
+(by default both are equal to 'OpenVG')
 
 #### Static Analysis
 To run the Clang Static Analyzer with CMake, obtain the latest analyzer from its [website](http://clang-analyzer.llvm.org/) and unpack it somewhere.
