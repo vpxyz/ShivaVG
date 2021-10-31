@@ -27,8 +27,9 @@ IV.   EXTENSIONS
 ### Compiling
 ShivaVG has now been converted to [CMake](http://www.cmake.org/).
 
-To compile it, obtain CMake from its website, generate project files for your favorite build system or IDE. <br>
-It is advisable to do so in a separate `build` directory to keep things clean.
+To compile it, obtain CMake from its website, generate project files for your
+favorite build system or IDE. <br> It is advisable to do so in a separate `build` 
+directory to keep things clean.
 
 `$ mkdir build; cd build`
 
@@ -41,7 +42,7 @@ Xcode/OS X:
 For Windows, generate Visual Studio project files with the CMake GUI.
 You can customize the name of the shared and static library by editing
 the cmake variables `SHARED_LIBRARY_NAME` and `STATIC_LIBRARY_NAME`
-(by default both are equal to 'OpenVG')
+(by default are equal to 'OpenVG' and 'OpenVGStatic')
 
 #### Static Analysis
 To run the Clang Static Analyzer with CMake, obtain the latest analyzer from its [website](http://clang-analyzer.llvm.org/) and unpack it somewhere.
